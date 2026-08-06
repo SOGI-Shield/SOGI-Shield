@@ -1,0 +1,17 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // SOGI-Shield Reports Collection
+    match /reports/{reportId} {
+      // Public Read allowed ONLY for verified or aggregated reports
+      allow read: if resource.data.status == 'PUBLIC_VERIFIED' || resource.data.status == 'HEATMAP_AGGREGATED';
+      
+      // Public Create allowed for incoming reports
+      allow create: if true;
+      
+      // Strict Deny on Updates and Deletes from clients (Zero-touch approach)
+      allow update, delete: if false;
+    }
+  }
+}
