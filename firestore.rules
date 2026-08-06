@@ -2,15 +2,61 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // SOGI-Shield Reports Collection
+    
+    // Function to check if the incoming data only contains allowed fields
+    function hasOnlyAllowedFields(allowedFields) {
+      return request.resource.data.keys().hasOnly(allowedFields);
+    }
+
+    // Function to validate string length
+    function isValidString(str, minLen, maxLen) {
+      return str is string && str.size() >= minLen && str.size() <= maxLen;
+    }
+
     match /reports/{reportId} {
-      // Public Read allowed ONLY for verified or aggregated reports
+      // 1. READ RULES: Only allow reading if the document is flagged for public or heatmap display.
+      // We check `resource.data` which refers to the existing document in the database.
       allow read: if resource.data.status == 'PUBLIC_VERIFIED' || resource.data.status == 'HEATMAP_AGGREGATED';
       
-      // Public Create allowed for incoming reports
-      allow create: if true;
+      // 2. CREATE RULES: Strict Schema Validation
+      allow create: if 
+        // Must contain ONLY these specific fields (prevents injecting malicious data)
+        hasOnlyAllowedFields(['id', 'timestamp', 'country', 'region', 'category', 'summary', 'evidenceLinks', 'status', 'verificationScore', 'lat', 'lng', 'facilityName']) &&
+        
+        // Validate required field types and lengths
+        isValidString(request.resource.data.country, 1, 100) &&
+        isValidString(request.resource.data.region, 1, 100) &&
+        isValidString(request.resource.data.category, 1, 100) &&
+        isValidString(request.resource.data.summary, 1, 5000) &&
+        request.resource.data.timestamp is string &&
+        
+        // Validate status is one of the two allowed values
+        (request.resource.data.status == 'PUBLIC_VERIFIED' || request.resource.data.status == 'HEATMAP_AGGREGATED') &&
+        
+        // Validate evidenceLinks is a list and capped at a reasonable amount to prevent spam
+        request.resource.data.evidenceLinks is list &&
+        request.resource.data.evidenceLinks.size() <= 10 &&
+        
+        // Optional fields validation (they must be the correct type if provided)
+        (
+          !('facilityName' in request.resource.data) || 
+          request.resource.data.facilityName == null || 
+          isValidString(request.resource.data.facilityName, 0, 200)
+        ) &&
+        (
+          !('verificationScore' in request.resource.data) || 
+          request.resource.data.verificationScore is number
+        ) &&
+        (
+          !('lat' in request.resource.data) || 
+          request.resource.data.lat is number
+        ) &&
+        (
+          !('lng' in request.resource.data) || 
+          request.resource.data.lng is number
+        );
       
-      // Strict Deny on Updates and Deletes from clients (Zero-touch approach)
+      // 3. UPDATE / DELETE RULES: Strict Deny (Zero-touch approach)
       allow update, delete: if false;
     }
   }
