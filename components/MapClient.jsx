@@ -86,7 +86,10 @@ export default function MapClient() {
 
       <MapContainer 
         center={[20, 0]} 
-        zoom={2} 
+        zoom={2}
+        minZoom={2}
+        maxBounds={[[-90, -180], [90, 180]]}
+        maxBoundsViscosity={1.0}
         scrollWheelZoom={true} 
         className="w-full h-full rounded-xl z-0"
         style={{ height: "100%", width: "100%", backgroundColor: "#0f172a" }} // Matches slate-950
@@ -95,6 +98,7 @@ export default function MapClient() {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           className="map-tiles"
+          noWrap={true}
         />
         
         <MarkerClusterGroup chunkedLoading>
