@@ -98,7 +98,7 @@ export default function MapClient() {
         maxBoundsViscosity={1.0}
         scrollWheelZoom={true} 
         className="w-full h-full rounded-xl z-0"
-        style={{ height: "100%", width: "100%", backgroundColor: "#0f172a" }} // Matches slate-950
+        style={{ height: "100%", width: "100%", backgroundColor: "#aad3df" }} // Matches OSM water color
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
