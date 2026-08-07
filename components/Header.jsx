@@ -11,6 +11,7 @@ export default function Header() {
           <span className="text-xl font-bold tracking-wider">SOGI-Shield</span>
         </Link>
         <nav className="hidden md:flex gap-6">
+          <Link href="/about" className="text-slate-300 hover:text-white font-medium transition-colors">About</Link>
           <Link href="/" className="text-slate-300 hover:text-white font-medium transition-colors">Global Incident Map</Link>
           <Link href="/report" className="text-slate-300 hover:text-white font-medium transition-colors">File Incident</Link>
           <Link href="/track" className="text-slate-300 hover:text-white font-medium transition-colors">Track Case</Link>
