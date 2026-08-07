@@ -78,11 +78,17 @@ export default function MapClient() {
     <div className={containerClasses}>
       <button 
         onClick={toggleFullscreen}
-        className="absolute top-4 right-4 z-[400] bg-slate-900/80 hover:bg-indigo-600 text-white p-2 rounded-lg backdrop-blur shadow border border-slate-700 transition-colors"
+        className="absolute top-4 right-4 z-[400] bg-slate-900/80 hover:bg-indigo-600 text-white p-2 rounded-lg backdrop-blur shadow border border-slate-700 transition-colors pointer-events-auto"
         title="Toggle Fullscreen"
       >
         {isFullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
       </button>
+
+      <div className="absolute bottom-6 left-4 z-[400] bg-slate-900/80 backdrop-blur text-sm px-4 py-3 rounded-lg border border-slate-700 shadow-lg pointer-events-none text-slate-200">
+        <div className="flex items-center gap-2 mb-2"><span className="w-3 h-3 rounded-full bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.8)]"></span> Public Verified</div>
+        <div className="flex items-center gap-2 mb-2"><span className="w-3 h-3 rounded-full bg-slate-400 shadow-[0_0_8px_rgba(148,163,184,0.8)]"></span> Action Ignored</div>
+        <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-orange-500 opacity-80 shadow-[0_0_8px_rgba(249,115,22,0.8)]"></span> Heatmap Aggregated</div>
+      </div>
 
       <MapContainer 
         center={[20, 0]} 
@@ -107,7 +113,7 @@ export default function MapClient() {
               return (
                 <Marker key={report.id} position={[report.lat, report.lng]} icon={icons.red}>
                   <Popup>
-                    <div className="text-slate-900">
+                    <div className="text-slate-900 min-w-[250px]">
                       <h3 className="font-bold text-lg mb-1">{report.facilityName || "Verified Incident"}</h3>
                       <p className="text-sm font-semibold text-red-600 mb-2">{report.category}</p>
                       <p className="text-sm mb-2">{report.summary}</p>
@@ -127,7 +133,7 @@ export default function MapClient() {
               return (
                 <Marker key={report.id} position={[report.lat, report.lng]} icon={icons.grey}>
                   <Popup>
-                    <div className="text-slate-900">
+                    <div className="text-slate-900 min-w-[250px]">
                       <div className="inline-block bg-slate-200 text-slate-700 text-xs font-bold px-2 py-1 rounded mb-2 uppercase tracking-wide">
                         Action Ignored
                       </div>
@@ -165,7 +171,7 @@ export default function MapClient() {
                   fillOpacity={0.4}
                 >
                   <Popup>
-                    <div className="text-slate-900">
+                    <div className="text-slate-900 min-w-[200px]">
                       <h3 className="font-bold">Region: {report.region || "Unknown"}</h3>
                       <p className="text-sm mt-1">Aggregated Incidents Reported.</p>
                       <p className="text-xs text-slate-500 mt-2">Specific facilities omitted for privacy and safety.</p>

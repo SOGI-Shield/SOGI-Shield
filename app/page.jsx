@@ -39,10 +39,6 @@ export default function Home() {
       </div>
 
       <section className="w-full max-w-6xl flex-1 min-h-[500px] border border-slate-700 rounded-xl overflow-hidden shadow-2xl relative">
-        <div className="absolute top-4 left-4 z-20 bg-slate-900/80 backdrop-blur text-sm px-4 py-2 rounded-md border border-slate-700">
-          <div className="flex items-center gap-2 mb-1"><span className="w-3 h-3 rounded-full bg-red-600"></span> Public Verified</div>
-          <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-orange-500 opacity-60"></span> Heatmap Aggregated</div>
-        </div>
         <Map />
       </section>
     </div>
