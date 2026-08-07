@@ -38,7 +38,7 @@ export default function Home() {
         </div>
       </div>
 
-      <section className="w-full max-w-6xl flex-1 min-h-[500px] border border-slate-700 rounded-xl overflow-hidden shadow-2xl relative">
+      <section className="w-full max-w-6xl flex-1 min-h-[600px] md:min-h-[700px] border border-slate-700 rounded-xl overflow-hidden shadow-2xl relative">
         <Map />
       </section>
     </div>

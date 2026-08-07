@@ -72,7 +72,7 @@ export default function MapClient() {
 
   const containerClasses = isFullscreen 
     ? "fixed inset-0 z-50 bg-slate-950 p-4 flex flex-col"
-    : "relative w-full h-[500px] md:h-[600px] rounded-xl overflow-hidden shadow-2xl border border-slate-700 z-10";
+    : "relative w-full h-[600px] md:h-[700px] rounded-xl overflow-hidden shadow-2xl border border-slate-700 z-10";
 
   return (
     <div className={containerClasses}>
