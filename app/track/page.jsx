@@ -23,9 +23,7 @@ export default function TrackCasePage() {
     try {
       if (isMockMode) {
         // Load local mock data
-        const res = await fetch('/mockReports.json'); // But the file is in src/data/mockReports.json, wait Next.js serves from public. Let me import it instead.
-        // Actually, just for client-side demo if mock mode:
-        const mockData = await import('@/data/mockReports.json').then(m => m.default).catch(() => []);
+        const mockData = await import('@/src/data/mockReports.json').then(m => m.default).catch(() => []);
         const found = mockData.find(r => r.trackingCode === trackingCode);
         if (found) {
           setReport({ ...found, _docId: found.id });

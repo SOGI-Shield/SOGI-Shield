@@ -47,7 +47,7 @@ export default function MapClient() {
 
   useEffect(() => {
     if (isMockMode) {
-      import('@/data/mockReports.json').then(m => {
+      import('@/src/data/mockReports.json').then(m => {
         setReports(m.default || m);
       }).catch(e => console.error("Failed to load mock reports:", e));
       return;
