@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@marsidev/react-turnstile": "^1.0.2",
     "firebase": "^10.12.0",
     "jspdf": "^2.5.1",
     "leaflet": "^1.9.4",
@@ -16,7 +17,8 @@
     "next": "14.2.3",
     "react": "^18",
     "react-dom": "^18",
-    "react-leaflet": "^4.2.1"
+    "react-leaflet": "^4.2.1",
+    "react-leaflet-cluster": "^2.1.0"
   },
   "devDependencies": {
     "autoprefixer": "^10.0.1",

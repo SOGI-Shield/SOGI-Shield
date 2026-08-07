@@ -1,0 +1,51 @@
+[
+  {
+    "id": "mock-1",
+    "trackingCode": "SOGI-2026-MOCKA1",
+    "lat": 38.8951,
+    "lng": -77.0364,
+    "status": "PUBLIC_VERIFIED",
+    "category": "Medical Misconduct",
+    "facilityName": "Mock General Hospital",
+    "summary": "Refused care on discriminatory grounds.",
+    "evidenceLinks": ["https://example.com/news1"],
+    "reportedToAuthorities": false
+  },
+  {
+    "id": "mock-2",
+    "trackingCode": "SOGI-2026-MOCKB2",
+    "lat": 34.0522,
+    "lng": -118.2437,
+    "status": "ACTION_IGNORED",
+    "category": "Forced Confinement",
+    "facilityName": "Mock State Facility",
+    "summary": "Confined against will. Official complaint filed with state board but no investigation launched.",
+    "evidenceLinks": ["https://example.com/court_filing"],
+    "reportedToAuthorities": true,
+    "authorityDetails": "Filed with State Board on Jan 14. Follow-up ignored."
+  },
+  {
+    "id": "mock-3",
+    "trackingCode": "SOGI-2026-MOCKC3",
+    "lat": 41.8781,
+    "lng": -87.6298,
+    "status": "HEATMAP_AGGREGATED",
+    "region": "Illinois",
+    "category": "Unlicensed Counseling",
+    "summary": "Coercive practices reported in local community center.",
+    "evidenceLinks": [],
+    "reportedToAuthorities": false
+  },
+  {
+    "id": "mock-4",
+    "trackingCode": "SOGI-2026-MOCKD4",
+    "lat": 51.5074,
+    "lng": -0.1278,
+    "status": "PUBLIC_VERIFIED",
+    "category": "State / Police Harassment",
+    "facilityName": "Mock Precinct",
+    "summary": "Harassment by local authorities.",
+    "evidenceLinks": ["https://example.com/news2"],
+    "reportedToAuthorities": false
+  }
+]

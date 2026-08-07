@@ -15,33 +15,39 @@ service cloud.firestore {
 
     match /reports/{reportId} {
       // 1. READ RULES: Only allow reading if the document is flagged for public or heatmap display.
-      // We check `resource.data` which refers to the existing document in the database.
-      allow read: if resource.data.status == 'PUBLIC_VERIFIED' || resource.data.status == 'HEATMAP_AGGREGATED';
+      allow read: if resource.data.status == 'PUBLIC_VERIFIED' || resource.data.status == 'HEATMAP_AGGREGATED' || resource.data.status == 'ACTION_IGNORED';
       
       // 2. CREATE RULES: Strict Schema Validation
       allow create: if 
-        // Must contain ONLY these specific fields (prevents injecting malicious data)
-        hasOnlyAllowedFields(['id', 'timestamp', 'country', 'region', 'category', 'summary', 'evidenceLinks', 'status', 'verificationScore', 'lat', 'lng', 'facilityName']) &&
+        // Must contain ONLY these specific fields
+        hasOnlyAllowedFields(['id', 'timestamp', 'country', 'region', 'category', 'summary', 'evidenceLinks', 'status', 'verificationScore', 'lat', 'lng', 'facilityName', 'trackingCode', 'reportedToAuthorities', 'authorityDetails']) &&
         
         // Validate required field types and lengths
+        isValidString(request.resource.data.trackingCode, 5, 100) &&
         isValidString(request.resource.data.country, 1, 100) &&
         isValidString(request.resource.data.region, 1, 100) &&
         isValidString(request.resource.data.category, 1, 100) &&
-        isValidString(request.resource.data.summary, 1, 5000) &&
+        isValidString(request.resource.data.summary, 1, 20000) &&
         request.resource.data.timestamp is string &&
+        request.resource.data.reportedToAuthorities is bool &&
         
-        // Validate status is one of the two allowed values
-        (request.resource.data.status == 'PUBLIC_VERIFIED' || request.resource.data.status == 'HEATMAP_AGGREGATED') &&
+        // Validate status is one of the allowed values
+        (request.resource.data.status == 'PUBLIC_VERIFIED' || request.resource.data.status == 'HEATMAP_AGGREGATED' || request.resource.data.status == 'ACTION_IGNORED') &&
         
         // Validate evidenceLinks is a list and capped at a reasonable amount to prevent spam
         request.resource.data.evidenceLinks is list &&
         request.resource.data.evidenceLinks.size() <= 10 &&
         
-        // Optional fields validation (they must be the correct type if provided)
+        // Optional fields validation
         (
           !('facilityName' in request.resource.data) || 
           request.resource.data.facilityName == null || 
           isValidString(request.resource.data.facilityName, 0, 200)
+        ) &&
+        (
+          !('authorityDetails' in request.resource.data) || 
+          request.resource.data.authorityDetails == null || 
+          isValidString(request.resource.data.authorityDetails, 0, 20000)
         ) &&
         (
           !('verificationScore' in request.resource.data) || 
@@ -56,8 +62,17 @@ service cloud.firestore {
           request.resource.data.lng is number
         );
       
-      // 3. UPDATE / DELETE RULES: Strict Deny (Zero-touch approach)
-      allow update, delete: if false;
+      // 3. UPDATE RULES: Only allow if trackingCode matches and only changing status to ACTION_IGNORED
+      allow update: if 
+        // 1. The client must pass the correct tracking code matching the existing document
+        request.resource.data.trackingCode == resource.data.trackingCode &&
+        // 2. ONLY the status field is being changed
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']) &&
+        // 3. The new status MUST be ACTION_IGNORED
+        request.resource.data.status == 'ACTION_IGNORED';
+
+      // 4. DELETE RULES: Strict Deny (Zero-touch approach)
+      allow delete: if false;
     }
   }
 }

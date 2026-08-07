@@ -13,6 +13,7 @@ export default function Header() {
         <nav className="hidden md:flex gap-6">
           <Link href="/" className="text-slate-300 hover:text-white font-medium transition-colors">Global Incident Map</Link>
           <Link href="/report" className="text-slate-300 hover:text-white font-medium transition-colors">File Incident</Link>
+          <Link href="/track" className="text-slate-300 hover:text-white font-medium transition-colors">Track Case</Link>
           <Link href="/action-portal" className="text-slate-300 hover:text-white font-medium transition-colors">UN & Local HRC Portal</Link>
         </nav>
       </div>
