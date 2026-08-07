@@ -49,3 +49,6 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## 🤝 Contribution Guidelines
 We welcome contributions to SOGI-Shield. Please read our contributing guidelines (coming soon) and ensure all PRs maintain our strict privacy and zero-touch moderation principles.
+
+## 📄 License
+This project is licensed under the [GNU General Public License v3.0](LICENSE) - see the [LICENSE](LICENSE) file for details.
