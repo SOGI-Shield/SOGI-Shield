@@ -157,8 +157,8 @@ export default function MapClient() {
   };
 
   const containerClasses = isFullscreen 
-    ? "fixed inset-0 z-50 bg-slate-950 p-4 flex flex-col"
-    : "relative w-full h-[600px] md:h-[700px] rounded-xl overflow-hidden shadow-2xl border border-slate-700 z-10";
+    ? "fixed inset-0 z-50 bg-slate-950 p-0 sm:p-4 flex flex-col"
+    : "relative w-full h-[50vh] min-h-[450px] md:h-[700px] rounded-xl overflow-hidden shadow-2xl border border-slate-700 z-10";
 
   return (
     <div className={containerClasses}>
@@ -170,18 +170,18 @@ export default function MapClient() {
         {isFullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
       </button>
 
-      <div className="absolute bottom-6 left-4 z-[400] bg-slate-900/80 backdrop-blur text-sm px-4 py-3 rounded-lg border border-slate-700 shadow-lg pointer-events-none text-slate-200">
-        <div className="flex items-center gap-2 mb-2"><span className="w-3 h-3 rounded-full bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.8)]"></span> Public Verified</div>
-        <div className="flex items-center gap-2 mb-2"><span className="w-3 h-3 rounded-full bg-slate-400 shadow-[0_0_8px_rgba(148,163,184,0.8)]"></span> Action Ignored</div>
-        <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-orange-500 opacity-80 shadow-[0_0_8px_rgba(249,115,22,0.8)]"></span> Heatmap Aggregated</div>
+      <div className="absolute bottom-6 left-4 z-[400] bg-slate-900/80 backdrop-blur text-xs sm:text-sm px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-slate-700 shadow-lg pointer-events-none text-slate-200">
+        <div className="flex items-center gap-2 mb-2"><span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.8)]"></span> Public Verified</div>
+        <div className="flex items-center gap-2 mb-2"><span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-slate-400 shadow-[0_0_8px_rgba(148,163,184,0.8)]"></span> Action Ignored</div>
+        <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-orange-500 opacity-80 shadow-[0_0_8px_rgba(249,115,22,0.8)]"></span> Heatmap Aggregated</div>
       </div>
 
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[400] bg-slate-900/80 backdrop-blur-md text-sm px-6 py-3 rounded-full border border-slate-800 shadow-xl pointer-events-none text-slate-200 hidden md:flex items-center gap-6">
-        <div className="flex items-center gap-2 font-bold"><Shield size={16} className="text-indigo-400"/> Total Incidents: {globalStats.total}</div>
-        <div className="w-px h-4 bg-slate-700"></div>
-        <div className="flex items-center gap-2"><CheckCircle size={16} className="text-red-500"/> Verified: {globalStats.verified}</div>
-        <div className="flex items-center gap-2"><AlertTriangle size={16} className="text-slate-400"/> Ignored: {globalStats.ignored}</div>
-        <div className="flex items-center gap-2"><Flame size={16} className="text-orange-500"/> Heatmaps: {globalStats.heatmap}</div>
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 md:top-auto md:bottom-6 z-[400] bg-slate-900/90 backdrop-blur-md text-xs sm:text-sm px-4 sm:px-6 py-2 sm:py-3 rounded-xl md:rounded-full border border-slate-800 shadow-xl pointer-events-none text-slate-200 flex flex-wrap justify-center w-[90%] md:w-auto items-center gap-3 md:gap-6">
+        <div className="flex items-center gap-1 sm:gap-2 font-bold"><Shield size={14} className="text-indigo-400 sm:w-4 sm:h-4"/> <span className="hidden sm:inline">Total Incidents:</span><span className="sm:hidden">Total:</span> {globalStats.total}</div>
+        <div className="w-px h-4 bg-slate-700 hidden sm:block"></div>
+        <div className="flex items-center gap-1 sm:gap-2"><CheckCircle size={14} className="text-red-500 sm:w-4 sm:h-4"/> Verified: {globalStats.verified}</div>
+        <div className="flex items-center gap-1 sm:gap-2"><AlertTriangle size={14} className="text-slate-400 sm:w-4 sm:h-4"/> Ignored: {globalStats.ignored}</div>
+        <div className="flex items-center gap-1 sm:gap-2"><Flame size={14} className="text-orange-500 sm:w-4 sm:h-4"/> Heatmaps: {globalStats.heatmap}</div>
       </div>
 
       <MapContainer 
@@ -291,8 +291,8 @@ export default function MapClient() {
 
       {/* Full Report Modal */}
       {selectedReport && (
-        <div className="fixed inset-0 z-[1000] bg-slate-950/80 backdrop-blur flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl relative text-left">
+        <div className="fixed inset-0 z-[1000] bg-slate-950/80 backdrop-blur flex items-center justify-center p-2 sm:p-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-xl max-w-2xl w-full max-h-[85vh] sm:max-h-[90vh] overflow-y-auto p-4 sm:p-6 shadow-2xl relative text-left">
             <button 
               onClick={() => setSelectedReport(null)}
               className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
