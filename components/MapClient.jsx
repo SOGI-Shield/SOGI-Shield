@@ -6,7 +6,7 @@ import L from "leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
 import { collection, onSnapshot, query } from "firebase/firestore";
 import { db, isMockMode } from "@/lib/firebase";
-import { Maximize2, Minimize2 } from "lucide-react";
+import { Maximize2, Minimize2, X } from "lucide-react";
 
 function MapEvents({ setZoom }) {
   const map = useMapEvents({
@@ -24,6 +24,14 @@ export default function MapClient() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [geoData, setGeoData] = useState(null);
   const [currentZoom, setCurrentZoom] = useState(2);
+  const [selectedReport, setSelectedReport] = useState(null);
+
+  const truncateWords = (str, numWords = 30) => {
+    if (!str) return "";
+    const words = str.split(/\s+/);
+    if (words.length <= numWords) return str;
+    return words.slice(0, numWords).join(" ") + "...";
+  };
 
   useEffect(() => {
     fetch('/countries.geojson')
@@ -207,15 +215,13 @@ export default function MapClient() {
                     <div className="text-slate-900 min-w-[250px] max-w-[320px]">
                       <h3 className="font-bold text-lg mb-1 break-words">{report.facilityName || "Verified Incident"}</h3>
                       <p className="text-sm font-semibold text-red-600 mb-2 break-words">{report.category}</p>
-                      <p className="text-sm mb-2 break-words whitespace-pre-wrap">{report.summary}</p>
-                      <div className="mt-2">
-                        <strong className="text-xs uppercase text-slate-500">Evidence:</strong>
-                        <ul className="list-disc pl-4 text-xs mt-1 break-all">
-                          {report.evidenceLinks?.map((link, i) => (
-                            <li key={i}><a href={link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{link}</a></li>
-                          ))}
-                        </ul>
-                      </div>
+                      <p className="text-sm mb-3 break-words whitespace-pre-wrap">{truncateWords(report.summary)}</p>
+                      <button 
+                        onClick={() => setSelectedReport(report)}
+                        className="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold py-2 rounded transition-colors"
+                      >
+                        Read Full Report
+                      </button>
                     </div>
                   </Popup>
                 </Marker>
@@ -230,21 +236,13 @@ export default function MapClient() {
                       </div>
                       <h3 className="font-bold text-lg mb-1 break-words">{report.facilityName || "Incident"}</h3>
                       <p className="text-sm font-semibold text-slate-600 mb-2 break-words">{report.category}</p>
-                      <p className="text-sm mb-2 break-words whitespace-pre-wrap">{report.summary}</p>
-                      
-                      <div className="bg-slate-100 p-2 rounded mt-2 border border-slate-200">
-                        <strong className="text-xs uppercase text-slate-500 block mb-1">Institutional Response:</strong>
-                        <p className="text-xs text-slate-700 break-words whitespace-pre-wrap">{report.authorityDetails || "Reported to authorities. No action taken."}</p>
-                      </div>
-
-                      <div className="mt-2">
-                        <strong className="text-xs uppercase text-slate-500">Evidence:</strong>
-                        <ul className="list-disc pl-4 text-xs mt-1 break-all">
-                          {report.evidenceLinks?.map((link, i) => (
-                            <li key={i}><a href={link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{link}</a></li>
-                          ))}
-                        </ul>
-                      </div>
+                      <p className="text-sm mb-3 break-words whitespace-pre-wrap">{truncateWords(report.summary)}</p>
+                      <button 
+                        onClick={() => setSelectedReport(report)}
+                        className="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold py-2 rounded transition-colors"
+                      >
+                        Read Full Report
+                      </button>
                     </div>
                   </Popup>
                 </Marker>
@@ -275,6 +273,63 @@ export default function MapClient() {
           })}
         </MarkerClusterGroup>
       </MapContainer>
+
+      {/* Full Report Modal */}
+      {selectedReport && (
+        <div className="fixed inset-0 z-[1000] bg-slate-950/80 backdrop-blur flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl relative text-left">
+            <button 
+              onClick={() => setSelectedReport(null)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
+            >
+              <X size={24} />
+            </button>
+            
+            <div className="mb-6 pr-8">
+              {selectedReport.status === "ACTION_IGNORED" && (
+                <div className="inline-block bg-slate-700 text-slate-200 text-xs font-bold px-2 py-1 rounded mb-3 uppercase tracking-wide">
+                  Action Ignored
+                </div>
+              )}
+              {selectedReport.status === "PUBLIC_VERIFIED" && (
+                <div className="inline-block bg-red-900/50 text-red-400 text-xs font-bold px-2 py-1 rounded mb-3 uppercase tracking-wide">
+                  Verified Incident
+                </div>
+              )}
+              <h2 className="text-2xl font-bold text-white mb-1">{selectedReport.facilityName || "Incident Report"}</h2>
+              <p className="text-indigo-400 font-semibold">{selectedReport.category}</p>
+              <p className="text-slate-400 text-sm mt-1">{selectedReport.region}, {selectedReport.country}</p>
+            </div>
+
+            <div className="mb-6">
+              <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Experience Summary</h3>
+              <p className="text-slate-200 leading-relaxed whitespace-pre-wrap">{selectedReport.summary}</p>
+            </div>
+
+            {selectedReport.status === "ACTION_IGNORED" && (
+              <div className="bg-slate-800 border border-slate-700 p-4 rounded-lg mb-6">
+                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Institutional Response</h3>
+                <p className="text-slate-200 whitespace-pre-wrap">{selectedReport.authorityDetails || "Reported to authorities. No action taken."}</p>
+              </div>
+            )}
+
+            {selectedReport.evidenceLinks && selectedReport.evidenceLinks.length > 0 && (
+              <div>
+                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Public Evidence Links</h3>
+                <ul className="list-disc pl-4 space-y-2">
+                  {selectedReport.evidenceLinks.map((link, i) => (
+                    <li key={i}>
+                      <a href={link} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 hover:underline break-all">
+                        {link}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
