@@ -303,13 +303,17 @@ export default function MapClient() {
 
             <div className="mb-6">
               <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Experience Summary</h3>
-              <p className="text-slate-200 leading-relaxed whitespace-pre-wrap">{selectedReport.summary}</p>
+              <div className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap bg-slate-950/50 p-4 rounded-lg border border-slate-800">
+                {selectedReport.summary ? selectedReport.summary.replace(/([^\n])\n([^\n])/g, '$1 $2') : ""}
+              </div>
             </div>
 
             {selectedReport.status === "ACTION_IGNORED" && (
               <div className="bg-slate-800 border border-slate-700 p-4 rounded-lg mb-6">
                 <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Institutional Response</h3>
-                <p className="text-slate-200 whitespace-pre-wrap">{selectedReport.authorityDetails || "Reported to authorities. No action taken."}</p>
+                <p className="text-sm text-slate-300 whitespace-pre-wrap leading-relaxed">
+                  {selectedReport.authorityDetails ? selectedReport.authorityDetails.replace(/([^\n])\n([^\n])/g, '$1 $2') : "Reported to authorities. No action taken."}
+                </p>
               </div>
             )}
 
