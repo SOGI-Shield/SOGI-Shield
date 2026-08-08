@@ -14,8 +14,8 @@ service cloud.firestore {
     }
 
     match /reports/{reportId} {
-      // 1. READ RULES: Only allow reading if the document is flagged for public or heatmap display.
-      allow read: if resource.data.status == 'PUBLIC_VERIFIED' || resource.data.status == 'HEATMAP_AGGREGATED' || resource.data.status == 'ACTION_IGNORED';
+      // 1. READ RULES: Allow read for all queries (Map relies on reading all reports, Track relies on querying by trackingCode)
+      allow read: if true;
       
       // 2. CREATE RULES: Strict Schema Validation
       allow create: if 
