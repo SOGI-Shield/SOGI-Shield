@@ -1,17 +1,35 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, CircleMarker } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, CircleMarker, GeoJSON, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
 import { collection, onSnapshot, query } from "firebase/firestore";
 import { db, isMockMode } from "@/lib/firebase";
 import { Maximize2, Minimize2 } from "lucide-react";
 
+function MapEvents({ setZoom }) {
+  const map = useMapEvents({
+    zoomend: () => {
+      setZoom(map.getZoom());
+    }
+  });
+  return null;
+}
+
 export default function MapClient() {
   const [reports, setReports] = useState([]);
   const [icons, setIcons] = useState({ red: null, grey: null });
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [geoData, setGeoData] = useState(null);
+  const [currentZoom, setCurrentZoom] = useState(2);
+
+  useEffect(() => {
+    fetch('/countries.geojson')
+      .then(res => res.json())
+      .then(data => setGeoData(data))
+      .catch(err => console.error("Failed to load geojson", err));
+  }, []);
 
   useEffect(() => {
     // Fix standard Leaflet icon issues in Next.js when window is available
@@ -66,6 +84,58 @@ export default function MapClient() {
     }
   }, []);
 
+  const countryStats = {};
+  reports.forEach(report => {
+    const country = report.country;
+    if (!country) return;
+    if (!countryStats[country]) {
+      countryStats[country] = { verified: 0, ignored: 0, aggregated: 0, total: 0 };
+    }
+    countryStats[country].total++;
+    if (report.status === "PUBLIC_VERIFIED") countryStats[country].verified++;
+    if (report.status === "ACTION_IGNORED") countryStats[country].ignored++;
+    if (report.status === "HEATMAP_AGGREGATED") countryStats[country].aggregated++;
+  });
+
+  const styleFeature = (feature) => {
+    const countryName = feature.properties.name;
+    const stats = countryStats[countryName];
+    
+    if (!stats || stats.total === 0) {
+      return { fillColor: "transparent", color: "#64748b", weight: 0.5, opacity: 0.5, fillOpacity: 0 };
+    }
+
+    let fillColor = "#D97706"; // Amber (default / moderate)
+    
+    // High Neglect (more ignored than verified)
+    if (stats.ignored > stats.verified) {
+      fillColor = "#374151"; // Charcoal Grey
+    } 
+    // High Density
+    else if (stats.total >= 50) {
+      fillColor = "#DC2626"; // Deep Red
+    }
+
+    return { fillColor, color: "#94a3b8", weight: 1, opacity: 0.8, fillOpacity: 0.6 };
+  };
+
+  const onEachFeature = (feature, layer) => {
+    const countryName = feature.properties.name;
+    const stats = countryStats[countryName];
+    if (stats && stats.total > 0) {
+      const tooltipContent = `
+        <div style="font-family: sans-serif; color: #0f172a;">
+          <div style="font-weight: bold; font-size: 14px;">${countryName}</div>
+          <div style="font-size: 12px; margin-top: 4px;">Total Incidents: ${stats.total}</div>
+          <div style="font-size: 12px; color: #dc2626;">Verified: ${stats.verified}</div>
+          <div style="font-size: 12px; color: #64748b;">Ignored: ${stats.ignored}</div>
+          <div style="font-size: 12px; color: #d97706;">Aggregated: ${stats.aggregated}</div>
+        </div>
+      `;
+      layer.bindTooltip(tooltipContent, { sticky: true });
+    }
+  };
+
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
   };
@@ -97,9 +167,11 @@ export default function MapClient() {
         maxBounds={[[-90, -180], [90, 180]]}
         maxBoundsViscosity={1.0}
         scrollWheelZoom={true} 
+        preferCanvas={true}
         className="w-full h-full rounded-xl z-0"
         style={{ height: "100%", width: "100%", backgroundColor: "#aad3df" }} // Matches OSM water color
       >
+        <MapEvents setZoom={setCurrentZoom} />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -107,7 +179,17 @@ export default function MapClient() {
           noWrap={true}
         />
         
-        <MarkerClusterGroup chunkedLoading>
+        {currentZoom < 8 && geoData && (
+          <GeoJSON 
+            data={geoData} 
+            style={styleFeature} 
+            onEachFeature={onEachFeature} 
+            key={JSON.stringify(countryStats)}
+          />
+        )}
+
+        {currentZoom >= 8 && (
+          <MarkerClusterGroup chunkedLoading>
           {reports.map((report) => {
             if (report.status === "PUBLIC_VERIFIED" && report.lat && report.lng && icons.red) {
               return (
@@ -183,6 +265,7 @@ export default function MapClient() {
             return null;
           })}
         </MarkerClusterGroup>
+        )}
       </MapContainer>
     </div>
   );
