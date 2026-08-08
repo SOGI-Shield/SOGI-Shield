@@ -1,7 +1,8 @@
 "use client";
 
+import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, CircleMarker, GeoJSON, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, CircleMarker, GeoJSON, useMapEvents, ZoomControl } from "react-leaflet";
 import L from "leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
 import { collection, onSnapshot, query } from "firebase/firestore";
@@ -176,12 +177,12 @@ export default function MapClient() {
         <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-orange-500 opacity-80 shadow-[0_0_8px_rgba(249,115,22,0.8)]"></span> Heatmap Aggregated</div>
       </div>
 
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 md:top-auto md:bottom-6 z-[400] bg-slate-900/90 backdrop-blur-md text-xs sm:text-sm px-4 sm:px-6 py-2 sm:py-3 rounded-xl md:rounded-full border border-slate-800 shadow-xl pointer-events-none text-slate-200 flex flex-wrap justify-center w-[90%] md:w-auto items-center gap-3 md:gap-6">
-        <div className="flex items-center gap-1 sm:gap-2 font-bold"><Shield size={14} className="text-indigo-400 sm:w-4 sm:h-4"/> <span className="hidden sm:inline">Total Incidents:</span><span className="sm:hidden">Total:</span> {globalStats.total}</div>
+      <div className="absolute top-2 left-1/2 -translate-x-1/2 md:top-auto md:bottom-6 md:left-1/2 md:-translate-x-1/2 z-[400] bg-slate-900/90 backdrop-blur-md text-[10px] sm:text-sm px-2 py-1.5 sm:px-6 sm:py-3 rounded-md md:rounded-full border border-slate-800 shadow-xl pointer-events-none text-slate-200 flex flex-wrap justify-center w-[92%] md:w-auto items-center gap-2 md:gap-6">
+        <div className="flex items-center gap-1 sm:gap-2 font-bold"><Shield size={12} className="text-indigo-400 sm:w-4 sm:h-4"/> <span className="hidden sm:inline">Total Incidents:</span><span className="sm:hidden">Total:</span> {globalStats.total}</div>
         <div className="w-px h-4 bg-slate-700 hidden sm:block"></div>
-        <div className="flex items-center gap-1 sm:gap-2"><CheckCircle size={14} className="text-red-500 sm:w-4 sm:h-4"/> Verified: {globalStats.verified}</div>
-        <div className="flex items-center gap-1 sm:gap-2"><AlertTriangle size={14} className="text-slate-400 sm:w-4 sm:h-4"/> Ignored: {globalStats.ignored}</div>
-        <div className="flex items-center gap-1 sm:gap-2"><Flame size={14} className="text-orange-500 sm:w-4 sm:h-4"/> Heatmaps: {globalStats.heatmap}</div>
+        <div className="flex items-center gap-1 sm:gap-2"><CheckCircle size={12} className="text-red-500 sm:w-4 sm:h-4"/> Verified: {globalStats.verified}</div>
+        <div className="flex items-center gap-1 sm:gap-2"><AlertTriangle size={12} className="text-slate-400 sm:w-4 sm:h-4"/> Ignored: {globalStats.ignored}</div>
+        <div className="flex items-center gap-1 sm:gap-2"><Flame size={12} className="text-orange-500 sm:w-4 sm:h-4"/> Heatmaps: {globalStats.heatmap}</div>
       </div>
 
       <MapContainer 
@@ -193,9 +194,11 @@ export default function MapClient() {
         scrollWheelZoom={true} 
         preferCanvas={true}
         attributionControl={false}
+        zoomControl={false}
         className="w-full h-full rounded-xl z-0"
         style={{ height: "100%", width: "100%", backgroundColor: "#aad3df" }} // Matches OSM water color
       >
+        <ZoomControl position="bottomright" />
         <MapEvents setZoom={setCurrentZoom} />
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
