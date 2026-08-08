@@ -18,6 +18,7 @@ function MapEvents({ setZoom }) {
 }
 
 export default function MapClient() {
+  const MIN_POLYGON_THRESHOLD = 100;
   const [reports, setReports] = useState([]);
   const [icons, setIcons] = useState({ red: null, grey: null });
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -101,8 +102,8 @@ export default function MapClient() {
     const countryName = feature.properties.name;
     const stats = countryStats[countryName];
     
-    if (!stats || stats.total === 0) {
-      return { fillColor: "transparent", color: "#64748b", weight: 0.5, opacity: 0.5, fillOpacity: 0 };
+    if (!stats || stats.total < MIN_POLYGON_THRESHOLD) {
+      return { fillColor: "transparent", color: "transparent", weight: 0, opacity: 0, fillOpacity: 0 };
     }
 
     let fillColor = "#D97706"; // Amber (default / moderate)
@@ -116,13 +117,13 @@ export default function MapClient() {
       fillColor = "#DC2626"; // Deep Red
     }
 
-    return { fillColor, color: "#94a3b8", weight: 1, opacity: 0.8, fillOpacity: 0.6 };
+    return { fillColor, color: "#94a3b8", weight: 1, opacity: 0.8, fillOpacity: 0.4 };
   };
 
   const onEachFeature = (feature, layer) => {
     const countryName = feature.properties.name;
     const stats = countryStats[countryName];
-    if (stats && stats.total > 0) {
+    if (stats && stats.total >= MIN_POLYGON_THRESHOLD) {
       const tooltipContent = `
         <div style="font-family: sans-serif; color: #0f172a;">
           <div style="font-weight: bold; font-size: 14px;">${countryName}</div>
@@ -188,9 +189,17 @@ export default function MapClient() {
           />
         )}
 
-        {currentZoom >= 8 && (
-          <MarkerClusterGroup chunkedLoading>
+        <MarkerClusterGroup chunkedLoading>
           {reports.map((report) => {
+            const country = report.country;
+            const regionTotal = countryStats[country]?.total || 0;
+            const isBelowThreshold = regionTotal < MIN_POLYGON_THRESHOLD;
+            
+            // Hide individual markers if zoomed out AND region meets polygon threshold
+            if (currentZoom < 8 && !isBelowThreshold) {
+              return null;
+            }
+
             if (report.status === "PUBLIC_VERIFIED" && report.lat && report.lng && icons.red) {
               return (
                 <Marker key={report.id} position={[report.lat, report.lng]} icon={icons.red}>
@@ -265,7 +274,6 @@ export default function MapClient() {
             return null;
           })}
         </MarkerClusterGroup>
-        )}
       </MapContainer>
     </div>
   );
