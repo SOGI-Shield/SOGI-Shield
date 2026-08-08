@@ -12,28 +12,32 @@ export default function Header() {
 
   return (
     <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-[500]">
-      <div className="container mx-auto px-4 py-4 pr-[110px] sm:pr-32 flex items-center justify-between">
+      <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <Link href="/" onClick={closeMenu} className="flex items-center gap-2 text-indigo-400 hover:text-indigo-300 transition-colors z-[60]">
           <Shield size={24} className="sm:w-7 sm:h-7" />
           <span className="text-lg sm:text-xl font-bold tracking-wider">SOGI-Shield</span>
         </Link>
         
-        {/* Desktop Nav */}
-        <nav className="hidden md:flex gap-6">
-          <Link href="/about" className="text-slate-300 hover:text-white font-medium transition-colors">About</Link>
-          <Link href="/" className="text-slate-300 hover:text-white font-medium transition-colors">Global Map</Link>
-          <Link href="/report" className="text-slate-300 hover:text-white font-medium transition-colors">File Incident</Link>
-          <Link href="/track" className="text-slate-300 hover:text-white font-medium transition-colors">Track Case</Link>
-          <Link href="/action-portal" className="text-slate-300 hover:text-white font-medium transition-colors">Portal</Link>
-        </nav>
+        <div className="flex flex-1 items-center justify-end gap-3 sm:gap-6">
+          {/* Desktop Nav */}
+          <nav className="hidden md:flex gap-6 items-center">
+            <Link href="/about" className="text-slate-300 hover:text-white font-medium transition-colors">About</Link>
+            <Link href="/" className="text-slate-300 hover:text-white font-medium transition-colors">Global Map</Link>
+            <Link href="/report" className="text-slate-300 hover:text-white font-medium transition-colors">File Incident</Link>
+            <Link href="/track" className="text-slate-300 hover:text-white font-medium transition-colors">Track Case</Link>
+            <Link href="/action-portal" className="text-slate-300 hover:text-white font-medium transition-colors">Portal</Link>
+          </nav>
 
-        {/* Mobile Hamburger */}
-        <button 
-          className="md:hidden p-2 -mr-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 active:bg-slate-700 transition-colors z-[60]"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        >
-          {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
-        </button>
+          <PanicButton />
+
+          {/* Mobile Hamburger */}
+          <button 
+            className="md:hidden p-2 -mr-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 active:bg-slate-700 transition-colors z-[60]"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Nav Overlay */}
@@ -46,7 +50,6 @@ export default function Header() {
           <Link href="/action-portal" onClick={closeMenu} className="block w-full flex-none text-center py-4 text-xl text-slate-300 hover:text-white hover:bg-slate-900 active:bg-slate-800 font-bold transition-colors">UN & Local HRC Portal</Link>
         </div>
       )}
-      <PanicButton />
     </header>
   );
 }
