@@ -204,15 +204,15 @@ export default function MapClient() {
               return (
                 <Marker key={report.id} position={[report.lat, report.lng]} icon={icons.red}>
                   <Popup>
-                    <div className="text-slate-900 min-w-[250px]">
-                      <h3 className="font-bold text-lg mb-1">{report.facilityName || "Verified Incident"}</h3>
-                      <p className="text-sm font-semibold text-red-600 mb-2">{report.category}</p>
-                      <p className="text-sm mb-2">{report.summary}</p>
+                    <div className="text-slate-900 min-w-[250px] max-w-[320px]">
+                      <h3 className="font-bold text-lg mb-1 break-words">{report.facilityName || "Verified Incident"}</h3>
+                      <p className="text-sm font-semibold text-red-600 mb-2 break-words">{report.category}</p>
+                      <p className="text-sm mb-2 break-words whitespace-pre-wrap">{report.summary}</p>
                       <div className="mt-2">
                         <strong className="text-xs uppercase text-slate-500">Evidence:</strong>
-                        <ul className="list-disc pl-4 text-xs mt-1">
+                        <ul className="list-disc pl-4 text-xs mt-1 break-all">
                           {report.evidenceLinks?.map((link, i) => (
-                            <li key={i}><a href={link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Link {i+1}</a></li>
+                            <li key={i}><a href={link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{link}</a></li>
                           ))}
                         </ul>
                       </div>
@@ -224,24 +224,24 @@ export default function MapClient() {
               return (
                 <Marker key={report.id} position={[report.lat, report.lng]} icon={icons.grey}>
                   <Popup>
-                    <div className="text-slate-900 min-w-[250px]">
+                    <div className="text-slate-900 min-w-[250px] max-w-[320px]">
                       <div className="inline-block bg-slate-200 text-slate-700 text-xs font-bold px-2 py-1 rounded mb-2 uppercase tracking-wide">
                         Action Ignored
                       </div>
-                      <h3 className="font-bold text-lg mb-1">{report.facilityName || "Incident"}</h3>
-                      <p className="text-sm font-semibold text-slate-600 mb-2">{report.category}</p>
-                      <p className="text-sm mb-2">{report.summary}</p>
+                      <h3 className="font-bold text-lg mb-1 break-words">{report.facilityName || "Incident"}</h3>
+                      <p className="text-sm font-semibold text-slate-600 mb-2 break-words">{report.category}</p>
+                      <p className="text-sm mb-2 break-words whitespace-pre-wrap">{report.summary}</p>
                       
                       <div className="bg-slate-100 p-2 rounded mt-2 border border-slate-200">
                         <strong className="text-xs uppercase text-slate-500 block mb-1">Institutional Response:</strong>
-                        <p className="text-xs text-slate-700">{report.authorityDetails || "Reported to authorities. No action taken."}</p>
+                        <p className="text-xs text-slate-700 break-words whitespace-pre-wrap">{report.authorityDetails || "Reported to authorities. No action taken."}</p>
                       </div>
 
                       <div className="mt-2">
                         <strong className="text-xs uppercase text-slate-500">Evidence:</strong>
-                        <ul className="list-disc pl-4 text-xs mt-1">
+                        <ul className="list-disc pl-4 text-xs mt-1 break-all">
                           {report.evidenceLinks?.map((link, i) => (
-                            <li key={i}><a href={link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Link {i+1}</a></li>
+                            <li key={i}><a href={link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{link}</a></li>
                           ))}
                         </ul>
                       </div>

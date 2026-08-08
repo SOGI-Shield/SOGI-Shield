@@ -192,7 +192,7 @@ export default function TrackCasePage() {
               </div>
               <div className="sm:col-span-2 mt-2">
                 <span className="block text-slate-500 mb-1">Summary</span>
-                <p className="text-slate-300 leading-relaxed bg-slate-950 p-4 rounded border border-slate-800">
+                <p className="text-slate-300 leading-relaxed bg-slate-950 p-4 rounded border border-slate-800 break-words whitespace-pre-wrap">
                   {report.summary}
                 </p>
               </div>

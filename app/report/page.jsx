@@ -102,9 +102,23 @@ export default function ReportPage() {
       // Run Zero-Touch Classification locally
       const finalReport = classifyReport(basePayload);
 
-      // Add dummy lat/lng for map demo purposes based on country
-      finalReport.lat = 20 + (Math.random() * 40 - 20);
-      finalReport.lng = 0 + (Math.random() * 40 - 20);
+      // Fetch accurate coordinates via OpenStreetMap Nominatim
+      try {
+        const query = encodeURIComponent(`${finalReport.region}, ${finalReport.country}`);
+        const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
+        const geoData = await geoRes.json();
+        
+        if (geoData && geoData.length > 0) {
+          finalReport.lat = parseFloat(geoData[0].lat);
+          finalReport.lng = parseFloat(geoData[0].lon);
+        } else {
+          throw new Error("Geocoding failed to find location");
+        }
+      } catch (err) {
+        console.warn("Geocoding failed, falling back to dummy coordinates", err);
+        finalReport.lat = 20 + (Math.random() * 40 - 20);
+        finalReport.lng = 0 + (Math.random() * 40 - 20);
+      }
 
       // Submit to Firestore if API key is set and not mocking
       if (!isMockMode && process.env.NEXT_PUBLIC_FIREBASE_API_KEY && process.env.NEXT_PUBLIC_FIREBASE_API_KEY !== 'your_api_key_here') {
