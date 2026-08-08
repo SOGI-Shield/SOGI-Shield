@@ -6,7 +6,7 @@ import L from "leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
 import { collection, onSnapshot, query } from "firebase/firestore";
 import { db, isMockMode } from "@/lib/firebase";
-import { Maximize2, Minimize2, X } from "lucide-react";
+import { Maximize2, Minimize2, X, Shield, CheckCircle, AlertTriangle, Flame } from "lucide-react";
 
 function MapEvents({ setZoom }) {
   const map = useMapEvents({
@@ -94,7 +94,14 @@ export default function MapClient() {
   }, []);
 
   const countryStats = {};
+  const globalStats = { total: 0, verified: 0, ignored: 0, heatmap: 0 };
+  
   reports.forEach(report => {
+    globalStats.total++;
+    if (report.status === "PUBLIC_VERIFIED") globalStats.verified++;
+    if (report.status === "ACTION_IGNORED") globalStats.ignored++;
+    if (report.status === "HEATMAP_AGGREGATED") globalStats.heatmap++;
+
     const country = report.country;
     if (!country) return;
     if (!countryStats[country]) {
@@ -167,6 +174,14 @@ export default function MapClient() {
         <div className="flex items-center gap-2 mb-2"><span className="w-3 h-3 rounded-full bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.8)]"></span> Public Verified</div>
         <div className="flex items-center gap-2 mb-2"><span className="w-3 h-3 rounded-full bg-slate-400 shadow-[0_0_8px_rgba(148,163,184,0.8)]"></span> Action Ignored</div>
         <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-orange-500 opacity-80 shadow-[0_0_8px_rgba(249,115,22,0.8)]"></span> Heatmap Aggregated</div>
+      </div>
+
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[400] bg-slate-900/80 backdrop-blur-md text-sm px-6 py-3 rounded-full border border-slate-800 shadow-xl pointer-events-none text-slate-200 hidden md:flex items-center gap-6">
+        <div className="flex items-center gap-2 font-bold"><Shield size={16} className="text-indigo-400"/> Total Incidents: {globalStats.total}</div>
+        <div className="w-px h-4 bg-slate-700"></div>
+        <div className="flex items-center gap-2"><CheckCircle size={16} className="text-red-500"/> Verified: {globalStats.verified}</div>
+        <div className="flex items-center gap-2"><AlertTriangle size={16} className="text-slate-400"/> Ignored: {globalStats.ignored}</div>
+        <div className="flex items-center gap-2"><Flame size={16} className="text-orange-500"/> Heatmaps: {globalStats.heatmap}</div>
       </div>
 
       <MapContainer 
