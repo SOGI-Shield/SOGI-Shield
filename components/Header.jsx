@@ -29,7 +29,7 @@ export default function Header() {
 
         {/* Mobile Hamburger */}
         <button 
-          className="md:hidden text-slate-300 hover:text-white z-[60]"
+          className="md:hidden p-2 -mr-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 active:bg-slate-700 transition-colors z-[60]"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         >
           {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
@@ -38,12 +38,12 @@ export default function Header() {
 
       {/* Mobile Nav Overlay */}
       {isMobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 top-[60px] bg-slate-950/98 backdrop-blur-xl z-[55] flex flex-col items-center justify-start pt-12 gap-8 h-screen border-t border-slate-800">
-          <Link href="/about" onClick={closeMenu} className="text-xl text-slate-300 hover:text-white font-bold transition-colors">About</Link>
-          <Link href="/" onClick={closeMenu} className="text-xl text-slate-300 hover:text-white font-bold transition-colors">Global Incident Map</Link>
-          <Link href="/report" onClick={closeMenu} className="text-xl text-slate-300 hover:text-white font-bold transition-colors">File Incident</Link>
-          <Link href="/track" onClick={closeMenu} className="text-xl text-slate-300 hover:text-white font-bold transition-colors">Track Case</Link>
-          <Link href="/action-portal" onClick={closeMenu} className="text-xl text-slate-300 hover:text-white font-bold transition-colors">UN & Local HRC Portal</Link>
+        <div className="md:hidden fixed inset-x-0 bottom-0 top-[60px] bg-slate-950/95 backdrop-blur-xl z-[55] flex flex-col items-center justify-start pt-8 gap-2 border-t border-slate-800 overflow-y-auto pb-20">
+          <Link href="/about" onClick={closeMenu} className="w-full text-center py-4 text-xl text-slate-300 hover:text-white hover:bg-slate-900 active:bg-slate-800 font-bold transition-colors">About</Link>
+          <Link href="/" onClick={closeMenu} className="w-full text-center py-4 text-xl text-slate-300 hover:text-white hover:bg-slate-900 active:bg-slate-800 font-bold transition-colors">Global Incident Map</Link>
+          <Link href="/report" onClick={closeMenu} className="w-full text-center py-4 text-xl text-slate-300 hover:text-white hover:bg-slate-900 active:bg-slate-800 font-bold transition-colors">File Incident</Link>
+          <Link href="/track" onClick={closeMenu} className="w-full text-center py-4 text-xl text-slate-300 hover:text-white hover:bg-slate-900 active:bg-slate-800 font-bold transition-colors">Track Case</Link>
+          <Link href="/action-portal" onClick={closeMenu} className="w-full text-center py-4 text-xl text-slate-300 hover:text-white hover:bg-slate-900 active:bg-slate-800 font-bold transition-colors">UN & Local HRC Portal</Link>
         </div>
       )}
       <PanicButton />
