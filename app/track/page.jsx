@@ -114,7 +114,7 @@ export default function TrackCasePage() {
       </div>
 
       <div className="bg-slate-900 border border-slate-700 p-6 rounded-xl shadow-xl mb-8">
-        <form onSubmit={handleSearch} className="flex gap-4">
+        <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4">
           <input 
             type="text" 
             placeholder="e.g., SOGI-2026-ABCD" 
@@ -126,7 +126,7 @@ export default function TrackCasePage() {
           <button 
             type="submit" 
             disabled={isSearching}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2"
+            className="bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold py-3 px-8 rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center sm:justify-start gap-2"
           >
             <Search size={20} />
             {isSearching ? "Searching..." : "Lookup"}
@@ -162,7 +162,7 @@ export default function TrackCasePage() {
                   <button 
                     onClick={markAsIgnored}
                     disabled={isUpdating}
-                    className="bg-slate-800 hover:bg-slate-700 text-white border border-slate-600 py-2 px-4 rounded transition-colors text-sm font-medium disabled:opacity-50"
+                    className="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-white border border-slate-600 py-3 px-6 rounded-lg transition-colors text-sm font-medium disabled:opacity-50"
                   >
                     {isUpdating ? "Updating..." : "Flag as Action Ignored by Authorities"}
                   </button>
@@ -180,15 +180,15 @@ export default function TrackCasePage() {
               </div>
               <div>
                 <span className="block text-slate-500 mb-1">Location</span>
-                <span className="text-slate-200">{report.region}, {report.country}</span>
+                <span className="text-slate-200 break-words">{report.region}, {report.country}</span>
               </div>
               <div>
                 <span className="block text-slate-500 mb-1">Category</span>
-                <span className="text-slate-200">{report.category}</span>
+                <span className="text-slate-200 break-words">{report.category}</span>
               </div>
               <div>
                 <span className="block text-slate-500 mb-1">Facility Name</span>
-                <span className="text-slate-200">{report.facilityName || "Hidden / Not provided"}</span>
+                <span className="text-slate-200 break-words">{report.facilityName || "Hidden / Not provided"}</span>
               </div>
               <div className="sm:col-span-2 mt-2">
                 <span className="block text-slate-500 mb-1">Summary</span>

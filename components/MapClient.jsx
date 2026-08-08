@@ -195,6 +195,8 @@ export default function MapClient() {
         preferCanvas={true}
         attributionControl={false}
         zoomControl={false}
+        dragging={!L.Browser.mobile}
+        tap={!L.Browser.mobile}
         className="w-full h-full rounded-xl z-0"
         style={{ height: "100%", width: "100%", backgroundColor: "#aad3df" }} // Matches OSM water color
       >
@@ -230,13 +232,13 @@ export default function MapClient() {
               return (
                 <Marker key={report.id} position={[report.lat, report.lng]} icon={icons.red}>
                   <Popup>
-                    <div className="text-slate-900 min-w-[250px] max-w-[320px]">
+                    <div className="text-slate-900 w-full max-w-[260px]">
                       <h3 className="font-bold text-lg mb-1 break-words">{report.facilityName || "Verified Incident"}</h3>
                       <p className="text-sm font-semibold text-red-600 mb-2 break-words">{report.category}</p>
                       <p className="text-sm mb-3 break-words whitespace-pre-wrap">{truncateWords(report.summary)}</p>
                       <button 
                         onClick={() => setSelectedReport(report)}
-                        className="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold py-2 rounded transition-colors"
+                        className="w-full bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-800 text-xs font-bold py-3 rounded transition-colors"
                       >
                         Read Full Report
                       </button>
@@ -248,7 +250,7 @@ export default function MapClient() {
               return (
                 <Marker key={report.id} position={[report.lat, report.lng]} icon={icons.grey}>
                   <Popup>
-                    <div className="text-slate-900 min-w-[250px] max-w-[320px]">
+                    <div className="text-slate-900 w-full max-w-[260px]">
                       <div className="inline-block bg-slate-200 text-slate-700 text-xs font-bold px-2 py-1 rounded mb-2 uppercase tracking-wide">
                         Action Ignored
                       </div>
@@ -257,7 +259,7 @@ export default function MapClient() {
                       <p className="text-sm mb-3 break-words whitespace-pre-wrap">{truncateWords(report.summary)}</p>
                       <button 
                         onClick={() => setSelectedReport(report)}
-                        className="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold py-2 rounded transition-colors"
+                        className="w-full bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-800 text-xs font-bold py-3 rounded transition-colors"
                       >
                         Read Full Report
                       </button>
@@ -298,7 +300,7 @@ export default function MapClient() {
           <div className="bg-slate-900 border border-slate-700 rounded-xl max-w-2xl w-full max-h-[85vh] sm:max-h-[90vh] overflow-y-auto p-4 sm:p-6 shadow-2xl relative text-left">
             <button 
               onClick={() => setSelectedReport(null)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
+              className="absolute top-2 sm:top-4 right-2 sm:right-4 p-3 text-slate-400 hover:text-white active:bg-slate-800 rounded-full transition-colors"
             >
               <X size={24} />
             </button>

@@ -170,9 +170,9 @@ export default function ReportPage() {
           
           <div className="bg-slate-950 border border-indigo-500/30 p-6 rounded-lg mb-6">
             <h3 className="text-sm font-bold text-indigo-400 uppercase tracking-widest mb-2">Your Secret Tracking Code</h3>
-            <div className="flex items-center justify-center gap-4">
-              <span className="text-2xl font-mono text-white tracking-wider">{trackingCodeResult}</span>
-              <button onClick={copyToClipboard} className="text-slate-400 hover:text-white transition-colors" title="Copy to clipboard">
+            <div className="flex flex-wrap items-center justify-center gap-4">
+              <span className="text-lg sm:text-2xl font-mono text-white tracking-wider break-all">{trackingCodeResult}</span>
+              <button onClick={copyToClipboard} className="text-slate-400 hover:text-white active:bg-slate-800 p-3 rounded-full transition-colors" title="Copy to clipboard">
                 <Copy size={20} />
               </button>
             </div>
@@ -181,7 +181,7 @@ export default function ReportPage() {
             </p>
           </div>
           
-          <button onClick={() => window.location.reload()} className="text-indigo-400 hover:text-indigo-300 font-medium">
+          <button onClick={() => window.location.reload()} className="text-indigo-400 hover:text-indigo-300 active:text-indigo-200 font-medium py-3 px-4 rounded-lg">
             Submit another report (after 5 mins)
           </button>
         </div>
@@ -275,7 +275,7 @@ export default function ReportPage() {
         </div>
 
         <div className="border-t border-slate-800 pt-6 mt-6">
-          <label className="flex items-center gap-3 mb-4 cursor-pointer">
+          <label className="flex items-center gap-3 mb-4 py-2 cursor-pointer">
             <input type="checkbox" name="reportedToAuthorities" checked={formData.reportedToAuthorities} onChange={handleChange} className="w-5 h-5 rounded border-slate-700 text-indigo-600 focus:ring-indigo-600 bg-slate-950" />
             <span className="text-sm font-medium text-slate-200">I have reported this to official authorities (e.g., Police, State Medical Board, NHRC).</span>
           </label>
@@ -286,7 +286,7 @@ export default function ReportPage() {
                 <label className="block text-sm font-medium text-slate-400 mb-2">Authority Details</label>
                 <input name="authorityDetails" maxLength={5000} value={formData.authorityDetails} onChange={handleChange} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-colors" placeholder="e.g., Filed complaint with State Medical Council on Oct 14" />
               </div>
-              <label className="flex items-start gap-3 cursor-pointer">
+              <label className="flex items-start gap-3 py-2 cursor-pointer">
                 <input type="checkbox" name="actionIgnored" checked={formData.actionIgnored} onChange={handleChange} className="w-5 h-5 mt-0.5 rounded border-slate-700 text-indigo-600 focus:ring-indigo-600 bg-slate-950" />
                 <span className="text-sm font-medium text-slate-300">
                   <strong className="text-white">Flag as ACTION_IGNORED:</strong> Authorities have failed to launch an investigation or take action despite evidence. (This highlights institutional negligence on the map as a GREY marker).
@@ -299,7 +299,7 @@ export default function ReportPage() {
         <button 
           type="submit" 
           disabled={isSubmitting || rateLimited}
-          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-lg transition-colors disabled:opacity-50"
+          className="w-full bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold py-4 rounded-lg transition-colors disabled:opacity-50"
         >
           {isSubmitting ? "Encrypting & Submitting..." : rateLimited ? "Rate Limited (Wait 5m)" : "Submit Incident Report"}
         </button>

@@ -91,12 +91,12 @@ I respectfully urge this honorable commission/body to register this complaint an
             <h3 className="font-bold text-lg mb-3">Direct Filing Links</h3>
             <p className="text-sm text-slate-400 mb-4">After generating your PDF, submit it directly through the official portals below:</p>
             
-            <a href="https://hrcnet.nic.in/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-3 bg-slate-900 hover:bg-slate-700 border border-slate-600 rounded-lg mb-3 transition-colors">
+            <a href="https://hrcnet.nic.in/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-slate-900 hover:bg-slate-700 active:bg-slate-600 border border-slate-600 rounded-lg mb-3 transition-colors">
               <span className="font-medium text-sm">NHRC India Portal</span>
               <ExternalLink size={16} className="text-slate-400" />
             </a>
             
-            <a href="https://sps.un.org/english/rights" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-3 bg-slate-900 hover:bg-slate-700 border border-slate-600 rounded-lg transition-colors">
+            <a href="https://sps.un.org/english/rights" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-slate-900 hover:bg-slate-700 active:bg-slate-600 border border-slate-600 rounded-lg transition-colors">
               <span className="font-medium text-sm">UN Human Rights Submissions</span>
               <ExternalLink size={16} className="text-slate-400" />
             </a>
@@ -152,7 +152,7 @@ I respectfully urge this honorable commission/body to register this complaint an
 
             <button 
               onClick={generatePDF}
-              className="w-full mt-6 bg-pink-600 hover:bg-pink-700 text-white font-bold py-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+              className="w-full mt-6 bg-pink-600 hover:bg-pink-700 active:bg-pink-800 text-white font-bold py-4 rounded-lg transition-colors flex items-center justify-center gap-2"
             >
               <Download size={20} />
               Generate & Download PDF
