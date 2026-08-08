@@ -11,7 +11,7 @@ export default function Header() {
   const closeMenu = () => setIsMobileMenuOpen(false);
 
   return (
-    <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-40">
+    <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-[500]">
       <div className="container mx-auto px-4 py-4 pr-[110px] sm:pr-32 flex items-center justify-between">
         <Link href="/" onClick={closeMenu} className="flex items-center gap-2 text-indigo-400 hover:text-indigo-300 transition-colors z-[60]">
           <Shield size={24} className="sm:w-7 sm:h-7" />

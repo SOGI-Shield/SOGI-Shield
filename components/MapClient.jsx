@@ -158,23 +158,23 @@ export default function MapClient() {
   };
 
   const containerClasses = isFullscreen 
-    ? "fixed inset-0 z-50 bg-slate-950 p-0 sm:p-4 flex flex-col"
+    ? "fixed inset-0 z-[1000] bg-slate-950 p-0 sm:p-4 flex flex-col"
     : "relative w-full h-[50vh] min-h-[450px] md:h-[700px] rounded-xl overflow-hidden shadow-2xl border border-slate-700 z-10";
 
   return (
     <div className={containerClasses}>
       <button 
         onClick={toggleFullscreen}
-        className="absolute top-4 right-4 z-[400] bg-slate-900/80 hover:bg-indigo-600 text-white p-2 rounded-lg backdrop-blur shadow border border-slate-700 transition-colors pointer-events-auto"
+        className="hidden sm:block absolute top-4 right-4 z-[400] bg-slate-900/80 hover:bg-indigo-600 text-white p-2 rounded-lg backdrop-blur shadow border border-slate-700 transition-colors pointer-events-auto"
         title="Toggle Fullscreen"
       >
         {isFullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
       </button>
 
-      <div className="absolute bottom-6 left-4 z-[400] bg-slate-900/80 backdrop-blur text-xs sm:text-sm px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-slate-700 shadow-lg pointer-events-none text-slate-200">
-        <div className="flex items-center gap-2 mb-2"><span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.8)]"></span> Public Verified</div>
-        <div className="flex items-center gap-2 mb-2"><span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-slate-400 shadow-[0_0_8px_rgba(148,163,184,0.8)]"></span> Action Ignored</div>
-        <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-orange-500 opacity-80 shadow-[0_0_8px_rgba(249,115,22,0.8)]"></span> Heatmap Aggregated</div>
+      <div className="absolute bottom-4 left-2 sm:bottom-6 sm:left-4 z-[400] bg-slate-900/80 backdrop-blur text-[10px] sm:text-sm px-2 py-1.5 sm:px-4 sm:py-3 rounded-lg border border-slate-700 shadow-lg pointer-events-none text-slate-200">
+        <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2"><span className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.8)]"></span> Public Verified</div>
+        <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2"><span className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-slate-400 shadow-[0_0_8px_rgba(148,163,184,0.8)]"></span> Action Ignored</div>
+        <div className="flex items-center gap-1.5 sm:gap-2"><span className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-orange-500 opacity-80 shadow-[0_0_8px_rgba(249,115,22,0.8)]"></span> Heatmap Aggregated</div>
       </div>
 
       <div className="absolute top-2 left-1/2 -translate-x-1/2 md:top-auto md:bottom-6 md:left-1/2 md:-translate-x-1/2 z-[400] bg-slate-900/90 backdrop-blur-md text-[10px] sm:text-sm px-2 py-1.5 sm:px-6 sm:py-3 rounded-md md:rounded-full border border-slate-800 shadow-xl pointer-events-none text-slate-200 flex flex-wrap justify-center w-[92%] md:w-auto items-center gap-2 md:gap-6">
@@ -294,7 +294,7 @@ export default function MapClient() {
 
       {/* Full Report Modal */}
       {selectedReport && (
-        <div className="fixed inset-0 z-[1000] bg-slate-950/80 backdrop-blur flex items-center justify-center p-2 sm:p-4">
+        <div className="fixed inset-0 z-[1050] bg-slate-950/80 backdrop-blur flex items-center justify-center p-2 sm:p-4">
           <div className="bg-slate-900 border border-slate-700 rounded-xl max-w-2xl w-full max-h-[85vh] sm:max-h-[90vh] overflow-y-auto p-4 sm:p-6 shadow-2xl relative text-left">
             <button 
               onClick={() => setSelectedReport(null)}
