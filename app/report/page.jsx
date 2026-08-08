@@ -104,20 +104,28 @@ export default function ReportPage() {
 
       // Fetch accurate coordinates via OpenStreetMap Nominatim
       try {
-        const query = encodeURIComponent(`${finalReport.region}, ${finalReport.country}`);
-        const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
-        const geoData = await geoRes.json();
+        let geoData = null;
+        // Attempt 1: Region + Country
+        const query1 = encodeURIComponent(`${finalReport.region}, ${finalReport.country}`);
+        const res1 = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query1}&limit=1`);
+        geoData = await res1.json();
+        
+        // Attempt 2: If Region+Country fails (e.g. too specific/typos), fallback to Country only
+        if (!geoData || geoData.length === 0) {
+          const query2 = encodeURIComponent(`${finalReport.country}`);
+          const res2 = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query2}&limit=1`);
+          geoData = await res2.json();
+        }
         
         if (geoData && geoData.length > 0) {
           finalReport.lat = parseFloat(geoData[0].lat);
           finalReport.lng = parseFloat(geoData[0].lon);
         } else {
-          throw new Error("Geocoding failed to find location");
+          throw new Error("Could not find this location on the map. Please check your spelling for Region/Country.");
         }
       } catch (err) {
-        console.warn("Geocoding failed, falling back to dummy coordinates", err);
-        finalReport.lat = 20 + (Math.random() * 40 - 20);
-        finalReport.lng = 0 + (Math.random() * 40 - 20);
+        console.error("Geocoding completely failed:", err);
+        throw new Error(err.message || "Failed to locate the address. Please simplify the region/city name.");
       }
 
       // Submit to Firestore if API key is set and not mocking
