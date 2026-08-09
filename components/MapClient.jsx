@@ -27,7 +27,7 @@ export default function MapClient() {
   const [currentZoom, setCurrentZoom] = useState(2);
   const [selectedReport, setSelectedReport] = useState(null);
 
-  const truncateWords = (str, numWords = 30) => {
+  const truncateWords = (str, numWords = 8) => {
     if (!str) return "";
     const words = str.split(/\s+/);
     if (words.length <= numWords) return str;
