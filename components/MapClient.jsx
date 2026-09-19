@@ -1,10 +1,7 @@
 "use client";
-
-import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, CircleMarker, GeoJSON, useMapEvents, ZoomControl } from "react-leaflet";
 import L from "leaflet";
-import MarkerClusterGroup from "react-leaflet-cluster";
 import { collection, getDocs, query } from "firebase/firestore/lite";
 import { db, isMockMode } from "@/lib/firebase";
 import { Maximize2, Minimize2, X, Shield, CheckCircle, AlertTriangle, Flame } from "lucide-react";
@@ -226,7 +223,7 @@ export default function MapClient() {
           />
         )}
 
-        <MarkerClusterGroup chunkedLoading>
+        <>
           {reports.map((report) => {
             const country = report.country;
             const regionTotal = countryStats[country]?.total || 0;
@@ -300,7 +297,7 @@ export default function MapClient() {
             }
             return null;
           })}
-        </MarkerClusterGroup>
+        </>
       </MapContainer>
 
       {/* Full Report Modal */}
