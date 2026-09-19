@@ -14,7 +14,6 @@
   "dependencies": {
     "@marsidev/react-turnstile": "^1.0.2",
     "firebase": "^12.19.0",
-    "jspdf": "^4.2.1",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.370.0",
     "next": "^16.3.5",

@@ -51,11 +51,15 @@ export default function PrivacyPolicy() {
           <section className="space-y-4">
             <h2 className="text-2xl font-semibold text-neutral-100 flex items-center gap-2">
               <FileText className="w-6 h-6 text-emerald-400" />
-              2. Report Data & Anonymity
+              2. Report Data, Storage, & Anonymity
             </h2>
             <p className="text-neutral-300 leading-relaxed">
               When you submit a report through SOGI-Shield, the data is heavily sanitized before it ever reaches our database.
             </p>
+            <div className="bg-neutral-900 border border-neutral-800 p-5 rounded-xl mb-4">
+              <h3 className="font-medium text-emerald-300 mb-2">Where is Data Stored?</h3>
+              <p className="text-sm text-neutral-400">All submitted incident reports are securely stored in <strong>Google Cloud Firestore (Firebase)</strong>. Google Cloud complies with major global security standards. We do not maintain our own physical servers, ensuring that the infrastructure holding this sensitive data is protected by enterprise-grade security and encryption at rest.</p>
+            </div>
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="bg-neutral-900 border border-neutral-800 p-5 rounded-xl">
                 <h3 className="font-medium text-emerald-300 mb-2">Public Verified Reports</h3>
