@@ -8,6 +8,7 @@ A privacy-first, zero-touch, open-source web application dedicated to global LGB
 - **Privacy First**: We do not collect, log, or store IP addresses, user-agents, or browser fingerprints. No user accounts are required.
 - **Panic Button**: Instantly clears browser storage and redirects to Wikipedia.
 - **UN & Local HRC Action Portal**: Generate formal complaint PDFs locally in your browser. No personal data for these complaints touches the server.
+- **Privacy Policy**: Read our comprehensive [Privacy Policy](/app/privacy/page.jsx) that outlines exactly how we protect users.
 
 ## 🛠️ Tech Stack
 
@@ -30,11 +31,13 @@ npm install
 ```
 
 ### 3. Environment Variables
-Copy the `.env.example` file to `.env.local`:
+You can manually copy the `.env.example` file to `.env.local`:
 ```bash
 cp .env.example .env.local
 ```
 Fill in your Firebase project credentials in `.env.local`.
+
+Alternatively, since the Next.js config natively fetches environment variables from the public Gist, you don't need to manually create `.env.local` if you are using the public configuration.
 
 ### 4. Firebase Setup
 - Create a new Firebase project.

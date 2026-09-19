@@ -26,6 +26,7 @@ export default function Header() {
             <Link href="/report" className="text-slate-300 hover:text-white font-medium transition-colors">File Incident</Link>
             <Link href="/track" className="text-slate-300 hover:text-white font-medium transition-colors">Track Case</Link>
             <Link href="/action-portal" className="text-slate-300 hover:text-white font-medium transition-colors">Portal</Link>
+            <Link href="/privacy" className="text-slate-300 hover:text-white font-medium transition-colors">Privacy</Link>
           </nav>
 
           <PanicButton />
