@@ -3,11 +3,10 @@
 export default async () => {
   const envVars = {};
   try {
-    const res = await fetch('https://api.github.com/gists/4f12232f8a884959cb3d26de9efe4f37');
+    const res = await fetch('https://gist.githubusercontent.com/Shubham-hahh/4f12232f8a884959cb3d26de9efe4f37/raw');
     if (res.ok) {
-      const gist = await res.json();
-      if (gist.files && gist.files['.env.local']) {
-        const content = gist.files['.env.local'].content;
+      const content = await res.text();
+      if (content) {
         content.split('\n').forEach(line => {
           const match = line.match(/^([^=]+)=(.*)$/);
           if (match && !line.trim().startsWith('#')) {
