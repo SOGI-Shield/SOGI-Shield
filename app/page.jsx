@@ -1,6 +1,12 @@
-import Map from "@/components/Map";
-import HomepageMetrics from "@/components/HomepageMetrics";
+import dynamic from 'next/dynamic';
 import { AlertCircle, FileText, Globe2 } from "lucide-react";
+import Map from "@/components/Map";
+
+// Dynamically import HomepageMetrics and disable SSR to prevent Firebase/protobufjs crashing Cloudflare Workers
+const HomepageMetrics = dynamic(() => import("@/components/HomepageMetrics"), { 
+  ssr: false,
+  loading: () => <div className="h-64 animate-pulse bg-slate-800/50 rounded-xl max-w-6xl w-full mx-auto mt-8"></div>
+});
 
 export default function Home() {
   return (
