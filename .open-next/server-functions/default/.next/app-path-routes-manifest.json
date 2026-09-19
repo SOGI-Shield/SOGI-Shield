@@ -1,0 +1,12 @@
+{
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/about/page": "/about",
+  "/action-portal/page": "/action-portal",
+  "/api/verify-turnstile/route": "/api/verify-turnstile",
+  "/icon.svg/route": "/icon.svg",
+  "/page": "/",
+  "/privacy/page": "/privacy",
+  "/report/page": "/report",
+  "/track/page": "/track"
+}

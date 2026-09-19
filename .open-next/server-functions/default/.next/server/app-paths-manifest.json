@@ -1,0 +1,12 @@
+{
+  "/_global-error/page": "app/_global-error/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/about/page": "app/about/page.js",
+  "/action-portal/page": "app/action-portal/page.js",
+  "/api/verify-turnstile/route": "app/api/verify-turnstile/route.js",
+  "/icon.svg/route": "app/icon.svg/route.js",
+  "/page": "app/page.js",
+  "/privacy/page": "app/privacy/page.js",
+  "/report/page": "app/report/page.js",
+  "/track/page": "app/track/page.js"
+}
