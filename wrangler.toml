@@ -7,3 +7,10 @@ main = ".open-next/worker.js"
 # [[kv_namespaces]]
 # binding = "NEXT_CACHE_WORKERS_KV"
 # id = "..."
+
+[observability]
+enabled = true
+
+[observability.logs]
+enabled = true
+invocation_logs = true
