@@ -30,21 +30,32 @@ cd sogi-shield
 npm install
 ```
 
-### 3. Environment Variables
-You can manually copy the `.env.example` file to `.env.local`:
+### 3. Environment Variables (Dynamic Gist Fetching)
+This project is configured to dynamically pull environment variables at build-time from a central GitHub Gist to simplify remote deployments.
+
+When you run `npm run build` or `npm run deploy`, the `prebuild` script automatically downloads the latest `.env.local` file from the remote Gist URL, so you do not need to manually configure environment variables in your CI/CD pipeline!
+
+To develop locally without the Gist, you can manually copy the `.env.example` file:
 ```bash
 cp .env.example .env.local
 ```
-Fill in your Firebase project credentials in `.env.local`.
 
-Alternatively, since the Next.js config natively fetches environment variables from the public Gist, you don't need to manually create `.env.local` if you are using the public configuration.
+### 4. Cloudflare Deployment (OpenNext)
+SOGI-Shield is configured to deploy directly to **Cloudflare Workers** using [OpenNext](https://opennext.js.org/cloudflare). 
 
-### 4. Firebase Setup
+Deployments are entirely automated via GitHub Actions on every push to the `main` branch. 
+
+**To enable GitHub Actions Deployments:**
+1. Generate a Cloudflare API Token (Edit Cloudflare Workers template).
+2. Copy your Cloudflare Account ID from the Workers & Pages dashboard.
+3. Add both as GitHub Repository Secrets: `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`.
+
+### 5. Firebase Setup
 - Create a new Firebase project.
 - Enable Firestore Database.
 - Apply the rules found in `firestore.rules` to your Firestore instance.
 
-### 5. Run the development server
+### 6. Run the development server
 ```bash
 npm run dev
 ```
