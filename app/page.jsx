@@ -1,3 +1,5 @@
+"use client";
+
 import dynamic from 'next/dynamic';
 import { AlertCircle, FileText, Globe2 } from "lucide-react";
 import Map from "@/components/Map";
