@@ -31,6 +31,11 @@ export default function TrackCasePage() {
           setError("No incident found with this tracking code.");
         }
       } else {
+        if (!db) {
+          setError("Database is not initialized.");
+          setIsSearching(false);
+          return;
+        }
         const q = query(collection(db, "reports"), where("trackingCode", "==", trackingCode));
         const querySnapshot = await getDocs(q);
         

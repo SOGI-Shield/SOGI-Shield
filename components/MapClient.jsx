@@ -78,7 +78,7 @@ export default function MapClient() {
       return;
     }
 
-    if (process.env.NEXT_PUBLIC_FIREBASE_API_KEY && process.env.NEXT_PUBLIC_FIREBASE_API_KEY !== 'your_api_key_here') {
+    if (process.env.NEXT_PUBLIC_FIREBASE_API_KEY && process.env.NEXT_PUBLIC_FIREBASE_API_KEY !== 'your_api_key_here' && db) {
       const q = query(collection(db, "reports"));
       const fetchReports = async () => {
         try {
