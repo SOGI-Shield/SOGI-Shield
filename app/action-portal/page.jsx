@@ -44,13 +44,15 @@ Sincerely,
   };
 
   return (
-    <div className="flex-1 container mx-auto px-4 py-8 max-w-5xl">
-      <div className="mb-10 text-center max-w-3xl mx-auto">
-        <div className="flex justify-center mb-4 text-pink-400">
-          <FileText size={48} />
+    <div className="flex-1 container mx-auto px-4 py-12 max-w-5xl relative z-10">
+      <div className="mb-12 text-center max-w-3xl mx-auto">
+        <div className="flex justify-center mb-6">
+          <div className="p-4 bg-gradient-to-br from-pink-500/20 to-rose-500/20 border border-pink-500/30 rounded-2xl shadow-[0_0_20px_rgba(244,63,94,0.3)]">
+            <FileText size={48} className="text-pink-400 drop-shadow-[0_0_10px_rgba(244,63,94,0.5)]" />
+          </div>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-bold mb-4">Global Human Rights Action Portal</h1>
-        <p className="text-slate-400 text-lg">
+        <h1 className="text-3xl sm:text-5xl font-extrabold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-indigo-400 to-pink-400 drop-shadow-[0_0_15px_rgba(99,102,241,0.2)]">Global Human Rights Action Portal</h1>
+        <p className="text-slate-300 text-lg leading-relaxed">
           Take your documentation a step further. Use our standardized legal complaint format to report incidents directly to international human rights commissions and local authorities worldwide.
         </p>
       </div>
@@ -59,53 +61,54 @@ Sincerely,
         
         {/* Left Col: Info & Links */}
         <div className="lg:col-span-1 space-y-6">
-          <div className="bg-slate-800 border border-slate-700 p-6 rounded-xl shadow-lg">
-            <h3 className="font-bold text-lg mb-3 text-white">Direct Filing & Directories</h3>
-            <p className="text-sm text-slate-400 mb-5">After customizing your complaint letter, use these global directories and portals to submit it:</p>
+          <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 p-6 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+            <h3 className="font-bold text-lg mb-3 text-white uppercase tracking-widest text-sm">Direct Filing & Directories</h3>
+            <p className="text-sm text-slate-300 mb-6 leading-relaxed">After customizing your complaint letter, use these global directories and portals to submit it:</p>
             
-            <a href="https://sps.un.org/english/rights" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-slate-900 hover:bg-slate-700 active:bg-slate-600 border border-slate-600 rounded-lg mb-3 transition-colors group">
-              <span className="font-medium text-sm text-slate-200 group-hover:text-white">UN Human Rights Submissions</span>
-              <ExternalLink size={16} className="text-slate-400 group-hover:text-white" />
+            <a href="https://sps.un.org/english/rights" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-black/40 hover:bg-white/10 active:bg-white/20 border border-white/10 rounded-2xl mb-4 transition-all group">
+              <span className="font-bold text-sm text-slate-200 group-hover:text-cyan-400 transition-colors">UN Human Rights Submissions</span>
+              <ExternalLink size={16} className="text-slate-500 group-hover:text-cyan-400 transition-colors" />
             </a>
             
-            <a href="https://ganhri.org/membership/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-slate-900 hover:bg-slate-700 active:bg-slate-600 border border-slate-600 rounded-lg mb-3 transition-colors group">
-              <span className="font-medium text-sm text-slate-200 group-hover:text-white">Global NHRI Directory</span>
-              <ExternalLink size={16} className="text-slate-400 group-hover:text-white" />
+            <a href="https://ganhri.org/membership/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-black/40 hover:bg-white/10 active:bg-white/20 border border-white/10 rounded-2xl mb-4 transition-all group">
+              <span className="font-bold text-sm text-slate-200 group-hover:text-indigo-400 transition-colors">Global NHRI Directory</span>
+              <ExternalLink size={16} className="text-slate-500 group-hover:text-indigo-400 transition-colors" />
             </a>
 
-            <a href="https://outrightinternational.org/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-slate-900 hover:bg-slate-700 active:bg-slate-600 border border-slate-600 rounded-lg transition-colors group">
-              <span className="font-medium text-sm text-slate-200 group-hover:text-white">Outright International</span>
-              <ExternalLink size={16} className="text-slate-400 group-hover:text-white" />
+            <a href="https://outrightinternational.org/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-black/40 hover:bg-white/10 active:bg-white/20 border border-white/10 rounded-2xl transition-all group">
+              <span className="font-bold text-sm text-slate-200 group-hover:text-pink-400 transition-colors">Outright International</span>
+              <ExternalLink size={16} className="text-slate-500 group-hover:text-pink-400 transition-colors" />
             </a>
           </div>
 
-          <div className="bg-indigo-950/30 border border-indigo-500/30 p-6 rounded-xl shadow-lg">
-            <h3 className="font-bold text-indigo-300 mb-3">Guidelines for Reporting</h3>
-            <ul className="text-sm text-indigo-200/80 space-y-3 list-disc pl-4">
-              <li><strong>Be factual:</strong> Stick strictly to the facts of what happened without emotional exaggeration.</li>
-              <li><strong>Protect yourself:</strong> If you fear retaliation, you are fully entitled to submit the complaint anonymously or withhold your home address.</li>
-              <li><strong>Secure channels:</strong> Do not send highly sensitive photo evidence through unencrypted email channels unless specifically requested via a secure link.</li>
+          <div className="bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-3xl shadow-lg relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-indigo-500 to-pink-500"></div>
+            <h3 className="font-bold text-indigo-300 mb-4 uppercase tracking-widest text-sm">Guidelines for Reporting</h3>
+            <ul className="text-sm text-slate-300 space-y-4 list-disc pl-4 marker:text-indigo-500 leading-relaxed">
+              <li><strong className="text-white">Be factual:</strong> Stick strictly to the facts of what happened without emotional exaggeration.</li>
+              <li><strong className="text-white">Protect yourself:</strong> If you fear retaliation, you are fully entitled to submit the complaint anonymously or withhold your home address.</li>
+              <li><strong className="text-white">Secure channels:</strong> Do not send highly sensitive photo evidence through unencrypted email channels unless specifically requested via a secure link.</li>
             </ul>
           </div>
         </div>
 
         {/* Right Col: Letter Template */}
-        <div className="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-xl shadow-xl overflow-hidden flex flex-col">
-          <div className="bg-slate-950 border-b border-slate-800 p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="lg:col-span-2 bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col relative">
+          <div className="bg-black/40 border-b border-white/10 p-6 sm:p-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 relative z-10">
             <div>
-              <h2 className="text-xl font-bold text-white">Standard Complaint Template</h2>
+              <h2 className="text-2xl font-bold text-white mb-1">Standard Complaint Template</h2>
               <p className="text-sm text-slate-400">Copy this format into your email client or Word processor.</p>
             </div>
             <button 
               onClick={copyToClipboard}
-              className="bg-pink-600 hover:bg-pink-700 active:bg-pink-800 text-white font-bold py-2.5 px-5 rounded-lg transition-colors flex items-center gap-2 text-sm shrink-0 w-full sm:w-auto justify-center"
+              className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 active:from-pink-700 active:to-rose-700 text-white font-bold py-3 px-6 rounded-xl transition-all flex items-center gap-2 text-sm shrink-0 w-full sm:w-auto justify-center shadow-[0_0_15px_rgba(225,29,72,0.4)] hover:shadow-[0_0_25px_rgba(225,29,72,0.6)] border border-rose-400/30 uppercase tracking-wider"
             >
               {copied ? <><CheckCircle2 size={18} /> Copied!</> : <><Copy size={18} /> Copy Template</>}
             </button>
           </div>
           
-          <div className="p-6 sm:p-8 bg-slate-900 overflow-x-auto">
-            <pre className="text-sm text-slate-300 font-mono whitespace-pre-wrap leading-relaxed">
+          <div className="p-6 sm:p-8 bg-transparent overflow-x-auto relative z-10">
+            <pre className="text-sm text-slate-300 font-mono whitespace-pre-wrap leading-relaxed bg-black/40 p-6 rounded-2xl border border-white/5 shadow-inner selection:bg-pink-500/30">
               {templateText}
             </pre>
           </div>

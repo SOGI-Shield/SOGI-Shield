@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, CircleMarker, GeoJSON, useMapEvents, ZoomControl } from "react-leaflet";
 import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import { collection, getDocs, query } from "firebase/firestore/lite";
 import { db, isMockMode } from "@/lib/firebase";
 import { Maximize2, Minimize2, X, Shield, CheckCircle, AlertTriangle, Flame } from "lucide-react";
@@ -78,7 +79,7 @@ export default function MapClient() {
       return;
     }
 
-    if (process.env.NEXT_PUBLIC_FIREBASE_API_KEY && process.env.NEXT_PUBLIC_FIREBASE_API_KEY !== 'your_api_key_here' && db) {
+    if (process.env.NEXT_PUBLIC_FIREBASE_API_KEY && process.env.NEXT_PUBLIC_FIREBASE_API_KEY !== 'your_api_key_here') {
       const q = query(collection(db, "reports"));
       const fetchReports = async () => {
         try {
@@ -201,8 +202,6 @@ export default function MapClient() {
         preferCanvas={true}
         attributionControl={false}
         zoomControl={false}
-        dragging={!L.Browser.mobile}
-        tap={!L.Browser.mobile}
         className="w-full h-full rounded-xl z-0"
         style={{ height: "100%", width: "100%", backgroundColor: "#aad3df" }} // Matches OSM water color
       >
@@ -223,7 +222,6 @@ export default function MapClient() {
           />
         )}
 
-        <>
           {reports.map((report) => {
             const country = report.country;
             const regionTotal = countryStats[country]?.total || 0;
@@ -236,7 +234,7 @@ export default function MapClient() {
 
             if (report.status === "PUBLIC_VERIFIED" && report.lat && report.lng && icons.red) {
               return (
-                <Marker key={report.id} position={[report.lat, report.lng]} icon={icons.red}>
+                <Marker key={report.id} position={[Number(report.lat), Number(report.lng)]} icon={icons.red}>
                   <Popup>
                     <div className="text-slate-900 w-full max-w-[260px]">
                       <h3 className="font-bold text-lg mb-1 break-words">{report.facilityName || "Verified Incident"}</h3>
@@ -254,7 +252,7 @@ export default function MapClient() {
               );
             } else if (report.status === "ACTION_IGNORED" && report.lat && report.lng && icons.grey) {
               return (
-                <Marker key={report.id} position={[report.lat, report.lng]} icon={icons.grey}>
+                <Marker key={report.id} position={[Number(report.lat), Number(report.lng)]} icon={icons.grey}>
                   <Popup>
                     <div className="text-slate-900 w-full max-w-[260px]">
                       <div className="inline-block bg-slate-200 text-slate-700 text-xs font-bold px-2 py-1 rounded mb-2 uppercase tracking-wide">
@@ -277,7 +275,7 @@ export default function MapClient() {
               return (
                 <CircleMarker
                   key={report.id}
-                  center={[report.lat, report.lng]}
+                  center={[Number(report.lat), Number(report.lng)]}
                   radius={20}
                   fillColor="#f97316"
                   color="#ea580c"
@@ -297,7 +295,6 @@ export default function MapClient() {
             }
             return null;
           })}
-        </>
       </MapContainer>
 
       {/* Full Report Modal */}

@@ -112,62 +112,63 @@ export default function TrackCasePage() {
   };
 
   return (
-    <div className="flex-1 container mx-auto px-4 py-12 max-w-3xl">
+    <div className="flex-1 container mx-auto px-4 py-12 max-w-3xl relative z-10">
       <div className="text-center mb-10">
-        <h1 className="text-4xl font-bold mb-4">Track Your Case</h1>
-        <p className="text-slate-400">Enter your secure tracking code to view the status of your incident report.</p>
+        <h1 className="text-4xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-rose-400 drop-shadow-[0_0_15px_rgba(244,63,94,0.2)]">Track Your Case</h1>
+        <p className="text-slate-300 text-lg">Enter your secure tracking code to view the status of your incident report.</p>
       </div>
 
-      <div className="bg-slate-900 border border-slate-700 p-6 rounded-xl shadow-xl mb-8">
+      <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] mb-10 relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-rose-500"></div>
         <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4">
           <input 
             type="text" 
             placeholder="e.g., SOGI-2026-ABCD" 
             value={trackingCode}
             onChange={(e) => setTrackingCode(e.target.value)}
-            className="flex-1 bg-slate-950 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-colors uppercase font-mono"
+            className="flex-1 bg-black/40 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition-all uppercase font-mono tracking-widest placeholder:text-slate-600"
             required
           />
           <button 
             type="submit" 
             disabled={isSearching}
-            className="bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold py-3 px-8 rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center sm:justify-start gap-2"
+            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white font-bold py-4 px-10 rounded-xl transition-all shadow-[0_0_15px_rgba(236,72,153,0.4)] hover:shadow-[0_0_25px_rgba(236,72,153,0.6)] disabled:opacity-50 disabled:shadow-none flex items-center justify-center sm:justify-start gap-3 text-lg border border-white/20"
           >
-            <Search size={20} />
+            <Search size={24} />
             {isSearching ? "Searching..." : "Lookup"}
           </button>
         </form>
         {error && (
-          <div className="mt-4 p-3 bg-red-900/30 border border-red-500/30 text-red-300 rounded text-sm">
+          <div className="mt-6 p-5 bg-rose-900/40 border border-rose-500/50 text-rose-200 rounded-xl text-center font-bold shadow-lg">
             {error}
           </div>
         )}
       </div>
 
       {report && (
-        <div className="space-y-6">
-          <div className={`p-6 rounded-xl border ${getStatusDisplay(report.status).color} flex items-start gap-4 transition-all`}>
+        <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+          <div className={`p-8 rounded-3xl border backdrop-blur-xl ${getStatusDisplay(report.status).color} flex items-start gap-5 transition-all shadow-xl relative overflow-hidden`}>
             <div className="flex-shrink-0 mt-1">
               {getStatusDisplay(report.status).icon}
             </div>
-            <div>
-              <h2 className="text-xl font-bold mb-2">{getStatusDisplay(report.status).title}</h2>
-              <p className="text-sm opacity-90 leading-relaxed mb-4">
+            <div className="relative z-10">
+              <h2 className="text-2xl font-bold mb-2 text-white">{getStatusDisplay(report.status).title}</h2>
+              <p className="text-base opacity-90 leading-relaxed mb-4 text-slate-200">
                 {getStatusDisplay(report.status).desc}
               </p>
               
               {report.status === 'PUBLIC_VERIFIED' && report.reportedToAuthorities && (
-                <div className="mt-6 pt-6 border-t border-current/20">
-                  <h3 className="font-bold mb-2 flex items-center gap-2">
-                    <AlertCircle size={18} /> Update Case Status
+                <div className="mt-8 pt-8 border-t border-white/20">
+                  <h3 className="font-bold mb-3 flex items-center gap-2 text-white text-lg">
+                    <AlertCircle size={20} className="text-rose-400" /> Update Case Status
                   </h3>
-                  <p className="text-sm opacity-80 mb-4">
-                    If authorities have failed to investigate or take action on this verified report, you can permanently flag it as <strong>ACTION_IGNORED</strong>. This changes the map marker to GREY to highlight institutional neglect.
+                  <p className="text-slate-300 leading-relaxed mb-6">
+                    If authorities have failed to investigate or take action on this verified report, you can permanently flag it as <strong className="text-rose-400">ACTION_IGNORED</strong>. This changes the map marker to GREY to highlight institutional neglect.
                   </p>
                   <button 
                     onClick={markAsIgnored}
                     disabled={isUpdating}
-                    className="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-white border border-slate-600 py-3 px-6 rounded-lg transition-colors text-sm font-medium disabled:opacity-50"
+                    className="bg-black/50 hover:bg-black/70 active:bg-black/90 text-white border border-rose-500/50 hover:border-rose-500 py-4 px-8 rounded-xl transition-all font-bold text-sm uppercase tracking-widest disabled:opacity-50"
                   >
                     {isUpdating ? "Updating..." : "Flag as Action Ignored by Authorities"}
                   </button>
@@ -176,28 +177,28 @@ export default function TrackCasePage() {
             </div>
           </div>
 
-          <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl">
-            <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Report Details</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8 text-sm">
+          <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-lg">
+            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-6">Report Details</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-8 text-sm">
               <div>
-                <span className="block text-slate-500 mb-1">Date Submitted</span>
-                <span className="text-slate-200">{new Date(report.timestamp).toLocaleString()}</span>
+                <span className="block text-slate-500 mb-2 uppercase tracking-wider font-bold text-xs">Date Submitted</span>
+                <span className="text-white text-base">{new Date(report.timestamp).toLocaleString()}</span>
               </div>
               <div>
-                <span className="block text-slate-500 mb-1">Location</span>
-                <span className="text-slate-200 break-words">{report.region}, {report.country}</span>
+                <span className="block text-slate-500 mb-2 uppercase tracking-wider font-bold text-xs">Location</span>
+                <span className="text-white text-base break-words">{report.region}, {report.country}</span>
               </div>
               <div>
-                <span className="block text-slate-500 mb-1">Category</span>
-                <span className="text-slate-200 break-words">{report.category}</span>
+                <span className="block text-slate-500 mb-2 uppercase tracking-wider font-bold text-xs">Category</span>
+                <span className="text-white text-base break-words">{report.category}</span>
               </div>
               <div>
-                <span className="block text-slate-500 mb-1">Facility Name</span>
-                <span className="text-slate-200 break-words">{report.facilityName || "Hidden / Not provided"}</span>
+                <span className="block text-slate-500 mb-2 uppercase tracking-wider font-bold text-xs">Facility Name</span>
+                <span className="text-white text-base break-words">{report.facilityName || "Hidden / Not provided"}</span>
               </div>
-              <div className="sm:col-span-2 mt-2">
-                <span className="block text-slate-500 mb-1">Summary</span>
-                <p className="text-slate-300 leading-relaxed bg-slate-950 p-4 rounded border border-slate-800 break-words whitespace-pre-wrap">
+              <div className="sm:col-span-2 mt-4">
+                <span className="block text-slate-500 mb-3 uppercase tracking-wider font-bold text-xs">Summary</span>
+                <p className="text-slate-300 text-base leading-relaxed bg-black/40 p-6 rounded-2xl border border-white/5 break-words whitespace-pre-wrap shadow-inner">
                   {report.summary}
                 </p>
               </div>
