@@ -1,0 +1,9 @@
+name = "sogi-shield"
+compatibility_date = "2024-09-19"
+compatibility_flags = ["nodejs_compat"]
+main = ".open-next/worker.js"
+
+# You may need to specify KV namespaces or D1 databases here depending on your OpenNext configuration
+# [[kv_namespaces]]
+# binding = "NEXT_CACHE_WORKERS_KV"
+# id = "..."
