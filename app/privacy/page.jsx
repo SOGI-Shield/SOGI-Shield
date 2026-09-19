@@ -19,7 +19,7 @@ export default function PrivacyPolicy() {
             <h1 className="text-4xl font-bold tracking-tight text-neutral-100">Privacy Policy</h1>
           </div>
           <p className="text-xl text-neutral-400">
-            Last updated: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+            Last updated: September 19, 2026 (Version 1.0.0)
           </p>
           <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-lg text-rose-200 flex gap-3 items-start">
             <AlertTriangle className="w-6 h-6 shrink-0 mt-0.5" />
@@ -75,16 +75,15 @@ export default function PrivacyPolicy() {
           <section className="space-y-4">
             <h2 className="text-2xl font-semibold text-neutral-100 flex items-center gap-2">
               <Server className="w-6 h-6 text-amber-400" />
-              3. Local Processing & PDF Generation
+              3. Local Action Portal & Templates
             </h2>
             <p className="text-neutral-300 leading-relaxed">
-              Features such as the <strong>UN & Local HRC Action Portal</strong> are designed to run entirely locally in your browser. 
-              When you generate formal complaint PDFs:
+              Features such as the <strong>Global Action Portal</strong> are designed for local preparation entirely within your browser. 
             </p>
             <ul className="list-disc list-inside space-y-2 text-neutral-300 ml-4">
-              <li>The PDF is generated using local JavaScript (`jspdf`).</li>
-              <li>Your sensitive narrative and contact details never leave your device.</li>
-              <li>SOGI-Shield servers do not receive or process your generated complaints.</li>
+              <li>The standardized legal complaint format is provided as a blank template.</li>
+              <li>You copy the template directly to your own clipboard and fill it out locally on your device.</li>
+              <li>Your sensitive narrative and contact details never touch SOGI-Shield servers when preparing these complaints.</li>
             </ul>
           </section>
 

@@ -49,9 +49,9 @@ Sincerely,
         <div className="flex justify-center mb-4 text-pink-400">
           <FileText size={48} />
         </div>
-        <h1 className="text-3xl sm:text-4xl font-bold mb-4">UN & Local HRC Action Portal</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold mb-4">Global Human Rights Action Portal</h1>
         <p className="text-slate-400 text-lg">
-          Take your documentation a step further. Use our standardized legal complaint format to report incidents directly to human rights commissions and authorities.
+          Take your documentation a step further. Use our standardized legal complaint format to report incidents directly to international human rights commissions and local authorities worldwide.
         </p>
       </div>
 
@@ -60,16 +60,21 @@ Sincerely,
         {/* Left Col: Info & Links */}
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-slate-800 border border-slate-700 p-6 rounded-xl shadow-lg">
-            <h3 className="font-bold text-lg mb-3 text-white">Direct Filing Links</h3>
-            <p className="text-sm text-slate-400 mb-5">After customizing your complaint letter, submit it directly through these official portals:</p>
+            <h3 className="font-bold text-lg mb-3 text-white">Direct Filing & Directories</h3>
+            <p className="text-sm text-slate-400 mb-5">After customizing your complaint letter, use these global directories and portals to submit it:</p>
             
-            <a href="https://hrcnet.nic.in/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-slate-900 hover:bg-slate-700 active:bg-slate-600 border border-slate-600 rounded-lg mb-3 transition-colors group">
-              <span className="font-medium text-sm text-slate-200 group-hover:text-white">NHRC India Portal</span>
+            <a href="https://sps.un.org/english/rights" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-slate-900 hover:bg-slate-700 active:bg-slate-600 border border-slate-600 rounded-lg mb-3 transition-colors group">
+              <span className="font-medium text-sm text-slate-200 group-hover:text-white">UN Human Rights Submissions</span>
               <ExternalLink size={16} className="text-slate-400 group-hover:text-white" />
             </a>
             
-            <a href="https://sps.un.org/english/rights" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-slate-900 hover:bg-slate-700 active:bg-slate-600 border border-slate-600 rounded-lg transition-colors group">
-              <span className="font-medium text-sm text-slate-200 group-hover:text-white">UN Human Rights Submissions</span>
+            <a href="https://ganhri.org/membership/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-slate-900 hover:bg-slate-700 active:bg-slate-600 border border-slate-600 rounded-lg mb-3 transition-colors group">
+              <span className="font-medium text-sm text-slate-200 group-hover:text-white">Global NHRI Directory</span>
+              <ExternalLink size={16} className="text-slate-400 group-hover:text-white" />
+            </a>
+
+            <a href="https://outrightinternational.org/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-slate-900 hover:bg-slate-700 active:bg-slate-600 border border-slate-600 rounded-lg transition-colors group">
+              <span className="font-medium text-sm text-slate-200 group-hover:text-white">Outright International</span>
               <ExternalLink size={16} className="text-slate-400 group-hover:text-white" />
             </a>
           </div>
