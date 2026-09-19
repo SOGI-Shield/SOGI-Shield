@@ -49,6 +49,7 @@ export default function Header() {
           <Link href="/report" onClick={closeMenu} className="block w-full flex-none text-center py-4 text-xl text-slate-300 hover:text-white hover:bg-slate-900 active:bg-slate-800 font-bold transition-colors">File Incident</Link>
           <Link href="/track" onClick={closeMenu} className="block w-full flex-none text-center py-4 text-xl text-slate-300 hover:text-white hover:bg-slate-900 active:bg-slate-800 font-bold transition-colors">Track Case</Link>
           <Link href="/action-portal" onClick={closeMenu} className="block w-full flex-none text-center py-4 text-xl text-slate-300 hover:text-white hover:bg-slate-900 active:bg-slate-800 font-bold transition-colors">UN & Local HRC Portal</Link>
+          <Link href="/privacy" onClick={closeMenu} className="block w-full flex-none text-center py-4 text-xl text-slate-300 hover:text-white hover:bg-slate-900 active:bg-slate-800 font-bold transition-colors">Privacy Policy</Link>
         </div>
       )}
     </header>
