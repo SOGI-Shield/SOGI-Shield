@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Info, ShieldCheck, ShieldAlert, Copy } from "lucide-react";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc } from "firebase/firestore/lite";
 import { db, isMockMode } from "@/lib/firebase";
 import { sanitizeReportPayload, classifyReport } from "@/lib/utils";
 import { Turnstile } from '@marsidev/react-turnstile';

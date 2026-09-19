@@ -1,43 +1,47 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { collection, onSnapshot, query } from "firebase/firestore";
+import { collection, getDocs, query } from "firebase/firestore/lite";
 import { db, isMockMode } from "@/lib/firebase";
 import Link from "next/link";
 
 export default function HomepageMetrics() {
   const [stats, setStats] = useState({ total: 0, verified: 0, ignored: 0, heatmap: 0 });
 
+  const calculateStats = (reports) => {
+    const newStats = { total: 0, verified: 0, ignored: 0, heatmap: 0 };
+    reports.forEach(report => {
+      newStats.total++;
+      if (report.status === "PUBLIC_VERIFIED") newStats.verified++;
+      if (report.status === "ACTION_IGNORED") newStats.ignored++;
+      if (report.status === "HEATMAP_AGGREGATED") newStats.heatmap++;
+    });
+    setStats(newStats);
+  };
+
   useEffect(() => {
     if (isMockMode) {
       import('@/src/data/mockReports.json').then(m => {
         const reports = m.default || m;
-        const newStats = { total: 0, verified: 0, ignored: 0, heatmap: 0 };
-        reports.forEach(report => {
-          newStats.total++;
-          if (report.status === "PUBLIC_VERIFIED") newStats.verified++;
-          if (report.status === "ACTION_IGNORED") newStats.ignored++;
-          if (report.status === "HEATMAP_AGGREGATED") newStats.heatmap++;
-        });
-        setStats(newStats);
-      }).catch(e => console.error(e));
+        calculateStats(reports);
+      });
       return;
     }
 
     if (process.env.NEXT_PUBLIC_FIREBASE_API_KEY && process.env.NEXT_PUBLIC_FIREBASE_API_KEY !== 'your_api_key_here') {
       const q = query(collection(db, "reports"));
-      const unsubscribe = onSnapshot(q, (snapshot) => {
-        const newStats = { total: 0, verified: 0, ignored: 0, heatmap: 0 };
-        snapshot.docs.forEach(doc => {
-          const report = doc.data();
-          newStats.total++;
-          if (report.status === "PUBLIC_VERIFIED") newStats.verified++;
-          if (report.status === "ACTION_IGNORED") newStats.ignored++;
-          if (report.status === "HEATMAP_AGGREGATED") newStats.heatmap++;
-        });
-        setStats(newStats);
-      });
-      return () => unsubscribe();
+      const fetchReports = async () => {
+        try {
+          const snapshot = await getDocs(q);
+          const fetched = snapshot.docs.map(doc => doc.data());
+          calculateStats(fetched);
+        } catch (e) {
+          console.error("Failed to fetch reports for metrics:", e);
+        }
+      };
+      fetchReports();
+      const interval = setInterval(fetchReports, 60000);
+      return () => clearInterval(interval);
     }
   }, []);
 

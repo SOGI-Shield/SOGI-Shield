@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Search, ShieldCheck, ShieldAlert, Activity, AlertCircle } from "lucide-react";
-import { collection, query, where, getDocs, updateDoc, doc } from "firebase/firestore";
+import { collection, query, where, getDocs, updateDoc, doc } from "firebase/firestore/lite";
 import { db, isMockMode } from "@/lib/firebase";
 
 export default function TrackCasePage() {

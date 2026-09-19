@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, CircleMarker, GeoJSON, useMapEvents, ZoomControl } from "react-leaflet";
 import L from "leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
-import { collection, onSnapshot, query } from "firebase/firestore";
+import { collection, getDocs, query } from "firebase/firestore/lite";
 import { db, isMockMode } from "@/lib/firebase";
 import { Maximize2, Minimize2, X, Shield, CheckCircle, AlertTriangle, Flame } from "lucide-react";
 
@@ -83,11 +83,20 @@ export default function MapClient() {
 
     if (process.env.NEXT_PUBLIC_FIREBASE_API_KEY && process.env.NEXT_PUBLIC_FIREBASE_API_KEY !== 'your_api_key_here') {
       const q = query(collection(db, "reports"));
-      const unsubscribe = onSnapshot(q, (snapshot) => {
-        const fetched = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setReports(fetched);
-      });
-      return () => unsubscribe();
+      const fetchReports = async () => {
+        try {
+          const snapshot = await getDocs(q);
+          const fetched = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          setReports(fetched);
+        } catch (e) {
+          console.error("Failed to fetch reports:", e);
+        }
+      };
+      
+      fetchReports();
+      // Optional polling every 60s
+      const interval = setInterval(fetchReports, 60000);
+      return () => clearInterval(interval);
     } else {
       setReports([]);
       console.warn("Firebase API key is missing. Map will remain empty.");
