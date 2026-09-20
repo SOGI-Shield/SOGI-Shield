@@ -128,9 +128,22 @@ export default function ReportPage() {
         throw new Error(err.message || "Failed to locate the address. Please simplify the region/city name.");
       }
 
+      const reportId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2);
+      finalReport.id = reportId;
+
+      const secretReport = {
+        trackingCode: finalReport.trackingCode,
+      };
+      
+      // Crucial security fix: Delete trackingCode from the public document so it isn't leaked
+      delete finalReport.trackingCode;
+
       // Submit to Firestore if API key is set and not mocking
       if (!isMockMode && process.env.NEXT_PUBLIC_FIREBASE_API_KEY && process.env.NEXT_PUBLIC_FIREBASE_API_KEY !== 'your_api_key_here') {
-        await addDoc(collection(db, "reports"), finalReport);
+        import("firebase/firestore/lite").then(async ({ doc, setDoc }) => {
+          await setDoc(doc(db, "reports", reportId), finalReport);
+          await setDoc(doc(db, "report_secrets", reportId), secretReport);
+        });
       } else {
         // Simulate network request
         console.log("Mock submission:", finalReport);

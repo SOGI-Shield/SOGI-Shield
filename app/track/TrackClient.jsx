@@ -17,33 +17,32 @@ export default function TrackCasePage() {
     if (!trackingCode) return;
     
     setIsSearching(true);
-    setError("");
+    setError(null);
     setReport(null);
-
+    
     try {
       if (isMockMode) {
-        // Load local mock data
-        const mockData = await import('@/src/data/mockReports.json').then(m => m.default).catch(() => []);
-        const found = mockData.find(r => r.trackingCode === trackingCode);
-        if (found) {
-          setReport({ ...found, _docId: found.id });
-        } else {
-          setError("No incident found with this tracking code.");
-        }
+        import('@/src/data/mockReports.json').then(m => {
+          const mockData = m.default || m;
+          const found = mockData.find(r => r.trackingCode === trackingCode);
+          if (found) {
+            setReport({ ...found, _docId: found.id });
+          } else {
+            setError("No incident found with this tracking code.");
+          }
+        });
       } else {
-        if (!db) {
-          setError("Database is not initialized.");
-          setIsSearching(false);
-          return;
-        }
-        const q = query(collection(db, "reports"), where("trackingCode", "==", trackingCode));
-        const querySnapshot = await getDocs(q);
+        const res = await fetch('/api/track-report', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ trackingCode })
+        });
         
-        if (querySnapshot.empty) {
-          setError("No incident found with this tracking code. It may have been deleted for safety, or the code is incorrect.");
+        const data = await res.json();
+        if (data.success) {
+          setReport(data.report);
         } else {
-          const docSnap = querySnapshot.docs[0];
-          setReport({ ...docSnap.data(), _docId: docSnap.id });
+          setError(data.message || "No incident found with this tracking code.");
         }
       }
     } catch (err) {
@@ -61,13 +60,16 @@ export default function TrackCasePage() {
       if (isMockMode) {
         setReport({ ...report, status: 'ACTION_IGNORED' });
       } else {
-        const docRef = doc(db, "reports", report._docId);
-        // We must include the trackingCode in the update so the security rule can verify it
-        await updateDoc(docRef, {
-          status: 'ACTION_IGNORED',
-          trackingCode: report.trackingCode // Re-sending to satisfy rules if needed, though diff rules only look at affectedKeys.
-          // Wait, if we use diff(resource.data).affectedKeys().hasOnly(['status']), we SHOULD ONLY send status.
+        const res = await fetch('/api/update-status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ trackingCode: report.trackingCode })
         });
+        
+        const data = await res.json();
+        if (!data.success) {
+          throw new Error(data.message || "Update failed");
+        }
       }
       setReport({ ...report, status: 'ACTION_IGNORED' });
     } catch (err) {

@@ -20,10 +20,9 @@ service cloud.firestore {
       // 2. CREATE RULES: Strict Schema Validation
       allow create: if 
         // Must contain ONLY these specific fields
-        hasOnlyAllowedFields(['id', 'timestamp', 'country', 'region', 'category', 'summary', 'evidenceLinks', 'status', 'verificationScore', 'lat', 'lng', 'facilityName', 'trackingCode', 'reportedToAuthorities', 'authorityDetails']) &&
+        hasOnlyAllowedFields(['id', 'timestamp', 'country', 'region', 'category', 'summary', 'evidenceLinks', 'status', 'verificationScore', 'lat', 'lng', 'facilityName', 'reportedToAuthorities', 'authorityDetails']) &&
         
         // Validate required field types and lengths
-        isValidString(request.resource.data.trackingCode, 5, 100) &&
         isValidString(request.resource.data.country, 1, 100) &&
         isValidString(request.resource.data.region, 1, 100) &&
         isValidString(request.resource.data.category, 1, 100) &&
@@ -62,17 +61,19 @@ service cloud.firestore {
           request.resource.data.lng is number
         );
       
-      // 3. UPDATE RULES: Only allow if trackingCode matches and only changing status to ACTION_IGNORED
-      allow update: if 
-        // 1. The client must pass the correct tracking code matching the existing document
-        request.resource.data.trackingCode == resource.data.trackingCode &&
-        // 2. ONLY the status field is being changed
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']) &&
-        // 3. The new status MUST be ACTION_IGNORED
-        request.resource.data.status == 'ACTION_IGNORED';
+      // 3. UPDATE RULES: Disabled on client. Requires Admin SDK.
+      allow update: if false;
 
       // 4. DELETE RULES: Strict Deny (Zero-touch approach)
       allow delete: if false;
+    }
+
+    match /report_secrets/{reportId} {
+      allow create: if 
+        hasOnlyAllowedFields(['trackingCode']) &&
+        isValidString(request.resource.data.trackingCode, 5, 100);
+      
+      allow read, update, delete: if false;
     }
   }
 }
