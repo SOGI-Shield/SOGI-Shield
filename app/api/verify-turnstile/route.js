@@ -10,8 +10,12 @@ export async function POST(request) {
 
     const secretKey = process.env.TURNSTILE_SECRET_KEY;
     if (!secretKey) {
-      console.warn("Turnstile secret key is not configured. Failing open for local testing, but this should be set in production.");
-      return NextResponse.json({ success: true, message: 'Warning: Missing secret key. Bypassed verification.' });
+      if (process.env.NODE_ENV === 'development') {
+        console.warn("Turnstile secret key is not configured. Failing open for local testing, but this should be set in production.");
+        return NextResponse.json({ success: true, message: 'Warning: Missing secret key. Bypassed verification.' });
+      }
+      console.error("CRITICAL: Turnstile secret key is missing in production.");
+      return NextResponse.json({ success: false, message: 'Server configuration error.' }, { status: 500 });
     }
 
     const verifyData = new URLSearchParams();
