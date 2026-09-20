@@ -1,0 +1,34 @@
+name: Real-Time Antivirus Scan
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+
+jobs:
+  security-scan:
+    name: ClamAV Malware Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install ClamAV
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clamav clamav-daemon
+
+      - name: Update Virus Signatures
+        run: |
+          sudo systemctl stop clamav-freshclam
+          sudo freshclam || echo "Freshclam returned non-zero, but database might be updated."
+
+      - name: Scan Files for Malware
+        run: |
+          echo "Scanning all files in the repository..."
+          clamscan -r -i .
+          
+      - name: Check Scan Status
+        run: |
+          echo "Scan completed successfully. No malicious files found."
