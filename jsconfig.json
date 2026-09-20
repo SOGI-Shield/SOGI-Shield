@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    "ignoreDeprecations": "5.0",
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./*"]
     }
-  }
+  },
+  "include": ["**/*.js", "**/*.jsx", "**/*.mjs", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules", ".next"]
 }
