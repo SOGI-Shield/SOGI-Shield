@@ -1,8 +1,12 @@
 {
   "name": "sogi-shield",
   "version": "1.0.0",
-  "private": true,
+  "private": false,
   "license": "GPL-3.0-or-later",
+  "repository": "https://github.com/SOGI-Shield/SOGI-Shield", 
+  "publishConfig": {
+  "@SOGI-Shield:registry": "https://npm.pkg.github.com"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -40,4 +44,5 @@
     "unrs-resolver@1.12.2": true,
     "workerd@1.20260918.1": true
   }
-}
+
+  } 
