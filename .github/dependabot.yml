@@ -4,10 +4,18 @@
 # https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
 
 version: 2
+registries:
+  github-npm:
+    type: npm-registry
+    url: https://npm.pkg.github.com
+    token: ${{secrets.GITHUB_TOKEN}}
+
 updates:
   # Maintain dependencies for npm
   - package-ecosystem: "npm"
     directory: "/"
+    registries:
+      - github-npm
     schedule:
       interval: "weekly"
       day: "monday"
