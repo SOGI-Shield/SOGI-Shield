@@ -4,20 +4,24 @@ on:
   pull_request_target:
     types:
       - closed
+  push:
+    branches:
+      - '**'
 
 permissions:
   contents: write
 
 jobs:
   update-security-log:
-    # Only run when a Dependabot PR is successfully merged
-    if: github.event.pull_request.merged == true && github.event.pull_request.user.login == 'dependabot[bot]'
+    # Run if it's a merged PR from dependabot OR a direct push from dependabot
+    if: >
+      (github.event_name == 'pull_request_target' && github.event.pull_request.merged == true && github.event.pull_request.user.login == 'dependabot[bot]') ||
+      (github.event_name == 'push' && contains(github.event.head_commit.author.name, 'dependabot'))
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          # Use default token, which now has write permissions thanks to 'permissions: contents: write'
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update SECURITY.md
@@ -25,14 +29,28 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const title = context.payload.pull_request.title;
-            const date = new Date().toISOString().split('T')[0];
-            const prUrl = context.payload.pull_request.html_url;
             
-            // Format as a markdown table row
-            const entry = `| ${date} | [${title}](${prUrl}) |`;
+            let title, url;
+            if (context.eventName === 'pull_request_target' || context.eventName === 'pull_request') {
+              title = context.payload.pull_request.title;
+              url = context.payload.pull_request.html_url;
+            } else if (context.eventName === 'push') {
+              title = context.payload.head_commit.message.split('\n')[0]; // Get the first line of the commit
+              url = context.payload.head_commit.url;
+            } else {
+              console.log("Unsupported event");
+              return;
+            }
+            
+            const date = new Date().toISOString().split('T')[0];
+            const entry = `| ${date} | [${title}](${url}) |`;
             
             const filePath = 'SECURITY.md';
+            if (!fs.existsSync(filePath)) {
+              console.log("SECURITY.md not found, nothing to do.");
+              return;
+            }
+            
             let content = fs.readFileSync(filePath, 'utf8');
             const startMarker = '<!-- PATCH_LOG_START -->';
             const emptyRow = '| *N/A* | *No automated security patches have been recorded yet.* |';
