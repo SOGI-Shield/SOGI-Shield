@@ -35,8 +35,13 @@ jobs:
             const filePath = 'SECURITY.md';
             let content = fs.readFileSync(filePath, 'utf8');
             const startMarker = '<!-- PATCH_LOG_START -->';
+            const emptyRow = '| *N/A* | *No automated security patches have been recorded yet.* |';
             
             if (content.includes(startMarker)) {
+              // Remove the empty placeholder row if it exists
+              content = content.replace(emptyRow + '\n', '');
+              content = content.replace(emptyRow, '');
+              
               // Insert the new log entry directly underneath the start marker
               content = content.replace(startMarker, `${startMarker}\n${entry}`);
               fs.writeFileSync(filePath, content);
