@@ -2,20 +2,27 @@
 
 ## Supported Versions
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
+We provide security updates for the following versions of SOGI-Shield:
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+| 1.0.x   | :white_check_mark: |
+| < 1.0   | :x:                |
 
 ## Reporting a Vulnerability
 
-Use this section to tell people how to report a vulnerability.
+We take the security of this project very seriously. If you discover a security vulnerability, please report it in a responsible manner.
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+**Please do not report security vulnerabilities through public GitHub issues.**
+
+Instead, please contact the repository administrators directly. We will acknowledge your report and work to deploy a patch as swiftly as possible.
+
+## Security Patch Log
+
+To maintain transparency, this section contains an automated log of dependencies and security vulnerabilities that have been patched and merged into the base branch by our automated bots.
+
+| Date | Patch Details |
+| :--- | :------------ |
+<!-- PATCH_LOG_START -->
+| *N/A* | *No automated security patches have been recorded yet.* |
+<!-- PATCH_LOG_END -->
