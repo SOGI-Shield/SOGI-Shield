@@ -132,8 +132,9 @@ export default function ReportPage() {
       finalReport.id = reportId;
 
       const secretReport = {
-        trackingCode: finalReport.trackingCode,
+        reportId: reportId,
       };
+      const generatedTrackingCode = finalReport.trackingCode;
       
       // Crucial security fix: Delete trackingCode from the public document so it isn't leaked
       delete finalReport.trackingCode;
@@ -143,7 +144,8 @@ export default function ReportPage() {
         const { doc, setDoc } = await import("firebase/firestore/lite");
         // We MUST await these, otherwise errors are swallowed and the user thinks it succeeded!
         await setDoc(doc(db, "reports", reportId), finalReport);
-        await setDoc(doc(db, "report_secrets", reportId), secretReport);
+        // Use trackingCode as the document ID so it can only be read by someone who knows it
+        await setDoc(doc(db, "report_secrets", generatedTrackingCode), secretReport);
       } else {
         // Simulate network request
         console.log("Mock submission:", finalReport);
@@ -154,7 +156,7 @@ export default function ReportPage() {
       localStorage.setItem('sogi_last_submit', Date.now().toString());
       setRateLimited(true);
 
-      setTrackingCodeResult(secretReport.trackingCode);
+      setTrackingCodeResult(generatedTrackingCode);
       setSubmitStatus('success');
       
       // Clear sensitive form data
