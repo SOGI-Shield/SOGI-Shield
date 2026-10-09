@@ -1,4 +1,4 @@
-globalThis.disableIncrementalCache = false;globalThis.disableDynamoDBCache = false;globalThis.openNextDebug = false;globalThis.openNextVersion = "4.1.4";globalThis.nextVersion = "16.3.5";
+globalThis.disableIncrementalCache = false;globalThis.disableDynamoDBCache = false;globalThis.openNextDebug = false;globalThis.openNextVersion = "4.1.9";globalThis.nextVersion = "16.4.0";
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -280,6 +280,12 @@ function isBinaryContentType(contentType) {
   return commonBinaryMimeTypes.has(value);
 }
 
+// node_modules/@opennextjs/aws/dist/utils/routeCacheKey.js
+var ROUTE_CACHE_KEY_PREFIX = /^\/?route-cache\/(?:PAGES|APP_PAGE|APP_ROUTE)\/[0-9a-f]{64}\/\$(?=\/)/;
+function getPathFromRouteCacheKey(key) {
+  return key.replace(ROUTE_CACHE_KEY_PREFIX, "");
+}
+
 // node_modules/@opennextjs/aws/dist/adapters/cache.js
 var SOFT_TAG_PREFIX = "_N_T_/";
 function isFetchCache(options) {
@@ -427,7 +433,16 @@ var Cache = class {
     if (globalThis.openNextConfig.dangerous?.disableIncrementalCache) {
       return;
     }
-    const detachedPromise = globalThis.__openNextAls.getStore()?.pendingPromiseRunner.withResolvers();
+    const store = globalThis.__openNextAls.getStore();
+    const writePromise = this.writeCache(key, data, ctx);
+    if (store !== void 0) {
+      store.pendingPromiseRunner.add(writePromise);
+    }
+    if (data?.kind === "FETCH" || store === void 0) {
+      await writePromise;
+    }
+  }
+  async writeCache(key, data, ctx) {
     try {
       if (data === null || data === void 0) {
         await globalThis.incrementalCache.delete(key);
@@ -513,8 +528,6 @@ var Cache = class {
       debug("Finished setting cache");
     } catch (e) {
       error("Failed to set cache", e);
-    } finally {
-      detachedPromise?.resolve();
     }
   }
   async revalidateTag(tags, durations) {
@@ -545,7 +558,7 @@ var Cache = class {
         });
         await writeTags(tagsToWrite);
         if (paths.length > 0) {
-          await globalThis.cdnInvalidationHandler.invalidatePaths(paths.map((path) => ({
+          await globalThis.cdnInvalidationHandler.invalidatePaths(paths.map(getPathFromRouteCacheKey).map((path) => ({
             initialPath: path,
             rawPath: path,
             resolvedRoutes: [
@@ -603,7 +616,7 @@ var Cache = class {
           }
         }
         await writeTags(toInsert);
-        const uniquePaths = Array.from(new Set(toInsert.filter((t) => t.tag.startsWith(SOFT_TAG_PREFIX)).map((t) => `/${t.path}`)));
+        const uniquePaths = Array.from(new Set(toInsert.filter((t) => t.tag.startsWith(SOFT_TAG_PREFIX)).map((t) => getPathFromRouteCacheKey(`/${t.path}`))));
         if (uniquePaths.length > 0) {
           await globalThis.cdnInvalidationHandler.invalidatePaths(uniquePaths.map((path) => ({
             initialPath: path,

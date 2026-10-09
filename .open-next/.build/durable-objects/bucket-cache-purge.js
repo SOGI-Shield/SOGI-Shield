@@ -1,4 +1,4 @@
-globalThis.openNextDebug = false;globalThis.openNextVersion = "4.1.4";globalThis.nextVersion = "16.3.5";
+globalThis.openNextDebug = false;globalThis.openNextVersion = "4.1.9";globalThis.nextVersion = "16.4.0";
 
 // node_modules/@opennextjs/cloudflare/dist/api/durable-objects/bucket-cache-purge.js
 import { DurableObject } from "cloudflare:workers";
@@ -61,9 +61,6 @@ function getOpenNextErrorLogLevel() {
       return 1;
   }
 }
-
-// node_modules/@opennextjs/cloudflare/dist/api/cloudflare-context.js
-var cloudflareContextSymbol = Symbol.for("__cloudflare-context__");
 
 // node_modules/@opennextjs/cloudflare/dist/api/overrides/internal.js
 var debugCache = (name, ...args) => {

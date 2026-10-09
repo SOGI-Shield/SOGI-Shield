@@ -3,6 +3,8 @@
   "/_not-found/page": "/_not-found",
   "/about/page": "/about",
   "/action-portal/page": "/action-portal",
+  "/api/track-report/route": "/api/track-report",
+  "/api/update-status/route": "/api/update-status",
   "/api/verify-turnstile/route": "/api/verify-turnstile",
   "/icon.svg/route": "/icon.svg",
   "/page": "/",

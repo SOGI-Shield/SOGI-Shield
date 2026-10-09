@@ -54,6 +54,18 @@
       "namedRegex": "^/action\\-portal(?:/)?$"
     },
     {
+      "page": "/api/track-report",
+      "regex": "^/api/track\\-report(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/track\\-report(?:/)?$"
+    },
+    {
+      "page": "/api/update-status",
+      "regex": "^/api/update\\-status(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/update\\-status(?:/)?$"
+    },
+    {
       "page": "/api/verify-turnstile",
       "regex": "^/api/verify\\-turnstile(?:/)?$",
       "routeKeys": {},
