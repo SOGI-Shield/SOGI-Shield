@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, CircleMarker, GeoJSON, useMapEvents, ZoomControl } from "react-leaflet";
+import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { collection, getDocs, query } from "firebase/firestore/lite";
@@ -222,16 +223,11 @@ export default function MapClient() {
           />
         )}
 
+        <MarkerClusterGroup
+          chunkedLoading
+          maxClusterRadius={50}
+        >
           {reports.map((report) => {
-            const country = report.country;
-            const regionTotal = countryStats[country]?.total || 0;
-            const isBelowThreshold = regionTotal < MIN_POLYGON_THRESHOLD;
-            
-            // Hide individual markers if zoomed out AND region meets polygon threshold
-            if (currentZoom < 8 && !isBelowThreshold) {
-              return null;
-            }
-
             if (report.status === "PUBLIC_VERIFIED" && report.lat && report.lng && icons.red) {
               return (
                 <Marker key={report.id} position={[Number(report.lat), Number(report.lng)]} icon={icons.red}>
@@ -295,6 +291,7 @@ export default function MapClient() {
             }
             return null;
           })}
+        </MarkerClusterGroup>
       </MapContainer>
 
       {/* Full Report Modal */}

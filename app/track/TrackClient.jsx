@@ -22,15 +22,14 @@ export default function TrackCasePage() {
     
     try {
       if (isMockMode) {
-        import('@/src/data/mockReports.json').then(m => {
-          const mockData = m.default || m;
-          const found = mockData.find(r => r.trackingCode === trackingCode);
-          if (found) {
-            setReport({ ...found, _docId: found.id });
-          } else {
-            setError("No incident found with this tracking code.");
-          }
-        });
+        const m = await import('@/src/data/mockReports.json');
+        const mockData = m.default || m;
+        const found = mockData.find(r => r.trackingCode === trackingCode);
+        if (found) {
+          setReport({ ...found, _docId: found.id });
+        } else {
+          setError("No incident found with this tracking code.");
+        }
       } else {
         const res = await fetch('/api/track-report', {
           method: 'POST',
@@ -53,17 +52,17 @@ export default function TrackCasePage() {
     }
   };
 
-  const markAsIgnored = async () => {
-    if (!report || !report._docId) return;
+  const updateStatus = async (newStatus) => {
+    if (!report || !report.trackingCode) return;
     setIsUpdating(true);
     try {
       if (isMockMode) {
-        setReport({ ...report, status: 'ACTION_IGNORED' });
+        setReport({ ...report, status: newStatus });
       } else {
         const res = await fetch('/api/update-status', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ trackingCode: report.trackingCode })
+          body: JSON.stringify({ trackingCode: report.trackingCode, newStatus })
         });
         
         const data = await res.json();
@@ -71,7 +70,7 @@ export default function TrackCasePage() {
           throw new Error(data.message || "Update failed");
         }
       }
-      setReport({ ...report, status: 'ACTION_IGNORED' });
+      setReport({ ...report, status: newStatus });
     } catch (err) {
       console.error(err);
       alert("Failed to update status. " + err.message);
@@ -159,23 +158,43 @@ export default function TrackCasePage() {
                 {getStatusDisplay(report.status).desc}
               </p>
               
-              {report.status === 'PUBLIC_VERIFIED' && report.reportedToAuthorities && (
-                <div className="mt-8 pt-8 border-t border-white/20">
-                  <h3 className="font-bold mb-3 flex items-center gap-2 text-white text-lg">
-                    <AlertCircle size={20} className="text-rose-400" /> Update Case Status
-                  </h3>
-                  <p className="text-slate-300 leading-relaxed mb-6">
-                    If authorities have failed to investigate or take action on this verified report, you can permanently flag it as <strong className="text-rose-400">ACTION_IGNORED</strong>. This changes the map marker to GREY to highlight institutional neglect.
-                  </p>
-                  <button 
-                    onClick={markAsIgnored}
-                    disabled={isUpdating}
-                    className="bg-black/50 hover:bg-black/70 active:bg-black/90 text-white border border-rose-500/50 hover:border-rose-500 py-4 px-8 rounded-xl transition-all font-bold text-sm uppercase tracking-widest disabled:opacity-50"
-                  >
-                    {isUpdating ? "Updating..." : "Flag as Action Ignored by Authorities"}
-                  </button>
+              <div className="mt-8 pt-8 border-t border-white/20">
+                <h3 className="font-bold mb-4 flex items-center gap-2 text-white text-lg">
+                  <Activity size={20} className="text-indigo-400" /> Change Case Status
+                </h3>
+                <p className="text-slate-300 leading-relaxed mb-4 text-sm">
+                  You can update your report's visibility and status at any time. If you feel unsafe, you can downgrade to an anonymous heatmap point. If authorities ignored your case, flag it to highlight institutional neglect.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  {report.status !== 'PUBLIC_VERIFIED' && report.evidenceLinks?.length > 0 && (
+                    <button 
+                      onClick={() => updateStatus('PUBLIC_VERIFIED')}
+                      disabled={isUpdating}
+                      className="flex-1 bg-black/40 hover:bg-green-900/30 text-green-300 border border-green-500/30 hover:border-green-500/60 py-3 px-4 rounded-xl transition-all font-bold text-xs uppercase tracking-wider disabled:opacity-50"
+                    >
+                      Make Public & Verified
+                    </button>
+                  )}
+                  {report.status !== 'HEATMAP_AGGREGATED' && (
+                    <button 
+                      onClick={() => updateStatus('HEATMAP_AGGREGATED')}
+                      disabled={isUpdating}
+                      className="flex-1 bg-black/40 hover:bg-orange-900/30 text-orange-300 border border-orange-500/30 hover:border-orange-500/60 py-3 px-4 rounded-xl transition-all font-bold text-xs uppercase tracking-wider disabled:opacity-50"
+                    >
+                      Hide (Heatmap Only)
+                    </button>
+                  )}
+                  {report.status !== 'ACTION_IGNORED' && report.reportedToAuthorities && (
+                    <button 
+                      onClick={() => updateStatus('ACTION_IGNORED')}
+                      disabled={isUpdating}
+                      className="flex-1 bg-black/40 hover:bg-slate-800 text-slate-300 border border-slate-500/50 hover:border-slate-400 py-3 px-4 rounded-xl transition-all font-bold text-xs uppercase tracking-wider disabled:opacity-50"
+                    >
+                      Flag as Ignored
+                    </button>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
           </div>
 
@@ -196,7 +215,9 @@ export default function TrackCasePage() {
               </div>
               <div>
                 <span className="block text-slate-500 mb-2 uppercase tracking-wider font-bold text-xs">Facility Name</span>
-                <span className="text-white text-base break-words">{report.facilityName || "Hidden / Not provided"}</span>
+                <span className="text-white text-base break-words">
+                  {report.status === 'HEATMAP_AGGREGATED' ? "Hidden for safety" : (report.facilityName || "Hidden / Not provided")}
+                </span>
               </div>
               <div className="sm:col-span-2 mt-4">
                 <span className="block text-slate-500 mb-3 uppercase tracking-wider font-bold text-xs">Summary</span>
