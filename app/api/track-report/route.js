@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { adminDb } from '@/lib/firebaseAdmin';
+import { getAdminDb } from '@/lib/firebaseAdmin';
 
 export async function POST(request) {
   try {
@@ -7,6 +7,11 @@ export async function POST(request) {
 
     if (!trackingCode) {
       return NextResponse.json({ success: false, message: 'Missing tracking code' }, { status: 400 });
+    }
+
+    const adminDb = await getAdminDb();
+    if (!adminDb) {
+      return NextResponse.json({ success: false, message: 'Database initialization failed' }, { status: 500 });
     }
 
     // 1. Find the secret document with this tracking code

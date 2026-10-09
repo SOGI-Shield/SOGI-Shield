@@ -1,4 +1,4 @@
-globalThis.disableIncrementalCache = false;globalThis.disableDynamoDBCache = false;globalThis.openNextDebug = false;globalThis.openNextVersion = "4.1.4";globalThis.nextVersion = "16.3.5";
+globalThis.disableIncrementalCache = false;globalThis.disableDynamoDBCache = false;globalThis.openNextDebug = false;globalThis.openNextVersion = "4.1.9";globalThis.nextVersion = "16.4.0";
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -150,11 +150,13 @@ function toReadableStream(value, isBase64) {
 }
 
 // node_modules/@opennextjs/aws/dist/adapters/composable-cache.js
-var pendingWritePromiseMap = /* @__PURE__ */ new Map();
+var PENDING_WRITES_CACHE_KEY = "composable-cache:pending-writes";
+var getPendingWritePromiseMap = () => globalThis.__openNextAls?.getStore()?.requestCache?.getOrCreate(PENDING_WRITES_CACHE_KEY);
 var composable_cache_default = {
   async get(cacheKey) {
     try {
-      if (pendingWritePromiseMap.has(cacheKey)) {
+      const pendingWritePromiseMap = getPendingWritePromiseMap();
+      if (pendingWritePromiseMap?.has(cacheKey)) {
         const stored = pendingWritePromiseMap.get(cacheKey);
         if (stored) {
           return stored.then((entry) => ({
@@ -201,9 +203,10 @@ var composable_cache_default = {
       ...entry2,
       value: await fromReadableStream(entry2.value)
     }));
-    pendingWritePromiseMap.set(cacheKey, promiseEntry);
+    const pendingWritePromiseMap = getPendingWritePromiseMap();
+    pendingWritePromiseMap?.set(cacheKey, promiseEntry);
     const entry = await promiseEntry.finally(() => {
-      pendingWritePromiseMap.delete(cacheKey);
+      pendingWritePromiseMap?.delete(cacheKey);
     });
     await globalThis.incrementalCache.set(cacheKey, {
       ...entry,

@@ -3,6 +3,8 @@
   "/_not-found/page": "app/_not-found/page.js",
   "/about/page": "app/about/page.js",
   "/action-portal/page": "app/action-portal/page.js",
+  "/api/track-report/route": "app/api/track-report/route.js",
+  "/api/update-status/route": "app/api/update-status/route.js",
   "/api/verify-turnstile/route": "app/api/verify-turnstile/route.js",
   "/icon.svg/route": "app/icon.svg/route.js",
   "/page": "app/page.js",
