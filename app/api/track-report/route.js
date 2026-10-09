@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAdminDb } from '@/lib/firebaseAdmin';
+import fs from 'fs';
+import path from 'path';
 
 export async function POST(request) {
   try {
@@ -7,6 +9,21 @@ export async function POST(request) {
 
     if (!trackingCode) {
       return NextResponse.json({ success: false, message: 'Missing tracking code' }, { status: 400 });
+    }
+
+    if (process.env.NEXT_PUBLIC_USE_MOCK === 'true') {
+      try {
+        const mockFilePath = path.join(process.cwd(), 'src', 'data', 'mockReports.json');
+        const mockData = JSON.parse(fs.readFileSync(mockFilePath, 'utf8'));
+        const found = mockData.find(r => r.trackingCode === trackingCode);
+        if (found) {
+          return NextResponse.json({ success: true, report: { ...found, _docId: found.id } });
+        } else {
+          return NextResponse.json({ success: false, message: 'Invalid tracking code' }, { status: 404 });
+        }
+      } catch (e) {
+        console.error('Mock data error:', e);
+      }
     }
 
     const adminDb = await getAdminDb();

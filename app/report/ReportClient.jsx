@@ -140,10 +140,10 @@ export default function ReportPage() {
 
       // Submit to Firestore if API key is set and not mocking
       if (!isMockMode && process.env.NEXT_PUBLIC_FIREBASE_API_KEY && process.env.NEXT_PUBLIC_FIREBASE_API_KEY !== 'your_api_key_here') {
-        import("firebase/firestore/lite").then(async ({ doc, setDoc }) => {
-          await setDoc(doc(db, "reports", reportId), finalReport);
-          await setDoc(doc(db, "report_secrets", reportId), secretReport);
-        });
+        const { doc, setDoc } = await import("firebase/firestore/lite");
+        // We MUST await these, otherwise errors are swallowed and the user thinks it succeeded!
+        await setDoc(doc(db, "reports", reportId), finalReport);
+        await setDoc(doc(db, "report_secrets", reportId), secretReport);
       } else {
         // Simulate network request
         console.log("Mock submission:", finalReport);
@@ -154,7 +154,7 @@ export default function ReportPage() {
       localStorage.setItem('sogi_last_submit', Date.now().toString());
       setRateLimited(true);
 
-      setTrackingCodeResult(finalReport.trackingCode);
+      setTrackingCodeResult(secretReport.trackingCode);
       setSubmitStatus('success');
       
       // Clear sensitive form data
