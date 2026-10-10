@@ -3,19 +3,19 @@ import Link from "next/link";
 
 export default function AboutPage() {
   return (
-    <div className="flex-1 container mx-auto px-4 py-16 max-w-5xl">
-      <div className="text-center mb-16 relative z-10">
-        <h1 className="text-4xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-indigo-400 to-pink-400 mb-6 drop-shadow-[0_0_15px_rgba(99,102,241,0.2)]">
+    <div className="flex-1 container mx-auto px-4 py-10 sm:py-16 max-w-5xl">
+      <div className="text-center mb-12 sm:mb-16 relative z-10">
+        <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-indigo-400 to-pink-400 mb-4 sm:mb-6 drop-shadow-[0_0_15px_rgba(99,102,241,0.2)]">
           About SOGI-Shield
         </h1>
-        <p className="text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
+        <p className="text-base sm:text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
           A secure, zero-touch platform dedicated to global LGBTQ+ and non-binary human rights reporting, documentation, and institutional accountability.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center mb-24 relative z-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12 items-center mb-16 sm:mb-24 relative z-10">
         <div>
-          <h2 className="text-3xl font-bold mb-4 text-white">Documentation as Resistance</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-white">Documentation as Resistance</h2>
           <p className="text-slate-300 leading-relaxed mb-6">
             Across the globe, state-sanctioned discrimination, unlicensed "conversion" practices, and medical misconduct against sexual orientation, gender identity, expression, and sex characteristics (SOGIESC) minorities often go undocumented. SOGI-Shield exists to map these human rights violations without putting victims at risk.
           </p>
@@ -25,7 +25,7 @@ export default function AboutPage() {
         </div>
         <div className="relative">
           <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-indigo-500 to-pink-500 rounded-3xl blur-2xl opacity-20"></div>
-          <div className="relative bg-slate-900/50 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+          <div className="relative bg-slate-900/50 backdrop-blur-xl border border-white/10 p-6 sm:p-8 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
             <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
               <EyeOff className="text-indigo-400" /> Privacy First
             </h3>
@@ -47,10 +47,10 @@ export default function AboutPage() {
         </div>
       </div>
 
-      <h2 className="text-3xl font-bold mb-10 text-center text-white relative z-10">How the System Works</h2>
+      <h2 className="text-2xl sm:text-3xl font-bold mb-8 sm:mb-10 text-center text-white relative z-10">How the System Works</h2>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24 relative z-10">
-        <div className="bg-white/5 backdrop-blur-md border border-white/10 p-8 rounded-2xl transition-all hover:-translate-y-2 hover:bg-white/10 shadow-lg group">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 mb-16 sm:mb-24 relative z-10">
+        <div className="bg-white/5 backdrop-blur-md border border-white/10 p-6 sm:p-8 rounded-2xl transition-all hover:-translate-y-2 hover:bg-white/10 shadow-lg group">
           <div className="w-14 h-14 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-cyan-500/20 text-cyan-400 rounded-2xl flex items-center justify-center mb-6 group-hover:shadow-[0_0_15px_rgba(34,211,238,0.4)] transition-shadow">
             <Globe2 size={28} />
           </div>
@@ -60,7 +60,7 @@ export default function AboutPage() {
           </p>
         </div>
 
-        <div className="bg-white/5 backdrop-blur-md border border-white/10 p-8 rounded-2xl transition-all hover:-translate-y-2 hover:bg-white/10 shadow-lg group">
+        <div className="bg-white/5 backdrop-blur-md border border-white/10 p-6 sm:p-8 rounded-2xl transition-all hover:-translate-y-2 hover:bg-white/10 shadow-lg group">
           <div className="w-14 h-14 bg-gradient-to-br from-red-500/20 to-rose-500/20 border border-rose-500/20 text-rose-400 rounded-2xl flex items-center justify-center mb-6 group-hover:shadow-[0_0_15px_rgba(244,63,94,0.4)] transition-shadow">
             <Shield size={28} />
           </div>
@@ -70,7 +70,7 @@ export default function AboutPage() {
           </p>
         </div>
 
-        <div className="bg-white/5 backdrop-blur-md border border-white/10 p-8 rounded-2xl transition-all hover:-translate-y-2 hover:bg-white/10 shadow-lg group">
+        <div className="bg-white/5 backdrop-blur-md border border-white/10 p-6 sm:p-8 rounded-2xl transition-all hover:-translate-y-2 hover:bg-white/10 shadow-lg group">
           <div className="w-14 h-14 bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-slate-500/20 text-slate-300 rounded-2xl flex items-center justify-center mb-6 group-hover:shadow-[0_0_15px_rgba(148,163,184,0.4)] transition-shadow">
             <AlertCircle size={28} />
           </div>
@@ -81,16 +81,16 @@ export default function AboutPage() {
         </div>
       </div>
 
-      <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-12 text-center relative overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.5)] z-10">
+      <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 sm:p-8 md:p-12 text-center relative overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.5)] z-10">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-gradient-to-r from-cyan-600/10 via-indigo-600/10 to-pink-600/10 blur-[80px] pointer-events-none"></div>
         <Lock className="mx-auto text-indigo-400 mb-6 drop-shadow-[0_0_10px_rgba(129,140,248,0.5)]" size={48} />
-        <h2 className="text-3xl font-bold text-white mb-4 relative z-10">Open Source & Secure</h2>
-        <p className="text-slate-300 max-w-2xl mx-auto mb-10 relative z-10">
+        <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4 relative z-10">Open Source & Secure</h2>
+        <p className="text-slate-300 max-w-2xl mx-auto mb-10 relative z-10 text-sm sm:text-base">
           SOGI-Shield is licensed under the GNU General Public License v3.0. We believe the tools for human rights defense should belong to everyone. You are free to inspect the code, host your own instance, or contribute to our mission.
         </p>
         <Link 
           href="/report" 
-          className="inline-block bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-400 hover:via-purple-400 hover:to-pink-400 text-white font-bold py-4 px-10 rounded-full transition-all shadow-[0_0_20px_rgba(168,85,247,0.4)] hover:shadow-[0_0_30px_rgba(168,85,247,0.6)] border border-white/20 relative z-10"
+          className="inline-block bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-400 hover:via-purple-400 hover:to-pink-400 text-white font-bold py-3 sm:py-4 px-8 sm:px-10 rounded-full transition-all shadow-[0_0_20px_rgba(168,85,247,0.4)] hover:shadow-[0_0_30px_rgba(168,85,247,0.6)] border border-white/20 relative z-10 text-sm sm:text-base"
         >
           File an Incident Report
         </Link>

@@ -126,13 +126,13 @@ export default function TrackCasePage() {
   };
 
   return (
-    <div className="flex-1 container mx-auto px-4 py-12 max-w-3xl relative z-10">
-      <div className="text-center mb-10">
-        <h1 className="text-4xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-rose-400 drop-shadow-[0_0_15px_rgba(244,63,94,0.2)]">Track Your Case</h1>
-        <p className="text-slate-300 text-lg">Enter your secure tracking code to view the status of your incident report.</p>
+    <div className="flex-1 container mx-auto px-4 py-8 sm:py-12 max-w-3xl relative z-10">
+      <div className="text-center mb-8 sm:mb-10">
+        <h1 className="text-3xl sm:text-4xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-rose-400 drop-shadow-[0_0_15px_rgba(244,63,94,0.2)]">Track Your Case</h1>
+        <p className="text-slate-300 text-base sm:text-lg">Enter your secure tracking code to view the status of your incident report.</p>
       </div>
 
-      <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] mb-10 relative overflow-hidden">
+      <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 p-6 sm:p-8 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] mb-8 sm:mb-10 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-rose-500"></div>
         <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4">
           <input 
@@ -140,13 +140,13 @@ export default function TrackCasePage() {
             placeholder="e.g., SOGI-2026-ABCD" 
             value={trackingCode}
             onChange={(e) => setTrackingCode(e.target.value)}
-            className="flex-1 bg-black/40 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition-all uppercase font-mono tracking-widest placeholder:text-slate-600"
+            className="flex-1 bg-black/40 border border-white/10 rounded-xl px-5 py-3 sm:py-4 text-white focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition-all uppercase font-mono tracking-widest placeholder:text-slate-600"
             required
           />
           <button 
             type="submit" 
             disabled={isSearching}
-            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white font-bold py-4 px-10 rounded-xl transition-all shadow-[0_0_15px_rgba(236,72,153,0.4)] hover:shadow-[0_0_25px_rgba(236,72,153,0.6)] disabled:opacity-50 disabled:shadow-none flex items-center justify-center sm:justify-start gap-3 text-lg border border-white/20"
+            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white font-bold py-3 sm:py-4 px-8 sm:px-10 rounded-xl transition-all shadow-[0_0_15px_rgba(236,72,153,0.4)] hover:shadow-[0_0_25px_rgba(236,72,153,0.6)] disabled:opacity-50 disabled:shadow-none flex items-center justify-center sm:justify-start gap-3 text-base sm:text-lg border border-white/20"
           >
             <Search size={24} />
             {isSearching ? "Searching..." : "Lookup"}
@@ -160,8 +160,8 @@ export default function TrackCasePage() {
       </div>
 
       {report && (
-        <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
-          <div className={`p-8 rounded-3xl border backdrop-blur-xl ${getStatusDisplay(report.status).color} flex items-start gap-5 transition-all shadow-xl relative overflow-hidden`}>
+        <div className="space-y-6 sm:space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+          <div className={`p-6 sm:p-8 rounded-3xl border backdrop-blur-xl ${getStatusDisplay(report.status).color} flex items-start gap-4 sm:gap-5 transition-all shadow-xl relative overflow-hidden`}>
             <div className="flex-shrink-0 mt-1">
               {getStatusDisplay(report.status).icon}
             </div>
@@ -211,8 +211,8 @@ export default function TrackCasePage() {
             </div>
           </div>
 
-          <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-lg">
-            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-6">Report Details</h3>
+          <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 p-6 sm:p-8 rounded-3xl shadow-lg">
+            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 sm:mb-6">Report Details</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-8 text-sm">
               <div>
                 <span className="block text-slate-500 mb-2 uppercase tracking-wider font-bold text-xs">Date Submitted</span>
@@ -234,7 +234,7 @@ export default function TrackCasePage() {
               </div>
               <div className="sm:col-span-2 mt-4">
                 <span className="block text-slate-500 mb-3 uppercase tracking-wider font-bold text-xs">Summary</span>
-                <p className="text-slate-300 text-base leading-relaxed bg-black/40 p-6 rounded-2xl border border-white/5 break-words whitespace-pre-wrap shadow-inner">
+                <p className="text-slate-300 text-base leading-relaxed bg-black/40 p-4 sm:p-6 rounded-2xl border border-white/5 break-words whitespace-pre-wrap shadow-inner">
                   {report.summary}
                 </p>
               </div>
