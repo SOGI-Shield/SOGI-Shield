@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getDocument, updateDocumentStatus } from '@/lib/edgeFirebase';
 
-export const runtime = 'edge';
-
 export async function POST(request) {
   try {
     const { trackingCode, newStatus } = await request.json();
