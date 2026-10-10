@@ -68,12 +68,10 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    match /report_secrets/{reportId} {
-      allow create: if 
-        hasOnlyAllowedFields(['trackingCode']) &&
-        isValidString(request.resource.data.trackingCode, 5, 100);
-      
-      allow read, update, delete: if false;
+    match /report_secrets/{trackingCode} {
+      allow create: if hasOnlyAllowedFields(['reportId']);
+      allow get: if true;
+      allow list, update, delete: if false;
     }
   }
 }
