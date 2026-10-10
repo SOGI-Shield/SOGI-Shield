@@ -44,15 +44,15 @@ Sincerely,
   };
 
   return (
-    <div className="flex-1 container mx-auto px-4 py-12 max-w-5xl relative z-10">
-      <div className="mb-12 text-center max-w-3xl mx-auto">
+    <div className="flex-1 container mx-auto px-4 py-8 sm:py-12 max-w-5xl relative z-10">
+      <div className="mb-8 sm:mb-12 text-center max-w-3xl mx-auto">
         <div className="flex justify-center mb-6">
           <div className="p-4 bg-gradient-to-br from-pink-500/20 to-rose-500/20 border border-pink-500/30 rounded-2xl shadow-[0_0_20px_rgba(244,63,94,0.3)]">
             <FileText size={48} className="text-pink-400 drop-shadow-[0_0_10px_rgba(244,63,94,0.5)]" />
           </div>
         </div>
-        <h1 className="text-3xl sm:text-5xl font-extrabold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-indigo-400 to-pink-400 drop-shadow-[0_0_15px_rgba(99,102,241,0.2)]">Global Human Rights Action Portal</h1>
-        <p className="text-slate-300 text-lg leading-relaxed">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 sm:mb-6 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-indigo-400 to-pink-400 drop-shadow-[0_0_15px_rgba(99,102,241,0.2)]">Global Human Rights Action Portal</h1>
+        <p className="text-slate-300 text-base sm:text-lg leading-relaxed">
           Take your documentation a step further. Use our standardized legal complaint format to report incidents directly to international human rights commissions and local authorities worldwide.
         </p>
       </div>
@@ -107,8 +107,8 @@ Sincerely,
             </button>
           </div>
           
-          <div className="p-6 sm:p-8 bg-transparent overflow-x-auto relative z-10">
-            <pre className="text-sm text-slate-300 font-mono whitespace-pre-wrap leading-relaxed bg-black/40 p-6 rounded-2xl border border-white/5 shadow-inner selection:bg-pink-500/30">
+          <div className="p-4 sm:p-8 bg-transparent overflow-x-auto relative z-10">
+            <pre className="text-xs sm:text-sm text-slate-300 font-mono whitespace-pre-wrap leading-relaxed bg-black/40 p-4 sm:p-6 rounded-2xl border border-white/5 shadow-inner selection:bg-pink-500/30">
               {templateText}
             </pre>
           </div>

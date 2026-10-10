@@ -177,13 +177,13 @@ export default function ReportPage() {
 
   if (submitStatus === 'success' && trackingCodeResult) {
     return (
-      <div className="flex-1 container mx-auto px-4 py-16 max-w-2xl text-center relative z-10">
-        <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-3xl p-10 shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+      <div className="flex-1 container mx-auto px-4 py-10 sm:py-16 max-w-2xl text-center relative z-10">
+        <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 sm:p-10 shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
           <ShieldCheck className="text-emerald-400 mx-auto mb-6 drop-shadow-[0_0_15px_rgba(52,211,153,0.5)]" size={64} />
-          <h2 className="text-3xl font-bold text-white mb-3">Report Submitted Securely</h2>
-          <p className="text-slate-300 mb-8 text-lg">Your data has been processed via zero-touch classification.</p>
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">Report Submitted Securely</h2>
+          <p className="text-slate-300 mb-8 text-base sm:text-lg">Your data has been processed via zero-touch classification.</p>
           
-          <div className="bg-white/5 border border-white/10 p-8 rounded-2xl mb-8 relative overflow-hidden group">
+          <div className="bg-white/5 border border-white/10 p-6 sm:p-8 rounded-2xl mb-8 relative overflow-hidden group">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 via-indigo-500 to-pink-500"></div>
             <h3 className="text-sm font-bold text-indigo-300 uppercase tracking-widest mb-4">Your Secret Tracking Code</h3>
             <div className="flex flex-wrap items-center justify-center gap-4">
@@ -197,7 +197,7 @@ export default function ReportPage() {
             </p>
           </div>
           
-          <button onClick={() => window.location.reload()} className="text-indigo-400 hover:text-pink-400 active:text-pink-300 font-bold uppercase tracking-widest text-sm py-3 px-6 rounded-xl transition-colors">
+          <button onClick={() => window.location.reload()} className="text-indigo-400 hover:text-pink-400 active:text-pink-300 font-bold uppercase tracking-widest text-xs sm:text-sm py-3 px-4 sm:px-6 rounded-xl transition-colors">
             Submit another report (after 5 mins)
           </button>
         </div>
@@ -206,13 +206,13 @@ export default function ReportPage() {
   }
 
   return (
-    <div className="flex-1 container mx-auto px-4 py-12 max-w-4xl relative z-10">
-      <div className="mb-10 text-center">
-        <h1 className="text-4xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-indigo-400 to-pink-400 drop-shadow-[0_0_15px_rgba(99,102,241,0.2)]">File an Incident Report</h1>
-        <p className="text-slate-300 text-lg">Your privacy is our priority. No IP addresses or browser metadata are logged.</p>
+    <div className="flex-1 container mx-auto px-4 py-8 sm:py-12 max-w-4xl relative z-10">
+      <div className="mb-8 sm:mb-10 text-center">
+        <h1 className="text-3xl sm:text-4xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-indigo-400 to-pink-400 drop-shadow-[0_0_15px_rgba(99,102,241,0.2)]">File an Incident Report</h1>
+        <p className="text-slate-300 text-base sm:text-lg">Your privacy is our priority. No IP addresses or browser metadata are logged.</p>
       </div>
 
-      <div className="bg-slate-900/60 backdrop-blur-xl border border-indigo-500/30 rounded-3xl p-8 mb-10 flex flex-col sm:flex-row gap-6 shadow-2xl relative overflow-hidden">
+      <div className="bg-slate-900/60 backdrop-blur-xl border border-indigo-500/30 rounded-3xl p-6 sm:p-8 mb-8 sm:mb-10 flex flex-col sm:flex-row gap-4 sm:gap-6 shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-cyan-500 via-indigo-500 to-pink-500"></div>
         <Info className="text-indigo-400 flex-shrink-0 mt-1 drop-shadow-[0_0_10px_rgba(129,140,248,0.6)]" size={32} />
         <div>
@@ -237,7 +237,7 @@ export default function ReportPage() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-8 bg-slate-900/60 backdrop-blur-xl border border-white/10 p-6 sm:p-10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+      <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8 bg-slate-900/60 backdrop-blur-xl border border-white/10 p-5 sm:p-10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
         
         {/* Honeypot Field - visually hidden */}
         <div style={{ position: 'absolute', left: '-5000px' }} aria-hidden="true">
@@ -322,7 +322,7 @@ export default function ReportPage() {
         <button 
           type="submit" 
           disabled={isSubmitting || rateLimited}
-          className="w-full mt-4 bg-gradient-to-r from-cyan-500 via-indigo-500 to-pink-500 hover:from-cyan-400 hover:via-indigo-400 hover:to-pink-400 text-white font-bold py-5 rounded-xl transition-all shadow-[0_0_20px_rgba(99,102,241,0.4)] hover:shadow-[0_0_30px_rgba(99,102,241,0.6)] disabled:opacity-50 disabled:shadow-none text-lg tracking-wide border border-white/20"
+          className="w-full mt-4 bg-gradient-to-r from-cyan-500 via-indigo-500 to-pink-500 hover:from-cyan-400 hover:via-indigo-400 hover:to-pink-400 text-white font-bold py-4 sm:py-5 rounded-xl transition-all shadow-[0_0_20px_rgba(99,102,241,0.4)] hover:shadow-[0_0_30px_rgba(99,102,241,0.6)] disabled:opacity-50 disabled:shadow-none text-base sm:text-lg tracking-wide border border-white/20"
         >
           {isSubmitting ? "Encrypting & Submitting..." : rateLimited ? "Rate Limited (Wait 5m)" : "Submit Incident Report"}
         </button>
