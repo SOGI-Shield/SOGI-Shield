@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server';
 import { getDocument } from '@/lib/edgeFirebase';
-import mockData from '@/src/data/mockReports.json';
-
-export const runtime = 'edge';
 
 export async function POST(request) {
   try {
@@ -13,16 +10,7 @@ export async function POST(request) {
     }
 
     if (process.env.NEXT_PUBLIC_USE_MOCK === 'true') {
-      try {
-        const found = mockData.find(r => r.trackingCode === trackingCode);
-        if (found) {
-          return NextResponse.json({ success: true, report: { ...found, _docId: found.id } });
-        } else {
-          return NextResponse.json({ success: false, message: 'Invalid tracking code' }, { status: 404 });
-        }
-      } catch (e) {
-        console.error('Mock data error:', e);
-      }
+      return NextResponse.json({ success: false, message: 'Mock mode should be handled on client' }, { status: 404 });
     }
 
     // 1. Fetch the secret document via REST API

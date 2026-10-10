@@ -31,18 +31,31 @@ export default function TrackCasePage() {
           setError("No incident found with this tracking code.");
         }
       } else {
-        const res = await fetch('/api/track-report', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ trackingCode })
-        });
+        const { getDoc, doc } = await import("firebase/firestore/lite");
         
-        const data = await res.json();
-        if (data.success) {
-          setReport(data.report);
-        } else {
-          setError(data.message || "No incident found with this tracking code.");
+        // 1. Fetch the secret document by tracking code (Document ID)
+        const secretRef = doc(db, "report_secrets", trackingCode);
+        const secretSnap = await getDoc(secretRef);
+        
+        if (!secretSnap.exists()) {
+          setError("No incident found with this tracking code.");
+          setIsSearching(false);
+          return;
         }
+        
+        const reportId = secretSnap.data().reportId;
+        
+        // 2. Fetch the actual report
+        const reportRef = doc(db, "reports", reportId);
+        const reportSnap = await getDoc(reportRef);
+        
+        if (!reportSnap.exists()) {
+          setError("Report data missing.");
+          setIsSearching(false);
+          return;
+        }
+        
+        setReport({ ...reportSnap.data(), _docId: reportId, trackingCode });
       }
     } catch (err) {
       console.error(err);
