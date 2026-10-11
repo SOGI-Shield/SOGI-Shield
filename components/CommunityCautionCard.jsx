@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import QRCode from "qrcode";
-import { downloadFile } from "@/lib/utils";
+import { downloadFile, openInNewTab } from "@/lib/utils";
 import { 
   Share2, 
   Download, 
@@ -232,21 +232,26 @@ export default function CommunityCautionCard({ report }) {
       const safeRegion = (region || "Sector").replace(/[^a-zA-Z0-9_-]/g, "_");
       const filename = `SOGI_Safety_Caution_${safeRegion}.png`;
 
-      if (typeof canvas.toBlob === "function") {
-        canvas.toBlob((blob) => {
-          if (blob) {
-            downloadFile(blob, filename, "image/png");
-          } else {
-            const dataUrl = canvas.toDataURL("image/png");
-            downloadFile(dataUrl, filename, "image/png");
-          }
-        }, "image/png");
-      } else {
-        const dataUrl = canvas.toDataURL("image/png");
-        downloadFile(dataUrl, filename, "image/png");
-      }
+      // Direct Data URL ensures instantaneous, non-revocable, uncorrupted PNG generation on Windows
+      const dataUrl = canvas.toDataURL("image/png");
+      downloadFile(dataUrl, filename, "image/png");
     } catch (err) {
       console.error("Failed to generate caution card image:", err);
+    } finally {
+      setIsGeneratingImage(false);
+    }
+  };
+
+  // Preview / Open in New Tab
+  const handlePreviewCard = async () => {
+    setIsGeneratingImage(true);
+    try {
+      const canvas = await drawCautionCardToCanvas();
+      if (!canvas) return;
+      const dataUrl = canvas.toDataURL("image/png");
+      openInNewTab(dataUrl, "image/png");
+    } catch (err) {
+      console.error("Failed to preview caution card image:", err);
     } finally {
       setIsGeneratingImage(false);
     }
@@ -401,30 +406,41 @@ export default function CommunityCautionCard({ report }) {
 
       {/* Action Buttons */}
       <div className="space-y-3 pt-2">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {/* Download Graphic Card Image */}
           <button
             onClick={handleDownloadCard}
             disabled={isGeneratingImage}
-            className="w-full bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 active:from-rose-700 active:to-pink-700 text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-[0_0_15px_rgba(244,63,94,0.4)] flex items-center justify-center gap-2 text-sm border border-rose-400/30"
+            className="w-full bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 active:from-rose-700 active:to-pink-700 text-white font-bold py-3.5 px-3 rounded-xl transition-all shadow-[0_0_15px_rgba(244,63,94,0.4)] flex items-center justify-center gap-2 text-sm border border-rose-400/30 disabled:opacity-50"
           >
-            <Download size={18} />
-            {isGeneratingImage ? "Rendering Card..." : "Download Graphic Card (.PNG)"}
+            <Download size={17} />
+            <span>{isGeneratingImage ? "Rendering..." : "Download (.PNG)"}</span>
           </button>
 
-          {/* Copy Image / Copy Link */}
+          {/* View / Open in Browser Tab */}
+          <button
+            onClick={handlePreviewCard}
+            disabled={isGeneratingImage}
+            className="w-full bg-white/10 hover:bg-white/15 active:bg-white/20 text-white font-bold py-3.5 px-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm border border-white/10 disabled:opacity-50"
+            title="Open high-resolution graphic directly in browser"
+          >
+            <ExternalLink size={17} className="text-cyan-400" />
+            <span>Open in Tab</span>
+          </button>
+
+          {/* Copy Image to Clipboard */}
           <button
             onClick={handleCopyImage}
             disabled={isGeneratingImage}
-            className="w-full bg-white/10 hover:bg-white/15 active:bg-white/20 text-white font-bold py-3.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2 text-sm border border-white/10"
+            className="w-full bg-white/10 hover:bg-white/15 active:bg-white/20 text-white font-bold py-3.5 px-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm border border-white/10 disabled:opacity-50"
           >
             {copiedImage ? (
               <>
-                <Check size={18} className="text-emerald-400" /> Image Copied to Clipboard!
+                <Check size={17} className="text-emerald-400" /> <span>Copied!</span>
               </>
             ) : (
               <>
-                <Copy size={18} /> Copy Card Image
+                <Copy size={17} /> <span>Copy Image</span>
               </>
             )}
           </button>

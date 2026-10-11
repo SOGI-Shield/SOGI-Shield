@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, ShieldCheck, ShieldAlert, Activity, AlertCircle, FileText, Download, Share2 } from "lucide-react";
+import { Search, ShieldCheck, ShieldAlert, Activity, AlertCircle, FileText, Download, Share2, ExternalLink } from "lucide-react";
 import { collection, query, where, getDocs, updateDoc, doc } from "firebase/firestore/lite";
 import { db, isMockMode } from "@/lib/firebase";
 import { generateComplaintPdf } from "@/lib/generateComplaintPdf";
@@ -96,10 +96,23 @@ export default function TrackCasePage() {
     if (!report) return;
     setIsDownloadingPdf(true);
     try {
-      await generateComplaintPdf(report);
+      await generateComplaintPdf(report, { action: "download" });
     } catch (err) {
       console.error("PDF generation failed:", err);
       alert("Failed to generate PDF. Please try again.");
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  };
+
+  const handlePreviewPdf = async () => {
+    if (!report) return;
+    setIsDownloadingPdf(true);
+    try {
+      await generateComplaintPdf(report, { action: "open" });
+    } catch (err) {
+      console.error("PDF preview failed:", err);
+      alert("Failed to preview PDF. Please try again.");
     } finally {
       setIsDownloadingPdf(false);
     }
@@ -281,24 +294,34 @@ export default function TrackCasePage() {
               </div>
 
               {/* Legal Recourse & Community Warning Actions */}
-              <div className="sm:col-span-2 mt-6 pt-6 border-t border-white/10 flex flex-col sm:flex-row gap-4">
+              <div className="sm:col-span-2 mt-6 pt-6 border-t border-white/10 flex flex-col sm:flex-row gap-3">
                 <button
                   type="button"
                   onClick={handleDownloadPdf}
                   disabled={isDownloadingPdf}
-                  className="flex-1 bg-gradient-to-r from-cyan-500 via-indigo-500 to-pink-500 hover:from-cyan-400 hover:via-indigo-400 hover:to-pink-400 text-white font-bold py-3.5 px-5 rounded-xl transition-all shadow-[0_0_15px_rgba(99,102,241,0.3)] flex items-center justify-center gap-2.5 text-sm border border-white/20 disabled:opacity-50"
+                  className="flex-1 bg-gradient-to-r from-cyan-500 via-indigo-500 to-pink-500 hover:from-cyan-400 hover:via-indigo-400 hover:to-pink-400 text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-[0_0_15px_rgba(99,102,241,0.3)] flex items-center justify-center gap-2 text-sm border border-white/20 disabled:opacity-50"
                 >
                   <Download size={18} />
-                  {isDownloadingPdf ? "Building PDF..." : "Download Official UN/HRC Complaint PDF"}
+                  <span>{isDownloadingPdf ? "Building PDF..." : "Download Dossier PDF"}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handlePreviewPdf}
+                  disabled={isDownloadingPdf}
+                  className="bg-white/10 hover:bg-white/15 text-white font-bold py-3.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2 text-sm border border-white/10 disabled:opacity-50"
+                  title="Open and print PDF in browser"
+                >
+                  <ExternalLink size={18} className="text-cyan-400" />
+                  <span>Preview / Print in Browser</span>
                 </button>
                 <a
                   href={`/?lat=${report.lat || 20}&lng=${report.lng || 0}&zoom=11`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-white/10 hover:bg-white/15 text-white font-bold py-3.5 px-5 rounded-xl transition-all flex items-center justify-center gap-2 text-sm border border-white/10"
+                  className="bg-white/10 hover:bg-white/15 text-white font-bold py-3.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2 text-sm border border-white/10"
                 >
                   <Share2 size={18} className="text-rose-400" />
-                  <span>View Regional Alert on Map</span>
+                  <span>View Map</span>
                 </a>
               </div>
             </div>

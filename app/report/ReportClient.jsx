@@ -91,10 +91,24 @@ export default function ReportPage() {
     if (!submittedReport) return;
     setIsDownloadingPdf(true);
     try {
-      await generateComplaintPdf(submittedReport);
+      await generateComplaintPdf(submittedReport, { action: "download" });
     } catch (err) {
       console.error("PDF generation failed:", err);
       alert("Failed to generate PDF. Please try again.");
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  };
+
+  const handlePreviewPdf = async (e) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    if (!submittedReport) return;
+    setIsDownloadingPdf(true);
+    try {
+      await generateComplaintPdf(submittedReport, { action: "open" });
+    } catch (err) {
+      console.error("PDF preview failed:", err);
+      alert("Failed to preview PDF. Please try again.");
     } finally {
       setIsDownloadingPdf(false);
     }
@@ -281,11 +295,9 @@ export default function ReportPage() {
         {/* Top 3-Way Quick Action Summary Bar */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           
-          {/* Quick Action 1: Download UN/HRC Complaint PDF */}
-          <button
-            onClick={handleDownloadPdf}
-            disabled={isDownloadingPdf}
-            className="group p-5 bg-gradient-to-br from-indigo-950/80 via-slate-900/80 to-slate-900/80 hover:from-indigo-900/90 hover:via-slate-800/90 hover:to-slate-800/90 border border-indigo-500/40 hover:border-indigo-400 rounded-3xl transition-all shadow-[0_4px_24px_rgba(99,102,241,0.2)] hover:shadow-[0_4px_32px_rgba(99,102,241,0.4)] text-left flex flex-col justify-between"
+          {/* Quick Action 1: Download / Preview UN/HRC Complaint PDF */}
+          <div
+            className="group p-5 bg-gradient-to-br from-indigo-950/80 via-slate-900/80 to-slate-900/80 border border-indigo-500/40 rounded-3xl transition-all shadow-[0_4px_24px_rgba(99,102,241,0.2)] text-left flex flex-col justify-between"
           >
             <div>
               <div className="flex items-center justify-between mb-3">
@@ -296,18 +308,35 @@ export default function ReportPage() {
                   Pillar 1: Personal
                 </span>
               </div>
-              <h3 className="font-bold text-white text-base sm:text-lg group-hover:text-cyan-300 transition-colors">
-                Download UN/HRC PDF
+              <h3 className="font-bold text-white text-base sm:text-lg">
+                UN/HRC Legal Dossier
               </h3>
               <p className="text-slate-400 text-xs mt-1.5 leading-relaxed">
                 Client-side legal dossier for your records, local legal aid, or UN filings.
               </p>
             </div>
-            <div className="mt-4 pt-3 border-t border-white/10 flex items-center gap-1.5 text-xs font-bold text-indigo-300 group-hover:text-cyan-300">
-              <Download size={14} />
-              {isDownloadingPdf ? "Building PDF..." : "One-Click Download"}
+            <div className="mt-4 pt-3 border-t border-white/10 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleDownloadPdf}
+                disabled={isDownloadingPdf}
+                className="flex-1 bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white font-bold py-2 px-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 text-xs border border-indigo-400/30 disabled:opacity-50"
+              >
+                <Download size={13} />
+                <span>{isDownloadingPdf ? "Building..." : "Download"}</span>
+              </button>
+              <button
+                type="button"
+                onClick={handlePreviewPdf}
+                disabled={isDownloadingPdf}
+                className="bg-white/10 hover:bg-white/20 text-indigo-200 font-bold py-2 px-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 text-xs border border-white/10 disabled:opacity-50"
+                title="Preview and print directly in browser tab"
+              >
+                <ExternalLink size={13} className="text-cyan-400" />
+                <span>Preview</span>
+              </button>
             </div>
-          </button>
+          </div>
 
           {/* Quick Action 2: Share Caution Card */}
           <button
