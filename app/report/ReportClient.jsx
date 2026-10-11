@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { 
   Info, 
   ShieldCheck, 
@@ -27,7 +27,10 @@ import {
   MapPin,
   ChevronRight,
   Navigation,
-  RefreshCw
+  RefreshCw,
+  Building2,
+  Search,
+  X
 } from "lucide-react";
 import { db, isMockMode } from "@/lib/firebase";
 import { sanitizeReportPayload, classifyReport, isValidWebUrl, normalizeWebUrl, encodePlusCode, decodePlusCode, isValidPlusCode } from "@/lib/utils";
@@ -110,6 +113,52 @@ export default function ReportPage() {
   const [detectedLocationInfo, setDetectedLocationInfo] = useState(null);
   const [detectedCoords, setDetectedCoords] = useState(null);
   const [customCategory, setCustomCategory] = useState("");
+  const [openSourceCities, setOpenSourceCities] = useState([]);
+  const [citySearchInput, setCitySearchInput] = useState("");
+  const [showCityDropdown, setShowCityDropdown] = useState(false);
+
+  useEffect(() => {
+    fetch('/cities.geojson')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.features) {
+          setOpenSourceCities(data.features);
+        }
+      })
+      .catch(err => console.warn("Failed to load cities.geojson in report form", err));
+  }, []);
+
+  const cityFilterResults = useMemo(() => {
+    if (!citySearchInput.trim() || !openSourceCities.length) return [];
+    const q = citySearchInput.toLowerCase().trim();
+    return openSourceCities
+      .filter(c => {
+        const name = (c.properties?.name || "").toLowerCase();
+        const country = (c.properties?.country || "").toLowerCase();
+        const district = (c.properties?.district || "").toLowerCase();
+        const plusCode = (c.properties?.plusCode || "").toLowerCase();
+        return name.includes(q) || country.includes(q) || district.includes(q) || plusCode.includes(q);
+      })
+      .slice(0, 6);
+  }, [citySearchInput, openSourceCities]);
+
+  const handleSelectCityGrid = (city) => {
+    const [lng, lat] = city.geometry.coordinates;
+    const plusCode = city.properties.plusCode || encodePlusCode(lat, lng);
+    setFormData(prev => ({
+      ...prev,
+      country: city.properties.country || prev.country,
+      region: city.properties.district || city.properties.name
+    }));
+    setDetectedCoords({ lat, lng, plusCode });
+    setDetectedLocationInfo({
+      error: false,
+      message: `Verified via Natural Earth & GeoNames: ${city.properties.name}, ${city.properties.country} (Plus Code: ${plusCode})`,
+      source: "natural_earth_geonames"
+    });
+    setCitySearchInput("");
+    setShowCityDropdown(false);
+  };
 
   const handleAutoDetectLocation = () => {
     if (typeof window === "undefined" || !navigator.geolocation) {
@@ -1053,6 +1102,66 @@ export default function ReportPage() {
                 </>
               )}
             </button>
+          </div>
+
+          {/* Quick Open-Source City / District Grid Search (Natural Earth & GeoNames) */}
+          <div className="relative">
+            <div className="flex items-center gap-2 bg-slate-900/60 border border-slate-700/80 rounded-xl px-3 py-2 text-xs">
+              <Search size={14} className="text-cyan-400 shrink-0" />
+              <input
+                type="text"
+                value={citySearchInput}
+                onChange={(e) => {
+                  setCitySearchInput(e.target.value);
+                  setShowCityDropdown(true);
+                }}
+                onFocus={() => setShowCityDropdown(true)}
+                placeholder="Quick-search 1,200+ verified cities & districts (Natural Earth & GeoNames)..."
+                className="bg-transparent text-white placeholder:text-slate-400 focus:outline-none w-full text-xs"
+              />
+              {citySearchInput && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCitySearchInput("");
+                    setShowCityDropdown(false);
+                  }}
+                  className="text-slate-400 hover:text-white p-0.5 cursor-pointer"
+                  title="Clear search"
+                >
+                  <X size={12} />
+                </button>
+              )}
+            </div>
+
+            {showCityDropdown && cityFilterResults.length > 0 && (
+              <div className="absolute top-full mt-1.5 left-0 w-full bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-30">
+                <div className="p-1.5 text-[10px] font-bold text-slate-400 border-b border-white/5 uppercase tracking-wider flex items-center justify-between">
+                  <span>Natural Earth & GeoNames Open Grids</span>
+                  <span>Click to auto-fill</span>
+                </div>
+                {cityFilterResults.map((city) => (
+                  <button
+                    key={city.id || `${city.properties.name}-${city.properties.country}`}
+                    type="button"
+                    onClick={() => handleSelectCityGrid(city)}
+                    className="w-full px-3 py-2 text-left hover:bg-slate-800 border-b border-white/5 last:border-0 transition-colors flex items-center justify-between group cursor-pointer"
+                  >
+                    <div>
+                      <div className="text-xs font-bold text-white group-hover:text-cyan-300">
+                        {city.properties.name}
+                      </div>
+                      <div className="text-[11px] text-slate-400">
+                        {[city.properties.district, city.properties.country].filter(Boolean).join(", ")}
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-mono text-cyan-400 bg-cyan-950/60 px-1.5 py-0.5 rounded border border-cyan-500/20">
+                      {city.properties.plusCode?.slice(0, 8)}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {detectedLocationInfo && (
