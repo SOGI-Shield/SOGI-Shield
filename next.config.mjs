@@ -7,6 +7,15 @@ const __dirname = path.dirname(__filename);
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: false,
+  turbopack: {
+    resolveAlias: {
+      'firebase/app': './node_modules/firebase/app/dist/esm/index.esm.js',
+      'firebase/firestore/lite': './node_modules/firebase/firestore/lite/dist/esm/index.esm.js',
+      'firebase/firestore': './node_modules/firebase/firestore/dist/esm/index.esm.js',
+      '@firebase/firestore/lite': './node_modules/@firebase/firestore/dist/lite/index.browser.esm.js',
+      '@firebase/firestore': './node_modules/@firebase/firestore/dist/index.esm.js',
+    },
+  },
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,
