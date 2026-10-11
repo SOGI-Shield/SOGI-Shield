@@ -129,8 +129,8 @@ export default function ReportPage() {
     setErrorMessage("");
 
     try {
-      // Turnstile verification
-      if (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY) {
+      // Turnstile verification (only enforced in production when not in mock mode)
+      if (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && !isMockMode && process.env.NODE_ENV !== 'development') {
         if (!turnstileToken) {
           throw new Error("Bot verification incomplete. Please wait or reload.");
         }

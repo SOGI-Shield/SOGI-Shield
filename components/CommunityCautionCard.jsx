@@ -69,7 +69,7 @@ export default function CommunityCautionCard({ report }) {
   };
 
   // Render & Download Image
-  const drawCautionCardToCanvas = () => {
+  const drawCautionCardToCanvas = async () => {
     const canvas = canvasRef.current;
     if (!canvas) return null;
     const ctx = canvas.getContext("2d");
@@ -153,34 +153,54 @@ export default function CommunityCautionCard({ report }) {
     ctx.fillText("SOGI-Shield Global Human Rights Platform | sogi-shield.org", 40, 425);
 
     // Draw QR Code on the right
-    if (qrCodeUrl) {
-      const img = new Image();
-      img.src = qrCodeUrl;
-      return new Promise((resolve) => {
+    let targetQr = qrCodeUrl;
+    if (!targetQr && shareUrl) {
+      try {
+        targetQr = await QRCode.toDataURL(shareUrl, {
+          width: 240,
+          margin: 1,
+          color: { dark: "#0f172a", light: "#ffffff" },
+        });
+      } catch (err) {
+        console.warn("Direct QR generation fallback:", err);
+      }
+    }
+
+    if (targetQr) {
+      await new Promise((resolve) => {
+        const img = new Image();
         img.onload = () => {
-          // White card backing for QR code
-          ctx.fillStyle = "#ffffff";
-          ctx.fillRect(540, 100, 210, 260);
-          ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
-          ctx.lineWidth = 2;
-          ctx.strokeRect(540, 100, 210, 260);
+          try {
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(540, 100, 210, 260);
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(540, 100, 210, 260);
 
-          ctx.drawImage(img, 555, 115, 180, 180);
+            ctx.drawImage(img, 555, 115, 180, 180);
 
-          ctx.fillStyle = "#0f172a";
-          ctx.font = "bold 13px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-          ctx.textAlign = "center";
-          ctx.fillText("SCAN FOR LIVE MAP", 645, 320);
-          ctx.font = "10px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-          ctx.fillStyle = "#475569";
-          ctx.fillText("Verified Coordinates", 645, 340);
-          ctx.textAlign = "left";
-          resolve(canvas);
+            ctx.fillStyle = "#0f172a";
+            ctx.font = "bold 13px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText("SCAN FOR LIVE MAP", 645, 320);
+            ctx.font = "10px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+            ctx.fillStyle = "#475569";
+            ctx.fillText("Verified Coordinates", 645, 340);
+            ctx.textAlign = "left";
+          } catch (e) {
+            console.error("Canvas drawImage error:", e);
+          }
+          resolve();
         };
+        img.onerror = () => resolve();
+        img.src = targetQr;
+        if (img.complete) {
+          img.onload();
+        }
       });
     }
 
-    return Promise.resolve(canvas);
+    return canvas;
   };
 
   // Download Card
@@ -207,18 +227,24 @@ export default function CommunityCautionCard({ report }) {
     try {
       const canvas = await drawCautionCardToCanvas();
       if (!canvas) return;
-      canvas.toBlob(async (blob) => {
-        if (!blob) return;
-        try {
-          await navigator.clipboard.write([
-            new ClipboardItem({ "image/png": blob })
-          ]);
-          setCopiedImage(true);
-          setTimeout(() => setCopiedImage(false), 2200);
-        } catch (clipErr) {
-          console.warn("ClipboardItem image copy unsupported, falling back to download:", clipErr);
-          handleDownloadCard();
-        }
+      await new Promise((resolve) => {
+        canvas.toBlob(async (blob) => {
+          if (!blob) {
+            resolve();
+            return;
+          }
+          try {
+            await navigator.clipboard.write([
+              new ClipboardItem({ "image/png": blob })
+            ]);
+            setCopiedImage(true);
+            setTimeout(() => setCopiedImage(false), 2200);
+          } catch (clipErr) {
+            console.warn("ClipboardItem image copy unsupported, falling back to download:", clipErr);
+            handleDownloadCard();
+          }
+          resolve();
+        });
       });
     } catch (err) {
       console.error(err);
