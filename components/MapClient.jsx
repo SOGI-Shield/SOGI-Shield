@@ -91,7 +91,17 @@ export default function MapClient() {
   useEffect(() => {
     if (isMockMode) {
       import('@/src/data/mockReports.json').then(m => {
-        setReports(m.default || m);
+        const staticReports = m.default || m;
+        import('@/lib/localStore').then(({ getLocalReports }) => {
+          const localReports = getLocalReports();
+          const combined = [
+            ...localReports,
+            ...staticReports.filter(s => !localReports.some(l => l.id === s.id))
+          ];
+          setReports(combined);
+        }).catch(() => {
+          setReports(staticReports);
+        });
       }).catch(e => console.error("Failed to load mock reports:", e));
       return;
     }

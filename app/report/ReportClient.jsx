@@ -20,6 +20,7 @@ import { db, isMockMode } from "@/lib/firebase";
 import { sanitizeReportPayload, classifyReport } from "@/lib/utils";
 import { Turnstile } from '@marsidev/react-turnstile';
 import { generateComplaintPdf } from "@/lib/generateComplaintPdf";
+import { saveLocalReport } from "@/lib/localStore";
 import CommunityCautionCard from "@/components/CommunityCautionCard";
 import RegionalImpactPreview from "@/components/RegionalImpactPreview";
 import EvidenceLockerResources from "@/components/EvidenceLockerResources";
@@ -50,15 +51,30 @@ export default function ReportPage() {
   const [activeTab, setActiveTab] = useState("all"); // 'all' | 'personal' | 'community'
 
   useEffect(() => {
-    // Check rate limit on load
+    // Check rate limit on load - skip in development or mock mode so testing is seamless
     const lastSubmit = localStorage.getItem('sogi_last_submit');
-    if (lastSubmit) {
+    if (lastSubmit && !isMockMode && process.env.NODE_ENV !== 'development') {
       const timeSince = Date.now() - parseInt(lastSubmit, 10);
       if (timeSince < 5 * 60 * 1000) {
         setRateLimited(true);
       }
     }
   }, []);
+
+  const handleAutofillDemo = () => {
+    setFormData({
+      country: "India",
+      region: "Maharashtra",
+      facilityName: "Metro Counseling & Wellness Centre",
+      category: "Conversion Therapy / Unlicensed Counseling",
+      summary: "Survivor was subjected to coercive aversion counseling and non-consensual psychiatric intervention aimed at altering sexual orientation. Facility operated without valid psychiatric licensing.",
+      evidenceLinks: "https://drive.google.com/open?id=demo_affidavit, https://news.example.com/investigation",
+      reportedToAuthorities: true,
+      authorityDetails: "Filed complaint with State Medical Council and local human rights commission on Oct 14.",
+      actionIgnored: true,
+      website_hp: "",
+    });
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -164,11 +180,21 @@ export default function ReportPage() {
           finalReport.lat = parseFloat(geoData[0].lat);
           finalReport.lng = parseFloat(geoData[0].lon);
         } else {
-          throw new Error("Could not find this location on the map. Please check your spelling for Region/Country.");
+          if (isMockMode || process.env.NODE_ENV === 'development') {
+            finalReport.lat = 18.5204 + (Math.random() - 0.5) * 0.05;
+            finalReport.lng = 73.8567 + (Math.random() - 0.5) * 0.05;
+          } else {
+            throw new Error("Could not find this location on the map. Please check your spelling for Region/Country.");
+          }
         }
       } catch (err) {
-        console.error("Geocoding completely failed:", err);
-        throw new Error(err.message || "Failed to locate the address. Please simplify the region/city name.");
+        console.warn("Geocoding notice:", err);
+        if (isMockMode || process.env.NODE_ENV === 'development') {
+          finalReport.lat = 18.5204 + (Math.random() - 0.5) * 0.05;
+          finalReport.lng = 73.8567 + (Math.random() - 0.5) * 0.05;
+        } else {
+          throw new Error(err.message || "Failed to locate the address. Please simplify the region/city name.");
+        }
       }
 
       const reportId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2);
@@ -192,6 +218,11 @@ export default function ReportPage() {
       // Crucial security fix: Delete trackingCode from the public document so it isn't leaked
       delete finalReport.trackingCode;
 
+      // Always save to local dev store in mock mode or development
+      if (isMockMode || process.env.NODE_ENV === 'development') {
+        saveLocalReport(fullClientCopy, generatedTrackingCode);
+      }
+
       // Submit to Firestore if API key is set and not mocking
       if (!isMockMode && process.env.NEXT_PUBLIC_FIREBASE_API_KEY && process.env.NEXT_PUBLIC_FIREBASE_API_KEY !== 'your_api_key_here') {
         const { doc, setDoc } = await import("firebase/firestore/lite");
@@ -201,8 +232,8 @@ export default function ReportPage() {
         await setDoc(doc(db, "report_secrets", generatedTrackingCode), secretReport);
       } else {
         // Simulate network request
-        console.log("Mock submission:", finalReport);
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        console.log("Mock submission saved to local store:", finalReport);
+        await new Promise(resolve => setTimeout(resolve, 800));
       }
 
       // Update Rate Limit
@@ -577,6 +608,23 @@ export default function ReportPage() {
 
       <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8 bg-slate-900/60 backdrop-blur-xl border border-white/10 p-5 sm:p-10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
         
+        {/* Dev Mode Testing Bar */}
+        {(isMockMode || process.env.NODE_ENV === 'development') && (
+          <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 bg-indigo-950/40 border border-indigo-500/30 rounded-2xl">
+            <span className="text-xs font-mono text-indigo-300 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+              Dev Build Mode: Instant Mock Testing Active
+            </span>
+            <button
+              type="button"
+              onClick={handleAutofillDemo}
+              className="text-xs bg-indigo-600/40 hover:bg-indigo-600/60 active:bg-indigo-600 text-white font-bold py-1.5 px-3 rounded-lg border border-indigo-400/40 transition-colors flex items-center gap-1.5 shadow"
+            >
+              <Sparkles size={13} className="text-pink-400" /> Autofill Demo Incident
+            </button>
+          </div>
+        )}
+
         {/* Honeypot Field - visually hidden */}
         <div style={{ position: 'absolute', left: '-5000px' }} aria-hidden="true">
           <input type="text" name="website_hp" tabIndex="-1" value={formData.website_hp} onChange={handleChange} autoComplete="off" />

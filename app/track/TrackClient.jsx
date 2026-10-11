@@ -5,6 +5,7 @@ import { Search, ShieldCheck, ShieldAlert, Activity, AlertCircle, FileText, Down
 import { collection, query, where, getDocs, updateDoc, doc } from "firebase/firestore/lite";
 import { db, isMockMode } from "@/lib/firebase";
 import { generateComplaintPdf } from "@/lib/generateComplaintPdf";
+import { getLocalReportByTrackingCode, updateLocalReportStatus } from "@/lib/localStore";
 
 export default function TrackCasePage() {
   const [trackingCode, setTrackingCode] = useState("");
@@ -34,6 +35,14 @@ export default function TrackCasePage() {
     setReport(null);
     
     try {
+      // 1. Check local dev store first (makes newly submitted dev reports immediately available)
+      const localFound = getLocalReportByTrackingCode(code);
+      if (localFound) {
+        setReport({ ...localFound, _docId: localFound.id, trackingCode: code });
+        setIsSearching(false);
+        return;
+      }
+
       if (isMockMode) {
         const m = await import('@/src/data/mockReports.json');
         const mockData = m.default || m;
@@ -100,6 +109,7 @@ export default function TrackCasePage() {
     if (!report || !report.trackingCode) return;
     setIsUpdating(true);
     try {
+      updateLocalReportStatus(report.trackingCode, newStatus);
       if (isMockMode) {
         setReport({ ...report, status: newStatus });
       } else {
