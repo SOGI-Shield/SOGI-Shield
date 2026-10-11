@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import QRCode from "qrcode";
+import { downloadFile } from "@/lib/utils";
 import { 
   Share2, 
   Download, 
@@ -70,9 +71,13 @@ export default function CommunityCautionCard({ report }) {
 
   // Render & Download Image
   const drawCautionCardToCanvas = async () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return null;
+    let canvas = canvasRef.current;
+    if (!canvas) {
+      canvas = document.createElement("canvas");
+    }
     const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+
     const width = 800;
     const height = 480;
     canvas.width = width;
@@ -115,16 +120,30 @@ export default function CommunityCautionCard({ report }) {
     ctx.font = "bold 28px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
     ctx.fillText("INCIDENT FLAGGED IN SECTOR", 40, 115);
 
-    // Sector Location
+    // Sector Location (constrained so it never overlaps the QR box at x=540)
     ctx.fillStyle = "#38bdf8"; // sky blue
     ctx.font = "bold 22px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
     const locText = `${region || "Sector"}, ${country || "Global"}`;
-    ctx.fillText(locText, 40, 150);
+    let displayLoc = locText;
+    if (ctx.measureText(displayLoc).width > 480) {
+      while (displayLoc.length > 3 && ctx.measureText(displayLoc + "...").width > 480) {
+        displayLoc = displayLoc.slice(0, -1);
+      }
+      displayLoc += "...";
+    }
+    ctx.fillText(displayLoc, 40, 150);
 
     // Category
     ctx.fillStyle = "#94a3b8"; // slate-400
     ctx.font = "16px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-    ctx.fillText(`Category: ${category || "Human Rights Violation"}`, 40, 185);
+    let catText = `Category: ${category || "Human Rights Violation"}`;
+    if (ctx.measureText(catText).width > 480) {
+      while (catText.length > 3 && ctx.measureText(catText + "...").width > 480) {
+        catText = catText.slice(0, -1);
+      }
+      catText += "...";
+    }
+    ctx.fillText(catText, 40, 185);
 
     // Descriptive advisory box
     ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
@@ -167,37 +186,38 @@ export default function CommunityCautionCard({ report }) {
     }
 
     if (targetQr) {
-      await new Promise((resolve) => {
+      try {
         const img = new Image();
-        img.onload = () => {
-          try {
-            ctx.fillStyle = "#ffffff";
-            ctx.fillRect(540, 100, 210, 260);
-            ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
-            ctx.lineWidth = 2;
-            ctx.strokeRect(540, 100, 210, 260);
-
-            ctx.drawImage(img, 555, 115, 180, 180);
-
-            ctx.fillStyle = "#0f172a";
-            ctx.font = "bold 13px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-            ctx.textAlign = "center";
-            ctx.fillText("SCAN FOR LIVE MAP", 645, 320);
-            ctx.font = "10px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-            ctx.fillStyle = "#475569";
-            ctx.fillText("Verified Coordinates", 645, 340);
-            ctx.textAlign = "left";
-          } catch (e) {
-            console.error("Canvas drawImage error:", e);
-          }
-          resolve();
-        };
-        img.onerror = () => resolve();
+        img.crossOrigin = "anonymous";
         img.src = targetQr;
-        if (img.complete) {
-          img.onload();
+        if (typeof img.decode === "function") {
+          await img.decode();
+        } else {
+          await new Promise((resolve) => {
+            img.onload = () => resolve();
+            img.onerror = () => resolve();
+          });
         }
-      });
+
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(540, 100, 210, 260);
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(540, 100, 210, 260);
+
+        ctx.drawImage(img, 555, 115, 180, 180);
+
+        ctx.fillStyle = "#0f172a";
+        ctx.font = "bold 13px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("SCAN FOR LIVE MAP", 645, 320);
+        ctx.font = "10px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+        ctx.fillStyle = "#475569";
+        ctx.fillText("Verified Coordinates", 645, 340);
+        ctx.textAlign = "left";
+      } catch (e) {
+        console.error("Canvas QR draw error:", e);
+      }
     }
 
     return canvas;
@@ -209,11 +229,22 @@ export default function CommunityCautionCard({ report }) {
     try {
       const canvas = await drawCautionCardToCanvas();
       if (!canvas) return;
-      const dataUrl = canvas.toDataURL("image/png");
-      const a = document.createElement("a");
-      a.href = dataUrl;
-      a.download = `SOGI_Safety_Caution_${(region || "Sector").replace(/\s+/g, "_")}.png`;
-      a.click();
+      const safeRegion = (region || "Sector").replace(/[^a-zA-Z0-9_-]/g, "_");
+      const filename = `SOGI_Safety_Caution_${safeRegion}.png`;
+
+      if (typeof canvas.toBlob === "function") {
+        canvas.toBlob((blob) => {
+          if (blob) {
+            downloadFile(blob, filename, "image/png");
+          } else {
+            const dataUrl = canvas.toDataURL("image/png");
+            downloadFile(dataUrl, filename, "image/png");
+          }
+        }, "image/png");
+      } else {
+        const dataUrl = canvas.toDataURL("image/png");
+        downloadFile(dataUrl, filename, "image/png");
+      }
     } catch (err) {
       console.error("Failed to generate caution card image:", err);
     } finally {
@@ -228,23 +259,32 @@ export default function CommunityCautionCard({ report }) {
       const canvas = await drawCautionCardToCanvas();
       if (!canvas) return;
       await new Promise((resolve) => {
+        if (typeof canvas.toBlob !== "function") {
+          handleDownloadCard();
+          resolve();
+          return;
+        }
         canvas.toBlob(async (blob) => {
           if (!blob) {
             resolve();
             return;
           }
           try {
-            await navigator.clipboard.write([
-              new ClipboardItem({ "image/png": blob })
-            ]);
-            setCopiedImage(true);
-            setTimeout(() => setCopiedImage(false), 2200);
+            if (typeof ClipboardItem !== "undefined" && navigator.clipboard && navigator.clipboard.write) {
+              await navigator.clipboard.write([
+                new ClipboardItem({ "image/png": blob })
+              ]);
+              setCopiedImage(true);
+              setTimeout(() => setCopiedImage(false), 2200);
+            } else {
+              handleDownloadCard();
+            }
           } catch (clipErr) {
             console.warn("ClipboardItem image copy unsupported, falling back to download:", clipErr);
             handleDownloadCard();
           }
           resolve();
-        });
+        }, "image/png");
       });
     } catch (err) {
       console.error(err);
@@ -315,7 +355,7 @@ export default function CommunityCautionCard({ report }) {
                 ⚠️ SOGI Safety Alert
               </div>
               <h4 className="text-xl sm:text-2xl font-extrabold text-white leading-tight">
-                Incident Flagged near {region || "Sector"}, {country}
+                Incident Flagged near {region || "Sector"}, {country || "Global"}
               </h4>
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
                 Live decentralized safety map updated on <span className="text-indigo-300 font-semibold">SOGI-Shield</span>. Exercise heightened situational awareness in this vicinity.
