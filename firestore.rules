@@ -20,7 +20,7 @@ service cloud.firestore {
       // 2. CREATE RULES: Strict Schema Validation
       allow create: if 
         // Must contain ONLY these specific fields
-        hasOnlyAllowedFields(['id', 'timestamp', 'country', 'region', 'category', 'summary', 'evidenceLinks', 'status', 'verificationScore', 'lat', 'lng', 'facilityName', 'reportedToAuthorities', 'authorityDetails']) &&
+        hasOnlyAllowedFields(['id', 'timestamp', 'country', 'region', 'category', 'summary', 'evidenceLinks', 'status', 'verificationScore', 'lat', 'lng', 'facilityName', 'plusCode', 'reportedToAuthorities', 'authorityDetails']) &&
         
         // Ensure document ID matches payload ID
         isValidString(reportId, 1, 100) &&
@@ -46,6 +46,11 @@ service cloud.firestore {
           !('facilityName' in request.resource.data) || 
           request.resource.data.facilityName == null || 
           isValidString(request.resource.data.facilityName, 0, 200)
+        ) &&
+        (
+          !('plusCode' in request.resource.data) || 
+          request.resource.data.plusCode == null || 
+          isValidString(request.resource.data.plusCode, 0, 50)
         ) &&
         (
           !('authorityDetails' in request.resource.data) || 

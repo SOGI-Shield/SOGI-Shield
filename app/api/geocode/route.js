@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { encodePlusCode, decodePlusCode, isValidPlusCode } from "@/lib/pluscode";
 
 export const runtime = "edge";
 
@@ -35,6 +36,7 @@ async function queryPhoton(queryString) {
             success: true,
             lat,
             lng: lon,
+            plusCode: encodePlusCode(lat, lon),
             formattedAddress,
             source: "photon_by_komoot"
           };
@@ -69,6 +71,7 @@ async function queryNominatim(queryString) {
             success: true,
             lat,
             lng: lon,
+            plusCode: encodePlusCode(lat, lon),
             formattedAddress: item.display_name || queryString,
             source: "nominatim"
           };
@@ -115,6 +118,50 @@ async function performForwardGeocode(params) {
 
   if (uniqueCandidates.length === 0) {
     return { error: "Please provide a region, country, or location query to geocode.", status: 400 };
+  }
+
+  // Tier 0: Direct Plus Code Mathematical Resolution (Instant, Offline, Zero-Network)
+  for (const query of uniqueCandidates) {
+    if (isValidPlusCode(query)) {
+      const decoded = decodePlusCode(query);
+      if (decoded) {
+        const fullPlusCode = encodePlusCode(decoded.lat, decoded.lng);
+        let country = "";
+        let region = "";
+        let formattedAddress = `Plus Code: ${fullPlusCode}`;
+        try {
+          const revRes = await fetch(`https://photon.komoot.io/reverse?lat=${decoded.lat}&lon=${decoded.lng}`, {
+            headers: {
+              "User-Agent": "SOGI-Shield/1.0 (Global Human Rights Documentation; contact@sogi-shield.org)",
+              "Accept": "application/json"
+            },
+            signal: AbortSignal.timeout(3000)
+          });
+          if (revRes.ok) {
+            const revData = await revRes.json();
+            if (revData && revData.features && revData.features[0]) {
+              const p = revData.features[0].properties || {};
+              country = p.country || "";
+              region = p.state || p.district || p.city || "";
+              if (country || region) {
+                formattedAddress = `${fullPlusCode} (${[region, country].filter(Boolean).join(", ")})`;
+              }
+            }
+          }
+        } catch {}
+
+        return {
+          success: true,
+          lat: decoded.lat,
+          lng: decoded.lng,
+          plusCode: fullPlusCode,
+          country: country || "Detected Location",
+          region: region || `Sector ${fullPlusCode.slice(0, 8)}`,
+          formattedAddress,
+          source: "plus_code_direct"
+        };
+      }
+    }
   }
 
   // Try candidate queries in sequence

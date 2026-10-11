@@ -30,7 +30,7 @@ import {
   RefreshCw
 } from "lucide-react";
 import { db, isMockMode } from "@/lib/firebase";
-import { sanitizeReportPayload, classifyReport, isValidWebUrl, normalizeWebUrl } from "@/lib/utils";
+import { sanitizeReportPayload, classifyReport, isValidWebUrl, normalizeWebUrl, encodePlusCode, decodePlusCode, isValidPlusCode } from "@/lib/utils";
 import { Turnstile } from '@marsidev/react-turnstile';
 import { generateComplaintPdf } from "@/lib/generateComplaintPdf";
 import { saveLocalReport } from "@/lib/localStore";
@@ -89,8 +89,20 @@ export default function ReportPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [trackingCodeResult, setTrackingCodeResult] = useState("");
   const [submittedReport, setSubmittedReport] = useState(null);
+  const [rateLimited, setRateLimited] = useState(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      const lastSubmit = localStorage.getItem('sogi_last_submit');
+      if (lastSubmit && !isMockMode && process.env.NODE_ENV !== 'development') {
+        const timeSince = Date.now() - parseInt(lastSubmit, 10);
+        return timeSince < 5 * 60 * 1000;
+      }
+    } catch {
+      return false;
+    }
+    return false;
+  });
   const [turnstileToken, setTurnstileToken] = useState("");
-  const [rateLimited, setRateLimited] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const [activeTab, setActiveTab] = useState("all"); // 'all' | 'personal' | 'community'
@@ -188,16 +200,7 @@ export default function ReportPage() {
     }
   };
 
-  useEffect(() => {
-    // Check rate limit on load - skip in development or mock mode so testing is seamless
-    const lastSubmit = localStorage.getItem('sogi_last_submit');
-    if (lastSubmit && !isMockMode && process.env.NODE_ENV !== 'development') {
-      const timeSince = Date.now() - parseInt(lastSubmit, 10);
-      if (timeSince < 5 * 60 * 1000) {
-        setRateLimited(true);
-      }
-    }
-  }, []);
+
 
   const handleAutofillDemo = () => {
     if (!isMockMode) return;
@@ -398,14 +401,26 @@ export default function ReportPage() {
       // Run Zero-Touch Classification locally
       const finalReport = classifyReport(basePayload);
 
-      // Step 2: Geocoding incident sector (Photon by Komoot, Nominatim)
+      // Step 2: Geocoding incident location & Open Location Code (Plus Code)
       setSubmittingStep(2);
       
+      // Check if user entered a Plus Code in location inputs
+      const userPlusCode = [formData.region, formData.country, formData.facilityName].find(isValidPlusCode);
+      if (userPlusCode) {
+        const decoded = decodePlusCode(userPlusCode);
+        if (decoded) {
+          finalReport.lat = decoded.lat;
+          finalReport.lng = decoded.lng;
+          finalReport.plusCode = encodePlusCode(decoded.lat, decoded.lng);
+        }
+      }
+
       // If we already detected coordinates via reverse geocoding, use them directly!
-      if (detectedCoords && typeof detectedCoords.lat === 'number' && typeof detectedCoords.lng === 'number') {
+      if (!finalReport.lat && detectedCoords && typeof detectedCoords.lat === 'number' && typeof detectedCoords.lng === 'number') {
         finalReport.lat = detectedCoords.lat;
         finalReport.lng = detectedCoords.lng;
-      } else {
+        finalReport.plusCode = detectedCoords.plusCode || encodePlusCode(detectedCoords.lat, detectedCoords.lng);
+      } else if (!finalReport.lat) {
         try {
           const geoRes = await fetch('/api/geocode', {
             method: 'POST',
@@ -421,23 +436,31 @@ export default function ReportPage() {
           if (geoData && geoData.success && typeof geoData.lat === 'number' && typeof geoData.lng === 'number') {
             finalReport.lat = geoData.lat;
             finalReport.lng = geoData.lng;
+            finalReport.plusCode = geoData.plusCode || encodePlusCode(geoData.lat, geoData.lng);
           } else {
-            if (isMockMode || process.env.NODE_ENV === 'development') {
-              finalReport.lat = 18.5204 + (Math.random() - 0.5) * 0.05;
-              finalReport.lng = 73.8567 + (Math.random() - 0.5) * 0.05;
+            if (isMockMode) {
+              finalReport.lat = 51.5074;
+              finalReport.lng = -0.1278;
+              finalReport.plusCode = encodePlusCode(finalReport.lat, finalReport.lng);
             } else {
-              throw new Error(geoData?.message || "Could not find this location on the map. Please check your spelling for Region/Country.");
+              throw new Error(geoData?.message || "Could not find this location on the map. Please check your spelling or enter a Plus Code.");
             }
           }
         } catch (err) {
           console.warn("Geocoding notice:", err);
-          if (isMockMode || process.env.NODE_ENV === 'development') {
-            finalReport.lat = 18.5204 + (Math.random() - 0.5) * 0.05;
-            finalReport.lng = 73.8567 + (Math.random() - 0.5) * 0.05;
+          if (isMockMode) {
+            finalReport.lat = 51.5074;
+            finalReport.lng = -0.1278;
+            finalReport.plusCode = encodePlusCode(finalReport.lat, finalReport.lng);
           } else {
-            throw new Error(err.message || "Failed to locate the address. Please simplify the region/city name.");
+            throw new Error(err.message || "Failed to locate the address. Please simplify the region/city name or enter a Plus Code.");
           }
         }
+      }
+
+      // Ensure plusCode is always generated from coordinates
+      if (typeof finalReport.lat === 'number' && typeof finalReport.lng === 'number' && !finalReport.plusCode) {
+        finalReport.plusCode = encodePlusCode(finalReport.lat, finalReport.lng);
       }
 
       // Step 3: Generating zero-knowledge key
@@ -453,6 +476,7 @@ export default function ReportPage() {
       // Keep complete client-side copy for personal dossier & caution card before scrubbing
       const fullClientCopy = {
         ...finalReport,
+        plusCode: finalReport.plusCode,
         trackingCode: generatedTrackingCode,
         facilityName: formData.facilityName || null,
         evidenceLinks: linksArray, // Preserved for user's personal client-side UN PDF dossier
@@ -665,6 +689,13 @@ export default function ReportPage() {
               {copiedCode ? <><Check size={16} className="text-emerald-400" /> Copied!</> : <><Copy size={16} /> Copy Code</>}
             </button>
           </div>
+
+          {submittedReport?.plusCode && (
+            <div className="mt-4 inline-flex items-center gap-2 bg-cyan-950/60 border border-cyan-500/40 px-3.5 py-1.5 rounded-xl text-xs font-mono text-cyan-300 shadow-sm">
+              <MapPin size={14} className="text-cyan-400" />
+              <span>Plus Code (Geographic Sector): <strong>{submittedReport.plusCode}</strong></span>
+            </div>
+          )}
         </div>
 
         {/* Navigation Tabs for Dual Pillars */}

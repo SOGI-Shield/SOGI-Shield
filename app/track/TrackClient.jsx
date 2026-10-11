@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Search, ShieldCheck, ShieldAlert, Activity, AlertCircle, FileText, Download, Share2, ExternalLink } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Search, ShieldCheck, ShieldAlert, Activity, AlertCircle, FileText, Download, Share2, ExternalLink, MapPin } from "lucide-react";
 import { collection, query, where, getDocs, updateDoc, doc } from "firebase/firestore/lite";
 import { db, isMockMode } from "@/lib/firebase";
 import { generateComplaintPdf } from "@/lib/generateComplaintPdf";
@@ -9,25 +9,20 @@ import { getLocalReportByTrackingCode, updateLocalReportStatus } from "@/lib/loc
 import { isValidWebUrl } from "@/lib/utils";
 
 export default function TrackCasePage() {
-  const [trackingCode, setTrackingCode] = useState("");
+  const [trackingCode, setTrackingCode] = useState(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("code") || "";
+    }
+    return "";
+  });
   const [isSearching, setIsSearching] = useState(false);
   const [report, setReport] = useState(null);
   const [error, setError] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get("code");
-      if (code) {
-        setTrackingCode(code);
-        executeSearch(code);
-      }
-    }
-  }, []);
-
-  const executeSearch = async (codeToSearch) => {
+  const executeSearch = useCallback(async (codeToSearch) => {
     const code = (codeToSearch || trackingCode || "").trim();
     if (!code) return;
     
@@ -86,7 +81,19 @@ export default function TrackCasePage() {
     } finally {
       setIsSearching(false);
     }
-  };
+  }, [trackingCode]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("code");
+      if (code) {
+        queueMicrotask(() => {
+          executeSearch(code);
+        });
+      }
+    }
+  }, [executeSearch]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -276,6 +283,9 @@ export default function TrackCasePage() {
               <div>
                 <span className="block text-slate-500 mb-2 uppercase tracking-wider font-bold text-xs">Location</span>
                 <span className="text-white text-base break-words">{report.region}, {report.country}</span>
+                {report.plusCode && (
+                  <span className="block text-xs font-mono text-cyan-400 mt-1">Plus Code: {report.plusCode}</span>
+                )}
               </div>
               <div>
                 <span className="block text-slate-500 mb-2 uppercase tracking-wider font-bold text-xs">Category</span>

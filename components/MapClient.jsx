@@ -36,7 +36,38 @@ function MapUrlSync() {
 export default function MapClient() {
   const MIN_POLYGON_THRESHOLD = 100;
   const [reports, setReports] = useState([]);
-  const [icons, setIcons] = useState({ red: null, grey: null });
+  const [icons] = useState(() => {
+    if (typeof window === "undefined" || !L || !L.Icon) {
+      return { red: null, grey: null };
+    }
+    delete L.Icon.Default.prototype._getIconUrl;
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+      iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+    });
+
+    const redIcon = new L.Icon({
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41]
+    });
+
+    const greyIcon = new L.Icon({
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-grey.png',
+      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41]
+    });
+
+    return { red: redIcon, grey: greyIcon };
+  });
+
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [geoData, setGeoData] = useState(null);
   const [currentZoom, setCurrentZoom] = useState(2);
@@ -56,39 +87,7 @@ export default function MapClient() {
       .catch(err => console.error("Failed to load geojson", err));
   }, []);
 
-  useEffect(() => {
-    // Fix standard Leaflet icon issues in Next.js when window is available
-    if (typeof window !== "undefined") {
-      delete L.Icon.Default.prototype._getIconUrl;
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-        iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-      });
-
-      const redIcon = new L.Icon({
-        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41]
-      });
-
-      const greyIcon = new L.Icon({
-        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-grey.png',
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41]
-      });
-
-      setIcons({ red: redIcon, grey: greyIcon });
-    }
-  }, []);
-
-  const [isLoadingReports, setIsLoadingReports] = useState(true);
+  const [isLoadingReports, setIsLoadingReports] = useState(() => isMockMode || Boolean(process.env.NEXT_PUBLIC_FIREBASE_API_KEY));
 
   useEffect(() => {
     if (isMockMode) {
@@ -132,8 +131,6 @@ export default function MapClient() {
       const interval = setInterval(fetchReports, 60000);
       return () => clearInterval(interval);
     } else {
-      setReports([]);
-      setIsLoadingReports(false);
       console.warn("Firebase API key is missing. Map will remain empty.");
     }
   }, []);

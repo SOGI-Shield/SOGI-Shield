@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { encodePlusCode } from "@/lib/pluscode";
 
 export const runtime = "edge";
 
@@ -53,15 +54,17 @@ async function performReverseGeocode(lat, lng) {
         const formattedAddress = uniqueParts.join(", ") || `${region}, ${country}`.replace(/^, |, $/g, "");
 
         if (country || region) {
+          const plusCode = encodePlusCode(latitude, longitude);
           return {
             success: true,
             lat: latitude,
             lng: longitude,
+            plusCode,
             country: country || "Unknown",
             region: region || "Unknown",
             city: city || district || "",
             district: district || "",
-            formattedAddress: formattedAddress || `Coordinates: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+            formattedAddress: formattedAddress || (plusCode ? `Plus Code: ${plusCode}` : `Coordinates: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`),
             source: "photon_by_komoot",
             verified: true
           };
@@ -94,10 +97,12 @@ async function performReverseGeocode(lat, lng) {
         const city = addr.city || addr.town || addr.village || addr.municipality || "";
 
         if (country || region) {
+          const plusCode = encodePlusCode(latitude, longitude);
           return {
             success: true,
             lat: latitude,
             lng: longitude,
+            plusCode,
             country: country || "Unknown",
             region: region || city || "Unknown",
             city: city || "",
@@ -116,15 +121,17 @@ async function performReverseGeocode(lat, lng) {
   // -------------------------------------------------------------
   // Tier 3: Graceful coordinate-only fallback (e.g. remote ocean)
   // -------------------------------------------------------------
+  const plusCode = encodePlusCode(latitude, longitude);
   return {
     success: true,
     lat: latitude,
     lng: longitude,
+    plusCode,
     country: "International Territory",
-    region: "Sector",
+    region: plusCode ? `Sector ${plusCode.slice(0, 8)}` : "International Sector",
     city: "",
-    formattedAddress: `Sector Lat: ${latitude.toFixed(4)}, Lng: ${longitude.toFixed(4)}`,
-    source: "coordinates_fallback",
+    formattedAddress: plusCode ? `Plus Code: ${plusCode}` : `Coordinates: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+    source: "plus_code_fallback",
     verified: false
   };
 }

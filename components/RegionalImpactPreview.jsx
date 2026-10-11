@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { Radio, Users, MapPin, Eye } from "lucide-react";
+import { encodePlusCode } from "@/lib/pluscode";
 
 const MiniImpactMap = dynamic(() => import("./MiniImpactMap"), {
   ssr: false,
@@ -14,6 +15,7 @@ const MiniImpactMap = dynamic(() => import("./MiniImpactMap"), {
 
 export default function RegionalImpactPreview({ report }) {
   const { region, country, lat, lng, category, status } = report || {};
+  const plusCode = report?.plusCode || (lat && lng ? encodePlusCode(lat, lng) : null);
 
   return (
     <div className="bg-slate-900/60 backdrop-blur-xl border border-indigo-500/30 rounded-3xl p-5 sm:p-7 shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative overflow-hidden flex flex-col justify-between">
@@ -43,7 +45,8 @@ export default function RegionalImpactPreview({ report }) {
         <div className="flex flex-wrap items-center gap-2 text-xs text-slate-300 bg-black/40 border border-white/5 p-3 rounded-xl mb-4">
           <div className="flex items-center gap-1.5 text-cyan-400 font-semibold">
             <MapPin size={14} />
-            <span>{region || "Sector"}, {country}</span>
+            <span>{region || "Area"}, {country}</span>
+            {plusCode && <span className="font-mono text-cyan-300 text-[11px]">({plusCode})</span>}
           </div>
           <span className="text-slate-600">•</span>
           <span className="text-slate-400">{category}</span>
@@ -60,8 +63,8 @@ export default function RegionalImpactPreview({ report }) {
             <MiniImpactMap lat={lat} lng={lng} category={category} status={status} />
           </div>
         ) : (
-          <div className="h-28 bg-slate-900/60 rounded-xl border border-white/10 flex items-center justify-center text-slate-400 text-xs mb-3">
-            Sector coordinates anonymized within regional grid
+          <div className="h-28 bg-slate-900/60 rounded-xl border border-white/10 flex items-center justify-center text-slate-400 text-xs mb-3 font-mono">
+            {plusCode ? `Plus Code: ${plusCode}` : "Sector coordinates anonymized on public map"}
           </div>
         )}
       </div>
