@@ -1,12 +1,26 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { MapContainer, TileLayer, Marker, Popup, CircleMarker, GeoJSON, useMapEvents, useMap, ZoomControl } from "react-leaflet";
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from "leaflet";
 import { collection, getDocs, query } from "firebase/firestore/lite";
 import { db, isMockMode } from "@/lib/firebase";
 import { isValidWebUrl } from "@/lib/utils";
-import { Maximize2, Minimize2, X, Shield, CheckCircle, AlertTriangle, Flame, Loader2 } from "lucide-react";
+import { 
+  Maximize2, 
+  Minimize2, 
+  X, 
+  Shield, 
+  CheckCircle, 
+  AlertTriangle, 
+  Flame, 
+  Loader2,
+  Search,
+  Building2,
+  MapPin,
+  Layers,
+  Globe
+} from "lucide-react";
 
 function MapEvents({ setZoom }) {
   const map = useMapEvents({
@@ -14,6 +28,18 @@ function MapEvents({ setZoom }) {
       setZoom(map.getZoom());
     }
   });
+  return null;
+}
+
+function MapController({ focusTarget }) {
+  const map = useMap();
+  useEffect(() => {
+    if (focusTarget && typeof focusTarget.lat === "number" && typeof focusTarget.lng === "number") {
+      map.flyTo([focusTarget.lat, focusTarget.lng], focusTarget.zoom || 11, {
+        duration: 1.2
+      });
+    }
+  }, [focusTarget, map]);
   return null;
 }
 
@@ -70,6 +96,11 @@ export default function MapClient() {
 
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [geoData, setGeoData] = useState(null);
+  const [citiesData, setCitiesData] = useState(null);
+  const [districtsData, setDistrictsData] = useState(null);
+  const [activeLayer, setActiveLayer] = useState("all"); // 'all' | 'countries' | 'districts' | 'cities'
+  const [citySearchQuery, setCitySearchQuery] = useState("");
+  const [focusTarget, setFocusTarget] = useState(null);
   const [currentZoom, setCurrentZoom] = useState(2);
   const [selectedReport, setSelectedReport] = useState(null);
 
@@ -84,8 +115,52 @@ export default function MapClient() {
     fetch('/countries.geojson')
       .then(res => res.json())
       .then(data => setGeoData(data))
-      .catch(err => console.error("Failed to load geojson", err));
+      .catch(err => console.error("Failed to load country geojson", err));
+
+    fetch('/cities.geojson')
+      .then(res => res.json())
+      .then(data => setCitiesData(data))
+      .catch(err => console.error("Failed to load cities geojson", err));
+
+    fetch('/districts.geojson')
+      .then(res => res.json())
+      .then(data => setDistrictsData(data))
+      .catch(err => console.error("Failed to load districts geojson", err));
   }, []);
+
+  const searchResults = useMemo(() => {
+    if (!citiesData?.features || !citySearchQuery.trim()) return [];
+    const q = citySearchQuery.toLowerCase().trim();
+    return citiesData.features
+      .filter(f => {
+        const name = (f.properties?.name || "").toLowerCase();
+        const country = (f.properties?.country || "").toLowerCase();
+        const district = (f.properties?.district || "").toLowerCase();
+        const plusCode = (f.properties?.plusCode || "").toLowerCase();
+        return name.includes(q) || country.includes(q) || district.includes(q) || plusCode.includes(q);
+      })
+      .slice(0, 6);
+  }, [citiesData, citySearchQuery]);
+
+  const styleDistrictFeature = () => ({
+    fillColor: "#6366f1",
+    color: "#818cf8",
+    weight: 1.5,
+    opacity: 0.6,
+    dashArray: "4, 4",
+    fillOpacity: 0.05
+  });
+
+  const onEachDistrictFeature = (feature, layer) => {
+    const p = feature.properties || {};
+    const label = `
+      <div style="font-family: sans-serif; color: #0f172a;">
+        <div style="font-weight: bold; font-size: 13px;">${p.name || "District"}</div>
+        <div style="font-size: 11px; color: #475569;">${[p.type, p.region, p.country].filter(Boolean).join(" • ")}</div>
+      </div>
+    `;
+    layer.bindTooltip(label, { sticky: true });
+  };
 
   const [isLoadingReports, setIsLoadingReports] = useState(() => isMockMode || Boolean(process.env.NEXT_PUBLIC_FIREBASE_API_KEY));
 
@@ -222,6 +297,102 @@ export default function MapClient() {
         </div>
       )}
 
+      {/* City & District Search + Layer Controls (Natural Earth & GeoNames) */}
+      <div className="absolute top-12 left-3 sm:top-4 sm:left-4 z-[400] flex flex-col gap-2 max-w-[calc(100%-60px)] sm:max-w-xs">
+        <div className="relative">
+          <div className="bg-slate-900/95 backdrop-blur-md border border-slate-700/80 rounded-xl px-3 py-2 flex items-center gap-2 shadow-xl">
+            <Search size={14} className="text-cyan-400 shrink-0" />
+            <input
+              type="text"
+              value={citySearchQuery}
+              onChange={(e) => setCitySearchQuery(e.target.value)}
+              placeholder="Search 1,200+ cities & districts..."
+              className="bg-transparent text-xs text-white placeholder:text-slate-400 focus:outline-none w-full"
+            />
+            {citySearchQuery && (
+              <button
+                onClick={() => setCitySearchQuery("")}
+                className="text-slate-400 hover:text-white p-0.5 rounded-full cursor-pointer"
+                title="Clear search"
+              >
+                <X size={12} />
+              </button>
+            )}
+          </div>
+
+          {/* Autocomplete dropdown */}
+          {searchResults.length > 0 && (
+            <div className="absolute top-full mt-1.5 left-0 w-full bg-slate-900/95 backdrop-blur-md border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50 text-left">
+              <div className="p-1.5 text-[10px] font-bold text-slate-400 border-b border-white/5 uppercase tracking-wider flex items-center justify-between">
+                <span>Natural Earth & GeoNames</span>
+                <span>{searchResults.length} matches</span>
+              </div>
+              {searchResults.map((city) => {
+                const [lng, lat] = city.geometry.coordinates;
+                return (
+                  <button
+                    key={city.id || `${lat}-${lng}`}
+                    onClick={() => {
+                      setFocusTarget({ lat, lng, zoom: 11, name: city.properties.name });
+                      setCitySearchQuery("");
+                    }}
+                    className="w-full px-3 py-2 text-left hover:bg-slate-800 active:bg-slate-700 border-b border-white/5 last:border-0 transition-colors cursor-pointer group"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-white group-hover:text-cyan-300">
+                        {city.properties.name}
+                      </span>
+                      <span className="text-[10px] font-mono text-cyan-400 bg-cyan-950/60 px-1.5 py-0.5 rounded border border-cyan-500/20">
+                        {city.properties.plusCode?.slice(0, 8)}
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-slate-400 truncate">
+                      {[city.properties.district, city.properties.country].filter(Boolean).join(", ")}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Quick Layer Filter Buttons */}
+        <div className="bg-slate-900/90 backdrop-blur-md border border-slate-700/80 rounded-xl p-1 flex items-center gap-1 shadow-lg text-[10px] font-bold text-slate-300 w-fit">
+          <button
+            onClick={() => setActiveLayer("all")}
+            className={`px-2 py-1 rounded-lg transition-colors cursor-pointer ${
+              activeLayer === "all" ? "bg-indigo-600 text-white" : "hover:text-white"
+            }`}
+          >
+            All
+          </button>
+          <button
+            onClick={() => setActiveLayer("countries")}
+            className={`px-2 py-1 rounded-lg transition-colors cursor-pointer ${
+              activeLayer === "countries" ? "bg-indigo-600 text-white" : "hover:text-white"
+            }`}
+          >
+            Countries
+          </button>
+          <button
+            onClick={() => setActiveLayer("districts")}
+            className={`px-2 py-1 rounded-lg transition-colors cursor-pointer ${
+              activeLayer === "districts" ? "bg-indigo-600 text-white" : "hover:text-white"
+            }`}
+          >
+            Districts
+          </button>
+          <button
+            onClick={() => setActiveLayer("cities")}
+            className={`px-2 py-1 rounded-lg transition-colors cursor-pointer ${
+              activeLayer === "cities" ? "bg-indigo-600 text-white" : "hover:text-white"
+            }`}
+          >
+            Cities
+          </button>
+        </div>
+      </div>
+
       {/* Incident Status Legend */}
       <div className="absolute bottom-3 left-3 sm:bottom-6 sm:left-4 z-[400] bg-slate-900/90 backdrop-blur-md text-[10px] sm:text-xs px-2.5 py-2 sm:px-4 sm:py-3 rounded-xl border border-slate-700/80 shadow-lg pointer-events-none text-slate-200 flex flex-col gap-1 sm:gap-1.5">
         <div className="flex items-center gap-1.5 sm:gap-2"><span className="w-2.5 h-2.5 rounded-full bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.8)]"></span> Public Verified</div>
@@ -236,6 +407,11 @@ export default function MapClient() {
         <div className="flex items-center gap-1 sm:gap-2"><CheckCircle size={12} className="text-red-500 sm:w-4 sm:h-4"/> Verified: {globalStats.verified}</div>
         <div className="flex items-center gap-1 sm:gap-2"><AlertTriangle size={12} className="text-slate-400 sm:w-4 sm:h-4"/> Ignored: {globalStats.ignored}</div>
         <div className="flex items-center gap-1 sm:gap-2"><Flame size={12} className="text-orange-500 sm:w-4 sm:h-4"/> Heatmaps: {globalStats.heatmap}</div>
+      </div>
+
+      {/* Open-Source GeoJSON Attribution */}
+      <div className="absolute bottom-3 right-12 z-[400] bg-slate-900/80 backdrop-blur-md text-[9px] px-2 py-1 rounded-md border border-slate-800 text-slate-400 pointer-events-none hidden sm:block">
+        Natural Earth & GeoNames Open GeoJSON
       </div>
 
       <MapContainer 
@@ -253,6 +429,7 @@ export default function MapClient() {
       >
         <ZoomControl position="bottomright" />
         <MapEvents setZoom={setCurrentZoom} />
+        <MapController focusTarget={focusTarget} />
         <MapUrlSync />
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -260,13 +437,81 @@ export default function MapClient() {
           noWrap={true}
         />
         
-        {currentZoom < 8 && geoData && (
+        {/* Country Polygons (Risk & Incidents) */}
+        {(activeLayer === "all" || activeLayer === "countries") && currentZoom < 8 && geoData && (
           <GeoJSON 
             data={geoData} 
             style={styleFeature} 
             onEachFeature={onEachFeature} 
             key={JSON.stringify(countryStats)}
           />
+        )}
+
+        {/* Open-Source Districts & Provinces (Natural Earth Admin-1) */}
+        {(activeLayer === "all" || activeLayer === "districts") && districtsData && currentZoom < 9 && (
+          <GeoJSON
+            data={districtsData}
+            style={styleDistrictFeature}
+            onEachFeature={onEachDistrictFeature}
+            key="districts-open-layer"
+          />
+        )}
+
+        {/* Open-Source Cities & Populated Places (Natural Earth & GeoNames) */}
+        {(activeLayer === "all" || activeLayer === "cities") && citiesData?.features && (
+          citiesData.features.map((city) => {
+            const [lng, lat] = city.geometry.coordinates;
+            const isCapital = city.properties.type?.toLowerCase().includes("capital");
+            // At zoom < 4 only show national capitals; at zoom >= 4 show all cities
+            if (currentZoom < 4 && !isCapital) return null;
+
+            return (
+              <CircleMarker
+                key={city.id || `${lat}-${lng}`}
+                center={[lat, lng]}
+                radius={currentZoom >= 7 ? 6 : (isCapital ? 5 : 3.5)}
+                pathOptions={{
+                  fillColor: isCapital ? "#06b6d4" : "#6366f1",
+                  color: "#ffffff",
+                  weight: 1,
+                  opacity: 0.9,
+                  fillOpacity: 0.85
+                }}
+              >
+                <Popup>
+                  <div className="text-slate-900 w-full max-w-[240px]">
+                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-1">
+                      <Building2 size={12} />
+                      <span>{city.properties.type || "Populated Place"}</span>
+                    </div>
+                    <h3 className="font-bold text-base text-slate-950 mb-0.5">{city.properties.name}</h3>
+                    <p className="text-xs text-slate-600 mb-2">
+                      {[city.properties.district, city.properties.country].filter(Boolean).join(", ")}
+                    </p>
+                    <div className="bg-slate-100 rounded-lg p-2 text-xs mb-2.5 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500">Sector Code:</span>
+                        <span className="font-mono font-bold text-slate-800">{city.properties.plusCode || "N/A"}</span>
+                      </div>
+                      {city.properties.population > 0 && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-500">Population:</span>
+                          <span className="font-bold text-slate-700">{Number(city.properties.population).toLocaleString()}</span>
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => setFocusTarget({ lat, lng, zoom: 12 })}
+                      className="w-full bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-xs font-bold py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                    >
+                      <MapPin size={12} />
+                      <span>Focus City Sector</span>
+                    </button>
+                  </div>
+                </Popup>
+              </CircleMarker>
+            );
+          })
         )}
 
         <MarkerClusterGroup
