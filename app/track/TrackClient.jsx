@@ -32,7 +32,7 @@ export default function TrackCasePage() {
     
     try {
       // 1. Check local dev store first (makes newly submitted dev reports immediately available)
-      const localFound = getLocalReportByTrackingCode(code);
+      const localFound = await getLocalReportByTrackingCode(code);
       if (localFound) {
         setReport({ ...localFound, _docId: localFound.id, trackingCode: code });
         setIsSearching(false);
@@ -130,7 +130,7 @@ export default function TrackCasePage() {
     if (!report || !report.trackingCode) return;
     setIsUpdating(true);
     try {
-      updateLocalReportStatus(report.trackingCode, newStatus);
+      await updateLocalReportStatus(report.trackingCode, newStatus);
       if (isMockMode) {
         setReport({ ...report, status: newStatus });
       } else {
@@ -282,24 +282,24 @@ export default function TrackCasePage() {
               </div>
               <div>
                 <span className="block text-slate-500 mb-2 uppercase tracking-wider font-bold text-xs">Location</span>
-                <span className="text-white text-base break-words">{report.region}, {report.country}</span>
+                <span className="text-white text-base wrap-break-word">{report.region}, {report.country}</span>
                 {report.plusCode && (
                   <span className="block text-xs font-mono text-cyan-400 mt-1">Plus Code: {report.plusCode}</span>
                 )}
               </div>
               <div>
                 <span className="block text-slate-500 mb-2 uppercase tracking-wider font-bold text-xs">Category</span>
-                <span className="text-white text-base break-words">{report.category}</span>
+                <span className="text-white text-base wrap-break-word">{report.category}</span>
               </div>
               <div>
                 <span className="block text-slate-500 mb-2 uppercase tracking-wider font-bold text-xs">Facility Name</span>
-                <span className="text-white text-base break-words">
+                <span className="text-white text-base wrap-break-word">
                   {report.status === 'HEATMAP_AGGREGATED' ? "Hidden for safety" : (report.facilityName || "Hidden / Not provided")}
                 </span>
               </div>
               <div className="sm:col-span-2 mt-4">
                 <span className="block text-slate-500 mb-3 uppercase tracking-wider font-bold text-xs">Summary</span>
-                <p className="text-slate-300 text-base leading-relaxed bg-black/40 p-4 sm:p-6 rounded-2xl border border-white/5 break-words whitespace-pre-wrap shadow-inner">
+                <p className="text-slate-300 text-base leading-relaxed bg-black/40 p-4 sm:p-6 rounded-2xl border border-white/5 wrap-break-word whitespace-pre-wrap shadow-inner">
                   {report.summary}
                 </p>
               </div>
