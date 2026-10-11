@@ -1140,9 +1140,9 @@ export default function ReportPage() {
                   <span>Natural Earth & GeoNames Open Grids</span>
                   <span>Click to auto-fill</span>
                 </div>
-                {cityFilterResults.map((city) => (
+                {cityFilterResults.map((city, idx) => (
                   <button
-                    key={city.id || `${city.properties.name}-${city.properties.country}`}
+                    key={`report-city-${city.id || idx}-${idx}`}
                     type="button"
                     onClick={() => handleSelectCityGrid(city)}
                     className="w-full px-3 py-2 text-left hover:bg-slate-800 border-b border-white/5 last:border-0 transition-colors flex items-center justify-between group cursor-pointer"

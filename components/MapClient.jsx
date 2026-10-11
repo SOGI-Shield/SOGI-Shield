@@ -327,11 +327,11 @@ export default function MapClient() {
                 <span>Natural Earth & GeoNames</span>
                 <span>{searchResults.length} matches</span>
               </div>
-              {searchResults.map((city) => {
+              {searchResults.map((city, idx) => {
                 const [lng, lat] = city.geometry.coordinates;
                 return (
                   <button
-                    key={city.id || `${lat}-${lng}`}
+                    key={`search-city-${city.id || idx}-${lat}-${lng}-${idx}`}
                     onClick={() => {
                       setFocusTarget({ lat, lng, zoom: 11, name: city.properties.name });
                       setCitySearchQuery("");
@@ -459,7 +459,7 @@ export default function MapClient() {
 
         {/* Open-Source Cities & Populated Places (Natural Earth & GeoNames) */}
         {(activeLayer === "all" || activeLayer === "cities") && citiesData?.features && (
-          citiesData.features.map((city) => {
+          citiesData.features.map((city, idx) => {
             const [lng, lat] = city.geometry.coordinates;
             const isCapital = city.properties.type?.toLowerCase().includes("capital");
             // At zoom < 4 only show national capitals; at zoom >= 4 show all cities
@@ -467,7 +467,7 @@ export default function MapClient() {
 
             return (
               <CircleMarker
-                key={city.id || `${lat}-${lng}`}
+                key={`city-marker-${city.id || idx}-${lat}-${lng}-${idx}`}
                 center={[lat, lng]}
                 radius={currentZoom >= 7 ? 6 : (isCapital ? 5 : 3.5)}
                 pathOptions={{
@@ -518,10 +518,11 @@ export default function MapClient() {
           chunkedLoading
           maxClusterRadius={50}
         >
-          {reports.map((report) => {
+          {reports.map((report, idx) => {
+            const reportKey = `report-marker-${report.id || idx}-${idx}`;
             if (report.status === "PUBLIC_VERIFIED" && report.lat && report.lng && icons.red) {
               return (
-                <Marker key={report.id} position={[Number(report.lat), Number(report.lng)]} icon={icons.red}>
+                <Marker key={reportKey} position={[Number(report.lat), Number(report.lng)]} icon={icons.red}>
                   <Popup>
                     <div className="text-slate-900 w-full max-w-[260px]">
                       <h3 className="font-bold text-lg mb-1 break-words">{report.facilityName || "Verified Incident"}</h3>
@@ -539,7 +540,7 @@ export default function MapClient() {
               );
             } else if (report.status === "ACTION_IGNORED" && report.lat && report.lng && icons.grey) {
               return (
-                <Marker key={report.id} position={[Number(report.lat), Number(report.lng)]} icon={icons.grey}>
+                <Marker key={reportKey} position={[Number(report.lat), Number(report.lng)]} icon={icons.grey}>
                   <Popup>
                     <div className="text-slate-900 w-full max-w-[260px]">
                       <div className="inline-block bg-slate-200 text-slate-700 text-xs font-bold px-2 py-1 rounded mb-2 uppercase tracking-wide">
@@ -561,7 +562,7 @@ export default function MapClient() {
             } else if (report.status === "HEATMAP_AGGREGATED" && report.lat && report.lng) {
               return (
                 <CircleMarker
-                  key={report.id}
+                  key={reportKey}
                   center={[Number(report.lat), Number(report.lng)]}
                   radius={20}
                   fillColor="#f97316"
