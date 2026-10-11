@@ -3,6 +3,29 @@ import { encodePlusCode } from "@/lib/pluscode";
 
 export const runtime = "edge";
 
+// High-speed in-memory edge cache (LRU-like Map) for reverse geocoding
+const reverseGeocodeCache = new Map();
+const MAX_CACHE_SIZE = 300;
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+function getCachedReverse(key) {
+  const cached = reverseGeocodeCache.get(key);
+  if (!cached) return null;
+  if (Date.now() - cached.timestamp > CACHE_TTL_MS) {
+    reverseGeocodeCache.delete(key);
+    return null;
+  }
+  return cached.data;
+}
+
+function setCachedReverse(key, data) {
+  if (reverseGeocodeCache.size >= MAX_CACHE_SIZE) {
+    const oldestKey = reverseGeocodeCache.keys().next().value;
+    if (oldestKey) reverseGeocodeCache.delete(oldestKey);
+  }
+  reverseGeocodeCache.set(key, { data, timestamp: Date.now() });
+}
+
 /**
  * Robust Reverse Geocoding API powered by Photon by Komoot.
  * Includes fallback to OpenStreetMap Nominatim and graceful coordinate handling.
@@ -20,6 +43,13 @@ async function performReverseGeocode(lat, lng) {
     return { error: "Coordinates out of bounds. Latitude must be between -90 and 90, longitude between -180 and 180.", status: 400 };
   }
 
+  // Quantize coordinates to 3 decimal places (~110 meters) for high cache hit rates
+  const cacheKey = `${latitude.toFixed(3)},${longitude.toFixed(3)}`;
+  const cached = getCachedReverse(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
   // -------------------------------------------------------------
   // Tier 1: Photon by Komoot (Primary, fast, OSM-based search)
   // -------------------------------------------------------------
@@ -30,7 +60,7 @@ async function performReverseGeocode(lat, lng) {
         "User-Agent": "SOGI-Shield/1.0 (Global Human Rights Documentation; contact@sogi-shield.org)",
         "Accept": "application/json"
       },
-      signal: AbortSignal.timeout(5000)
+      signal: AbortSignal.timeout(4000)
     });
 
     if (photonRes.ok) {
@@ -45,17 +75,15 @@ async function performReverseGeocode(lat, lng) {
         const name = props.name || "";
         const street = props.street || "";
 
-        // Determine most suitable region
         const region = state || district || city || name || "";
 
-        // Build clean deduplicated formatted address
         const addressParts = [name, street, city, state, country].filter(Boolean);
         const uniqueParts = addressParts.filter((item, index) => addressParts.indexOf(item) === index);
         const formattedAddress = uniqueParts.join(", ") || `${region}, ${country}`.replace(/^, |, $/g, "");
 
         if (country || region) {
           const plusCode = encodePlusCode(latitude, longitude);
-          return {
+          const result = {
             success: true,
             lat: latitude,
             lng: longitude,
@@ -68,6 +96,8 @@ async function performReverseGeocode(lat, lng) {
             source: "photon_by_komoot",
             verified: true
           };
+          setCachedReverse(cacheKey, result);
+          return result;
         }
       }
     }
@@ -85,7 +115,7 @@ async function performReverseGeocode(lat, lng) {
         "User-Agent": "SOGI-Shield/1.0 (Global Human Rights Documentation; contact@sogi-shield.org)",
         "Accept": "application/json"
       },
-      signal: AbortSignal.timeout(5000)
+      signal: AbortSignal.timeout(4000)
     });
 
     if (nomRes.ok) {
@@ -98,7 +128,7 @@ async function performReverseGeocode(lat, lng) {
 
         if (country || region) {
           const plusCode = encodePlusCode(latitude, longitude);
-          return {
+          const result = {
             success: true,
             lat: latitude,
             lng: longitude,
@@ -111,6 +141,8 @@ async function performReverseGeocode(lat, lng) {
             source: "nominatim_reverse",
             verified: true
           };
+          setCachedReverse(cacheKey, result);
+          return result;
         }
       }
     }
@@ -122,7 +154,7 @@ async function performReverseGeocode(lat, lng) {
   // Tier 3: Graceful coordinate-only fallback (e.g. remote ocean)
   // -------------------------------------------------------------
   const plusCode = encodePlusCode(latitude, longitude);
-  return {
+  const fallbackResult = {
     success: true,
     lat: latitude,
     lng: longitude,
@@ -134,7 +166,14 @@ async function performReverseGeocode(lat, lng) {
     source: "plus_code_fallback",
     verified: false
   };
+  setCachedReverse(cacheKey, fallbackResult);
+  return fallbackResult;
 }
+
+const CACHE_HEADERS = {
+  "Cache-Control": "public, max-age=3600, s-maxage=604800, stale-while-revalidate=86400",
+  "CDN-Cache-Control": "public, s-maxage=604800"
+};
 
 export async function GET(req) {
   try {
@@ -146,9 +185,9 @@ export async function GET(req) {
     if (result.error) {
       return NextResponse.json({ success: false, message: result.error }, { status: result.status });
     }
-    return NextResponse.json(result);
+    return NextResponse.json(result, { headers: CACHE_HEADERS });
   } catch (err) {
-    console.error("Reverse geocoding error:", err);
+    console.error("Reverse Geocoding GET route error:", err);
     return NextResponse.json({ success: false, message: "Internal server error" }, { status: 500 });
   }
 }
@@ -156,16 +195,16 @@ export async function GET(req) {
 export async function POST(req) {
   try {
     const body = await req.json();
-    const lat = body?.lat;
-    const lng = body?.lng ?? body?.lon;
+    const lat = body?.lat ?? body?.latitude;
+    const lng = body?.lng ?? body?.longitude ?? body?.lon;
 
     const result = await performReverseGeocode(lat, lng);
     if (result.error) {
       return NextResponse.json({ success: false, message: result.error }, { status: result.status });
     }
-    return NextResponse.json(result);
+    return NextResponse.json(result, { headers: CACHE_HEADERS });
   } catch (err) {
-    console.error("Reverse geocoding error:", err);
+    console.error("Reverse Geocoding POST route error:", err);
     return NextResponse.json({ success: false, message: "Internal server error" }, { status: 500 });
   }
 }

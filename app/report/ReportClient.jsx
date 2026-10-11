@@ -40,6 +40,7 @@ import { saveLocalReport } from "@/lib/localStore";
 import CommunityCautionCard from "@/components/CommunityCautionCard";
 import RegionalImpactPreview from "@/components/RegionalImpactPreview";
 import EvidenceLockerResources from "@/components/EvidenceLockerResources";
+import { getGeoJson } from "@/lib/geoDataService";
 
 const NARRATIVE_STARTERS = [
   {
@@ -118,14 +119,11 @@ export default function ReportPage() {
   const [showCityDropdown, setShowCityDropdown] = useState(false);
 
   useEffect(() => {
-    fetch('/cities.geojson')
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.features) {
-          setOpenSourceCities(data.features);
-        }
-      })
-      .catch(err => console.warn("Failed to load cities.geojson in report form", err));
+    getGeoJson('/cities.geojson').then(data => {
+      if (data && data.features) {
+        setOpenSourceCities(data.features);
+      }
+    }).catch(err => console.warn("Failed to load cities.geojson in report form", err));
   }, []);
 
   const cityFilterResults = useMemo(() => {

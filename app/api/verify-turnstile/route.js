@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 
+export const runtime = 'edge';
+
 export async function POST(request) {
   try {
     let body;
@@ -33,6 +35,7 @@ export async function POST(request) {
     const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
       method: 'POST',
       body: verifyData,
+      signal: AbortSignal.timeout(5000)
     });
 
     const data = await response.json();

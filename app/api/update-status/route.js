@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getDocument, updateDocumentStatus } from '@/lib/edgeFirebase';
+import { invalidateTrackCache } from '@/app/api/track-report/route';
+
+export const runtime = 'edge';
 
 const TRACKING_CODE_REGEX = /^[A-Za-z0-9_-]{5,64}$/;
 const ALLOWED_STATUSES = new Set(['PUBLIC_VERIFIED', 'HEATMAP_AGGREGATED', 'ACTION_IGNORED']);
@@ -29,6 +32,7 @@ export async function POST(request) {
     }
 
     if (process.env.NEXT_PUBLIC_USE_MOCK === 'true') {
+      invalidateTrackCache(trimmedCode);
       return NextResponse.json({ success: true });
     }
 
@@ -46,6 +50,7 @@ export async function POST(request) {
 
     // 2. Update the actual report data
     await updateDocumentStatus('reports', reportId, newStatus);
+    invalidateTrackCache(trimmedCode);
 
     return NextResponse.json({ success: true });
 

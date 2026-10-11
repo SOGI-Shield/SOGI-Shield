@@ -1,7 +1,6 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
-
 :root {
   --background: #0f172a;
   --foreground: #f8fafc;
@@ -11,10 +10,25 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
+/* Eliminate 300ms mobile touch delay */
+button, a, input, select, textarea {
+  touch-action: manipulation;
+}
+
+/* GPU hardware compositing and smooth tile rendering for Leaflet on weak mobile GPUs */
 .leaflet-container {
   width: 100%;
   height: 100%;
   z-index: 10;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+.leaflet-tile {
+  will-change: transform;
 }

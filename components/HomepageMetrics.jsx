@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { collection, getDocs, query } from "firebase/firestore/lite";
-import { db, isMockMode } from "@/lib/firebase";
+import { subscribeReports, fetchAllReports, initBackgroundPoller } from "@/lib/reportsCache";
 import Link from "next/link";
 
 export default function HomepageMetrics() {
   const [stats, setStats] = useState({ total: 0, verified: 0, ignored: 0, heatmap: 0 });
 
   const calculateStats = (reports) => {
+    if (!reports || !Array.isArray(reports)) return;
     const newStats = { total: 0, verified: 0, ignored: 0, heatmap: 0 };
     reports.forEach(report => {
       newStats.total++;
@@ -20,38 +20,12 @@ export default function HomepageMetrics() {
   };
 
   useEffect(() => {
-    if (isMockMode) {
-      import('@/src/data/mockReports.json').then(m => {
-        const staticReports = m.default || m;
-        import('@/lib/localStore').then(({ getLocalReports }) => {
-          const localReports = getLocalReports();
-          const combined = [
-            ...localReports,
-            ...staticReports.filter(s => !localReports.some(l => l.id === s.id))
-          ];
-          calculateStats(combined);
-        }).catch(() => {
-          calculateStats(staticReports);
-        });
-      });
-      return;
-    }
-
-    if (process.env.NEXT_PUBLIC_FIREBASE_API_KEY && process.env.NEXT_PUBLIC_FIREBASE_API_KEY !== 'your_api_key_here' && db) {
-      const q = query(collection(db, "reports"));
-      const fetchReports = async () => {
-        try {
-          const snapshot = await getDocs(q);
-          const fetched = snapshot.docs.map(doc => doc.data());
-          calculateStats(fetched);
-        } catch (e) {
-          console.error("Failed to fetch reports for metrics:", e);
-        }
-      };
-      fetchReports();
-      const interval = setInterval(fetchReports, 60000);
-      return () => clearInterval(interval);
-    }
+    initBackgroundPoller();
+    const unsubscribe = subscribeReports((reports) => {
+      calculateStats(reports);
+    });
+    fetchAllReports();
+    return () => unsubscribe();
   }, []);
 
   return (

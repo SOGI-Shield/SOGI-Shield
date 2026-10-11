@@ -1,11 +1,11 @@
 "use client";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { MapContainer, TileLayer, Marker, Popup, CircleMarker, GeoJSON, useMapEvents, useMap, ZoomControl } from "react-leaflet";
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from "leaflet";
-import { collection, getDocs, query } from "firebase/firestore/lite";
-import { db, isMockMode } from "@/lib/firebase";
 import { isValidWebUrl } from "@/lib/utils";
+import { getGeoJson } from "@/lib/geoDataService";
+import { subscribeReports, fetchAllReports, initBackgroundPoller } from "@/lib/reportsCache";
 import { 
   Maximize2, 
   Minimize2, 
@@ -19,15 +19,25 @@ import {
   Building2,
   MapPin,
   Layers,
-  Globe
+  ChevronDown,
+  Info
 } from "lucide-react";
 
-function MapEvents({ setZoom }) {
+function MapEvents({ setZoom, setBounds }) {
   const map = useMapEvents({
     zoomend: () => {
       setZoom(map.getZoom());
+      setBounds(map.getBounds());
+    },
+    moveend: () => {
+      setBounds(map.getBounds());
     }
   });
+
+  useEffect(() => {
+    setBounds(map.getBounds());
+  }, [map, setBounds]);
+
   return null;
 }
 
@@ -62,6 +72,7 @@ function MapUrlSync() {
 export default function MapClient() {
   const MIN_POLYGON_THRESHOLD = 100;
   const [reports, setReports] = useState([]);
+  const [isLoadingReports, setIsLoadingReports] = useState(true);
   const [icons] = useState(() => {
     if (typeof window === "undefined" || !L || !L.Icon) {
       return { red: null, grey: null };
@@ -99,9 +110,12 @@ export default function MapClient() {
   const [citiesData, setCitiesData] = useState(null);
   const [districtsData, setDistrictsData] = useState(null);
   const [activeLayer, setActiveLayer] = useState("all"); // 'all' | 'countries' | 'districts' | 'cities'
+  const [showLayerMenu, setShowLayerMenu] = useState(false);
+  const [showLegend, setShowLegend] = useState(false);
   const [citySearchQuery, setCitySearchQuery] = useState("");
   const [focusTarget, setFocusTarget] = useState(null);
   const [currentZoom, setCurrentZoom] = useState(2);
+  const [mapBounds, setMapBounds] = useState(null);
   const [selectedReport, setSelectedReport] = useState(null);
 
   const truncateWords = (str, numWords = 8) => {
@@ -111,23 +125,40 @@ export default function MapClient() {
     return words.slice(0, numWords).join(" ") + "...";
   };
 
+  // Progressive GeoJSON Loading: Countries first, cities and districts deferred for slow networks
   useEffect(() => {
-    fetch('/countries.geojson')
-      .then(res => res.json())
-      .then(data => setGeoData(data))
-      .catch(err => console.error("Failed to load country geojson", err));
+    // 1. Countries GeoJSON (priority for base polygons)
+    getGeoJson('/countries.geojson').then(data => {
+      if (data) setGeoData(data);
+    });
 
-    fetch('/cities.geojson')
-      .then(res => res.json())
-      .then(data => setCitiesData(data))
-      .catch(err => console.error("Failed to load cities geojson", err));
+    // 2. Cities & Districts deferred slightly to prioritize map tile loading and UI responsiveness
+    const timer = setTimeout(() => {
+      getGeoJson('/cities.geojson').then(data => {
+        if (data) setCitiesData(data);
+      });
+      getGeoJson('/districts.geojson').then(data => {
+        if (data) setDistrictsData(data);
+      });
+    }, 150);
 
-    fetch('/districts.geojson')
-      .then(res => res.json())
-      .then(data => setDistrictsData(data))
-      .catch(err => console.error("Failed to load districts geojson", err));
+    return () => clearTimeout(timer);
   }, []);
 
+  // Shared Reports Synchronization
+  useEffect(() => {
+    initBackgroundPoller();
+    const unsubscribe = subscribeReports((allReports) => {
+      setReports(allReports);
+      setIsLoadingReports(false);
+    });
+    fetchAllReports().then(() => {
+      setIsLoadingReports(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Fast client-side city search across all 1,249 features in memory
   const searchResults = useMemo(() => {
     if (!citiesData?.features || !citySearchQuery.trim()) return [];
     const q = citySearchQuery.toLowerCase().trim();
@@ -142,6 +173,55 @@ export default function MapClient() {
       .slice(0, 6);
   }, [citiesData, citySearchQuery]);
 
+  // Viewport Bounding Box & Zoom-Tiered City LOD Culling
+  // Drastically cuts React DOM reconciliation down from 1,249 markers to max 60 markers!
+  const visibleCities = useMemo(() => {
+    if (!citiesData?.features) return [];
+    if (activeLayer !== "all" && activeLayer !== "cities") return [];
+
+    // Global / World View (zoom 2): show top national capitals only
+    if (currentZoom < 3) {
+      return citiesData.features
+        .filter(c => c.properties?.type?.toLowerCase().includes("capital") && (c.properties?.population || 0) >= 1000000)
+        .slice(0, 30);
+    }
+
+    // Continental View (zoom 3-4): show capitals + top metropolitan centers
+    if (currentZoom < 5) {
+      return citiesData.features
+        .filter(c => {
+          const isCapital = c.properties?.type?.toLowerCase().includes("capital");
+          const pop = c.properties?.population || 0;
+          return isCapital || pop >= 1500000;
+        })
+        .slice(0, 50);
+    }
+
+    // Viewport-based culling when zoomed into countries/regions
+    if (!mapBounds) {
+      return citiesData.features.slice(0, 40);
+    }
+
+    const south = mapBounds.getSouth() - 0.2;
+    const north = mapBounds.getNorth() + 0.2;
+    const west = mapBounds.getWest() - 0.2;
+    const east = mapBounds.getEast() + 0.2;
+
+    const inBounds = citiesData.features.filter(c => {
+      const [lng, lat] = c.geometry.coordinates;
+      return lat >= south && lat <= north && lng >= west && lng <= east;
+    });
+
+    if (currentZoom < 8) {
+      return inBounds
+        .sort((a, b) => (b.properties?.population || 0) - (a.properties?.population || 0))
+        .slice(0, 55);
+    }
+
+    // High zoom local metropolitan view
+    return inBounds.slice(0, 60);
+  }, [citiesData, activeLayer, currentZoom, mapBounds]);
+
   const styleDistrictFeature = () => ({
     fillColor: "#6366f1",
     color: "#818cf8",
@@ -151,7 +231,7 @@ export default function MapClient() {
     fillOpacity: 0.05
   });
 
-  const onEachDistrictFeature = (feature, layer) => {
+  const onEachDistrictFeature = useCallback((feature, layer) => {
     const p = feature.properties || {};
     const label = `
       <div style="font-family: sans-serif; color: #0f172a;">
@@ -160,77 +240,33 @@ export default function MapClient() {
       </div>
     `;
     layer.bindTooltip(label, { sticky: true });
-  };
-
-  const [isLoadingReports, setIsLoadingReports] = useState(() => isMockMode || Boolean(process.env.NEXT_PUBLIC_FIREBASE_API_KEY));
-
-  useEffect(() => {
-    if (isMockMode) {
-      import('@/src/data/mockReports.json').then(m => {
-        const staticReports = m.default || m;
-        import('@/lib/localStore').then(({ getLocalReports }) => {
-          const localReports = getLocalReports();
-          const combined = [
-            ...localReports,
-            ...staticReports.filter(s => !localReports.some(l => l.id === s.id))
-          ];
-          setReports(combined);
-          setIsLoadingReports(false);
-        }).catch(() => {
-          setReports(staticReports);
-          setIsLoadingReports(false);
-        });
-      }).catch(e => {
-        console.error("Failed to load mock reports:", e);
-        setIsLoadingReports(false);
-      });
-      return;
-    }
-
-    if (process.env.NEXT_PUBLIC_FIREBASE_API_KEY && process.env.NEXT_PUBLIC_FIREBASE_API_KEY !== 'your_api_key_here') {
-      const q = query(collection(db, "reports"));
-      const fetchReports = async () => {
-        try {
-          const snapshot = await getDocs(q);
-          const fetched = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          setReports(fetched);
-        } catch (e) {
-          console.error("Failed to fetch reports:", e);
-        } finally {
-          setIsLoadingReports(false);
-        }
-      };
-      
-      fetchReports();
-      // Optional polling every 60s
-      const interval = setInterval(fetchReports, 60000);
-      return () => clearInterval(interval);
-    } else {
-      console.warn("Firebase API key is missing. Map will remain empty.");
-    }
   }, []);
 
-  const countryStats = {};
-  const globalStats = { total: 0, verified: 0, ignored: 0, heatmap: 0 };
-  
-  reports.forEach(report => {
-    globalStats.total++;
-    if (report.status === "PUBLIC_VERIFIED") globalStats.verified++;
-    if (report.status === "ACTION_IGNORED") globalStats.ignored++;
-    if (report.status === "HEATMAP_AGGREGATED") globalStats.heatmap++;
+  const { countryStats, globalStats } = useMemo(() => {
+    const cStats = {};
+    const gStats = { total: 0, verified: 0, ignored: 0, heatmap: 0 };
 
-    const country = report.country;
-    if (!country) return;
-    if (!countryStats[country]) {
-      countryStats[country] = { verified: 0, ignored: 0, aggregated: 0, total: 0 };
-    }
-    countryStats[country].total++;
-    if (report.status === "PUBLIC_VERIFIED") countryStats[country].verified++;
-    if (report.status === "ACTION_IGNORED") countryStats[country].ignored++;
-    if (report.status === "HEATMAP_AGGREGATED") countryStats[country].aggregated++;
-  });
+    reports.forEach(report => {
+      gStats.total++;
+      if (report.status === "PUBLIC_VERIFIED") gStats.verified++;
+      if (report.status === "ACTION_IGNORED") gStats.ignored++;
+      if (report.status === "HEATMAP_AGGREGATED") gStats.heatmap++;
 
-  const styleFeature = (feature) => {
+      const country = report.country;
+      if (!country) return;
+      if (!cStats[country]) {
+        cStats[country] = { verified: 0, ignored: 0, aggregated: 0, total: 0 };
+      }
+      cStats[country].total++;
+      if (report.status === "PUBLIC_VERIFIED") cStats[country].verified++;
+      if (report.status === "ACTION_IGNORED") cStats[country].ignored++;
+      if (report.status === "HEATMAP_AGGREGATED") cStats[country].aggregated++;
+    });
+
+    return { countryStats: cStats, globalStats: gStats };
+  }, [reports]);
+
+  const styleFeature = useCallback((feature) => {
     const countryName = feature.properties.name;
     const stats = countryStats[countryName];
     
@@ -238,36 +274,39 @@ export default function MapClient() {
       return { fillColor: "transparent", color: "transparent", weight: 0, opacity: 0, fillOpacity: 0 };
     }
 
-    let fillColor = "#D97706"; // Amber (default / moderate)
-    
-    // High Neglect (more ignored than verified)
+    let fillColor = "#D97706";
     if (stats.ignored > stats.verified) {
-      fillColor = "#374151"; // Charcoal Grey
-    } 
-    // High Density
-    else if (stats.total >= 50) {
-      fillColor = "#DC2626"; // Deep Red
+      fillColor = "#374151";
+    } else if (stats.total >= 50) {
+      fillColor = "#DC2626";
     }
 
-    return { fillColor, color: "#94a3b8", weight: 1, opacity: 0.8, fillOpacity: 0.4 };
-  };
+    return {
+      fillColor: fillColor,
+      weight: 1,
+      opacity: 0.8,
+      color: "#9CA3AF",
+      fillOpacity: 0.4
+    };
+  }, [countryStats]);
 
-  const onEachFeature = (feature, layer) => {
+  const onEachFeature = useCallback((feature, layer) => {
     const countryName = feature.properties.name;
     const stats = countryStats[countryName];
+    
     if (stats && stats.total >= MIN_POLYGON_THRESHOLD) {
       const tooltipContent = `
-        <div style="font-family: sans-serif; color: #0f172a;">
-          <div style="font-weight: bold; font-size: 14px;">${countryName}</div>
-          <div style="font-size: 12px; margin-top: 4px;">Total Incidents: ${stats.total}</div>
-          <div style="font-size: 12px; color: #dc2626;">Verified: ${stats.verified}</div>
-          <div style="font-size: 12px; color: #64748b;">Ignored: ${stats.ignored}</div>
-          <div style="font-size: 12px; color: #d97706;">Aggregated: ${stats.aggregated}</div>
+        <div style="font-family: sans-serif; color: #000; min-width: 140px;">
+          <div style="font-weight: bold; font-size: 14px; margin-bottom: 4px;">${countryName}</div>
+          <div style="font-size: 12px; margin-bottom: 2px;">Total Incidents: <b>${stats.total}</b></div>
+          <div style="font-size: 12px; color: #16a34a; margin-bottom: 2px;">Verified: <b>${stats.verified}</b></div>
+          <div style="font-size: 12px; color: #dc2626; margin-bottom: 2px;">Ignored: <b>${stats.ignored}</b></div>
+          <div style="font-size: 12px; color: #ea580c;">Heatmap Aggregated: <b>${stats.aggregated}</b></div>
         </div>
       `;
       layer.bindTooltip(tooltipContent, { sticky: true });
     }
-  };
+  }, [countryStats]);
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
@@ -275,145 +314,183 @@ export default function MapClient() {
 
   const containerClasses = isFullscreen 
     ? "fixed inset-0 z-[1000] bg-slate-950 p-0 sm:p-4 flex flex-col"
-    : "relative w-full h-[50vh] min-h-[450px] md:h-[700px] rounded-xl overflow-hidden shadow-2xl border border-slate-700 z-10";
+    : "relative w-full h-[55vh] min-h-[460px] md:h-[720px] rounded-xl overflow-hidden shadow-2xl border border-slate-700/80 z-10";
 
   return (
     <div className={containerClasses}>
-      {/* Fullscreen Toggle (enabled on all screen sizes with 44px touch target) */}
-      <button 
-        onClick={toggleFullscreen}
-        className="absolute top-3 right-3 sm:top-4 sm:right-4 z-[400] bg-slate-900/90 hover:bg-indigo-600 active:bg-indigo-700 text-white min-w-[44px] min-h-[44px] p-2.5 rounded-xl backdrop-blur-md shadow-lg border border-slate-700/80 transition-all pointer-events-auto flex items-center justify-center cursor-pointer"
-        title="Toggle Fullscreen"
-        aria-label="Toggle Fullscreen"
-      >
-        {isFullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
-      </button>
+      {/* Top Floating Utility Bar (Anti-Clutter, Mobile-Optimized) */}
+      <div className="absolute top-3 left-3 right-3 sm:top-4 sm:left-4 sm:right-4 z-[400] flex items-center justify-between gap-2 pointer-events-none">
+        {/* Search + Layer Controls Cluster */}
+        <div className="flex items-center gap-1.5 sm:gap-2 pointer-events-auto flex-1 max-w-sm sm:max-w-md">
+          <div className="relative flex-1">
+            <div className="bg-slate-900/95 backdrop-blur-md border border-slate-700/90 rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2 flex items-center gap-2 shadow-xl">
+              <Search size={14} className="text-cyan-400 shrink-0" />
+              <input
+                type="text"
+                value={citySearchQuery}
+                onChange={(e) => setCitySearchQuery(e.target.value)}
+                placeholder="Search 1,200+ cities & grids..."
+                className="bg-transparent text-xs text-white placeholder:text-slate-400 focus:outline-none w-full"
+              />
+              {citySearchQuery && (
+                <button
+                  onClick={() => setCitySearchQuery("")}
+                  className="text-slate-400 hover:text-white p-0.5 rounded-full cursor-pointer"
+                  title="Clear search"
+                  aria-label="Clear search"
+                >
+                  <X size={12} />
+                </button>
+              )}
+            </div>
 
-      {/* Loading Indicator */}
-      {isLoadingReports && (
-        <div className="absolute top-16 right-3 sm:top-16 sm:right-4 z-[400] bg-slate-900/90 backdrop-blur-md border border-cyan-500/30 px-3 py-1.5 rounded-full text-[10px] sm:text-xs font-bold text-cyan-300 shadow-lg flex items-center gap-1.5 sm:gap-2 pointer-events-none animate-pulse">
-          <Loader2 size={12} className="animate-spin text-cyan-400" />
-          <span>Syncing pins...</span>
-        </div>
-      )}
-
-      {/* City & District Search + Layer Controls (Natural Earth & GeoNames) */}
-      <div className="absolute top-12 left-3 sm:top-4 sm:left-4 z-[400] flex flex-col gap-2 max-w-[calc(100%-60px)] sm:max-w-xs">
-        <div className="relative">
-          <div className="bg-slate-900/95 backdrop-blur-md border border-slate-700/80 rounded-xl px-3 py-2 flex items-center gap-2 shadow-xl">
-            <Search size={14} className="text-cyan-400 shrink-0" />
-            <input
-              type="text"
-              value={citySearchQuery}
-              onChange={(e) => setCitySearchQuery(e.target.value)}
-              placeholder="Search 1,200+ cities & districts..."
-              className="bg-transparent text-xs text-white placeholder:text-slate-400 focus:outline-none w-full"
-            />
-            {citySearchQuery && (
-              <button
-                onClick={() => setCitySearchQuery("")}
-                className="text-slate-400 hover:text-white p-0.5 rounded-full cursor-pointer"
-                title="Clear search"
-              >
-                <X size={12} />
-              </button>
+            {/* Instant City Search Dropdown */}
+            {searchResults.length > 0 && (
+              <div className="absolute top-full mt-1.5 left-0 w-full bg-slate-900/95 backdrop-blur-md border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50 text-left">
+                <div className="p-1.5 text-[10px] font-bold text-slate-400 border-b border-white/5 uppercase tracking-wider flex items-center justify-between">
+                  <span>Natural Earth & GeoNames</span>
+                  <span>{searchResults.length} matches</span>
+                </div>
+                {searchResults.map((city, idx) => {
+                  const [lng, lat] = city.geometry.coordinates;
+                  return (
+                    <button
+                      key={`search-city-${city.id || idx}-${lat}-${lng}-${idx}`}
+                      onClick={() => {
+                        setFocusTarget({ lat, lng, zoom: 11, name: city.properties.name });
+                        setCitySearchQuery("");
+                      }}
+                      className="w-full px-3 py-2 text-left hover:bg-slate-800 active:bg-slate-700 border-b border-white/5 last:border-0 transition-colors cursor-pointer group"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-white group-hover:text-cyan-300">
+                          {city.properties.name}
+                        </span>
+                        <span className="text-[10px] font-mono text-cyan-400 bg-cyan-950/60 px-1.5 py-0.5 rounded border border-cyan-500/20">
+                          {city.properties.plusCode?.slice(0, 8)}
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-slate-400 truncate">
+                        {[city.properties.district, city.properties.country].filter(Boolean).join(", ")}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             )}
           </div>
 
-          {/* Autocomplete dropdown */}
-          {searchResults.length > 0 && (
-            <div className="absolute top-full mt-1.5 left-0 w-full bg-slate-900/95 backdrop-blur-md border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50 text-left">
-              <div className="p-1.5 text-[10px] font-bold text-slate-400 border-b border-white/5 uppercase tracking-wider flex items-center justify-between">
-                <span>Natural Earth & GeoNames</span>
-                <span>{searchResults.length} matches</span>
-              </div>
-              {searchResults.map((city, idx) => {
-                const [lng, lat] = city.geometry.coordinates;
-                return (
+          {/* Collapsible Layer Toggle Pill */}
+          <div className="relative">
+            <button
+              onClick={() => setShowLayerMenu(!showLayerMenu)}
+              className="bg-slate-900/95 hover:bg-slate-800 text-slate-300 hover:text-white px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl border border-slate-700/90 text-xs font-bold flex items-center gap-1.5 shadow-xl transition-all cursor-pointer min-h-[36px]"
+              title="Toggle Map Layers"
+              aria-label="Toggle Map Layers"
+            >
+              <Layers size={13} className="text-indigo-400" />
+              <span className="hidden sm:inline capitalize">{activeLayer}</span>
+              <ChevronDown size={12} className={`transition-transform duration-200 ${showLayerMenu ? "rotate-180" : ""}`} />
+            </button>
+
+            {showLayerMenu && (
+              <div className="absolute top-full mt-1.5 right-0 sm:left-0 bg-slate-900/95 backdrop-blur-md border border-slate-700 rounded-xl p-1 shadow-2xl flex flex-col gap-0.5 z-50 min-w-[120px]">
+                {["all", "countries", "districts", "cities"].map((layer) => (
                   <button
-                    key={`search-city-${city.id || idx}-${lat}-${lng}-${idx}`}
+                    key={`layer-opt-${layer}`}
                     onClick={() => {
-                      setFocusTarget({ lat, lng, zoom: 11, name: city.properties.name });
-                      setCitySearchQuery("");
+                      setActiveLayer(layer);
+                      setShowLayerMenu(false);
                     }}
-                    className="w-full px-3 py-2 text-left hover:bg-slate-800 active:bg-slate-700 border-b border-white/5 last:border-0 transition-colors cursor-pointer group"
+                    className={`w-full px-2.5 py-1.5 rounded-lg text-left text-xs font-semibold capitalize transition-colors cursor-pointer ${
+                      activeLayer === layer ? "bg-indigo-600 text-white font-bold" : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                    }`}
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-white group-hover:text-cyan-300">
-                        {city.properties.name}
-                      </span>
-                      <span className="text-[10px] font-mono text-cyan-400 bg-cyan-950/60 px-1.5 py-0.5 rounded border border-cyan-500/20">
-                        {city.properties.plusCode?.slice(0, 8)}
-                      </span>
-                    </div>
-                    <div className="text-[11px] text-slate-400 truncate">
-                      {[city.properties.district, city.properties.country].filter(Boolean).join(", ")}
-                    </div>
+                    {layer}
                   </button>
-                );
-              })}
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right Toolbar: Sync Status + Fullscreen */}
+        <div className="flex items-center gap-2 pointer-events-auto">
+          {isLoadingReports && (
+            <div className="bg-slate-900/90 backdrop-blur-md border border-cyan-500/30 px-2.5 py-1.5 rounded-xl text-[10px] font-bold text-cyan-300 shadow-lg flex items-center gap-1.5 animate-pulse">
+              <Loader2 size={12} className="animate-spin text-cyan-400" />
+              <span className="hidden sm:inline">Syncing...</span>
             </div>
           )}
-        </div>
 
-        {/* Quick Layer Filter Buttons */}
-        <div className="bg-slate-900/90 backdrop-blur-md border border-slate-700/80 rounded-xl p-1 flex items-center gap-1 shadow-lg text-[10px] font-bold text-slate-300 w-fit">
-          <button
-            onClick={() => setActiveLayer("all")}
-            className={`px-2 py-1 rounded-lg transition-colors cursor-pointer ${
-              activeLayer === "all" ? "bg-indigo-600 text-white" : "hover:text-white"
-            }`}
+          <button 
+            onClick={toggleFullscreen}
+            className="bg-slate-900/95 hover:bg-indigo-600 active:bg-indigo-700 text-white min-w-[36px] min-h-[36px] sm:min-w-[40px] sm:min-h-[40px] p-2 rounded-xl backdrop-blur-md shadow-lg border border-slate-700/90 transition-all flex items-center justify-center cursor-pointer"
+            title="Toggle Fullscreen"
+            aria-label="Toggle Fullscreen"
           >
-            All
-          </button>
-          <button
-            onClick={() => setActiveLayer("countries")}
-            className={`px-2 py-1 rounded-lg transition-colors cursor-pointer ${
-              activeLayer === "countries" ? "bg-indigo-600 text-white" : "hover:text-white"
-            }`}
-          >
-            Countries
-          </button>
-          <button
-            onClick={() => setActiveLayer("districts")}
-            className={`px-2 py-1 rounded-lg transition-colors cursor-pointer ${
-              activeLayer === "districts" ? "bg-indigo-600 text-white" : "hover:text-white"
-            }`}
-          >
-            Districts
-          </button>
-          <button
-            onClick={() => setActiveLayer("cities")}
-            className={`px-2 py-1 rounded-lg transition-colors cursor-pointer ${
-              activeLayer === "cities" ? "bg-indigo-600 text-white" : "hover:text-white"
-            }`}
-          >
-            Cities
+            {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
           </button>
         </div>
       </div>
 
-      {/* Incident Status Legend */}
-      <div className="absolute bottom-3 left-3 sm:bottom-6 sm:left-4 z-[400] bg-slate-900/90 backdrop-blur-md text-[10px] sm:text-xs px-2.5 py-2 sm:px-4 sm:py-3 rounded-xl border border-slate-700/80 shadow-lg pointer-events-none text-slate-200 flex flex-col gap-1 sm:gap-1.5">
-        <div className="flex items-center gap-1.5 sm:gap-2"><span className="w-2.5 h-2.5 rounded-full bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.8)]"></span> Public Verified</div>
-        <div className="flex items-center gap-1.5 sm:gap-2"><span className="w-2.5 h-2.5 rounded-full bg-slate-400 shadow-[0_0_8px_rgba(148,163,184,0.8)]"></span> Action Ignored</div>
-        <div className="flex items-center gap-1.5 sm:gap-2"><span className="w-2.5 h-2.5 rounded-full bg-orange-500 opacity-80 shadow-[0_0_8px_rgba(249,115,22,0.8)]"></span> Heatmap Aggregated</div>
+      {/* Floating Global Incident Stats HUD (Centered, Non-Obtrusive) */}
+      <div className="absolute bottom-14 left-3 right-3 sm:bottom-4 sm:left-1/2 sm:-translate-x-1/2 sm:right-auto z-[400] bg-slate-900/90 backdrop-blur-md text-[10px] sm:text-xs px-3 py-1.5 sm:px-5 sm:py-2.5 rounded-xl sm:rounded-full border border-slate-700/80 shadow-2xl pointer-events-none text-slate-200 flex items-center justify-between sm:justify-center gap-2 sm:gap-5">
+        <div className="flex items-center gap-1 font-bold">
+          <Shield size={12} className="text-indigo-400" />
+          <span className="hidden sm:inline">Incidents:</span>
+          <span>{globalStats.total}</span>
+        </div>
+        <div className="w-px h-3 bg-slate-700 hidden sm:block"></div>
+        <div className="flex items-center gap-1 text-rose-400 font-semibold">
+          <CheckCircle size={12} className="text-rose-500" />
+          <span className="hidden sm:inline">Verified:</span>
+          <span>{globalStats.verified}</span>
+        </div>
+        <div className="w-px h-3 bg-slate-700 hidden sm:block"></div>
+        <div className="flex items-center gap-1 text-slate-400 font-semibold">
+          <AlertTriangle size={12} className="text-slate-400" />
+          <span className="hidden sm:inline">Ignored:</span>
+          <span>{globalStats.ignored}</span>
+        </div>
+        <div className="w-px h-3 bg-slate-700 hidden sm:block"></div>
+        <div className="flex items-center gap-1 text-orange-400 font-semibold">
+          <Flame size={12} className="text-orange-500" />
+          <span className="hidden sm:inline">Heatmaps:</span>
+          <span>{globalStats.heatmap}</span>
+        </div>
       </div>
 
-      {/* Global Incident Stats HUD */}
-      <div className="absolute top-3 left-3 sm:top-auto sm:bottom-6 sm:left-1/2 sm:-translate-x-1/2 z-[400] bg-slate-900/90 backdrop-blur-md text-[10px] sm:text-sm px-2.5 py-1.5 sm:px-6 sm:py-3 rounded-xl sm:rounded-full border border-slate-800 shadow-xl pointer-events-none text-slate-200 flex flex-wrap justify-center max-w-[calc(100%-68px)] sm:max-w-none items-center gap-1.5 sm:gap-6">
-        <div className="flex items-center gap-1 sm:gap-2 font-bold"><Shield size={12} className="text-indigo-400 sm:w-4 sm:h-4"/> <span className="hidden sm:inline">Total Incidents:</span><span className="sm:hidden">Total:</span> {globalStats.total}</div>
-        <div className="w-px h-4 bg-slate-700 hidden sm:block"></div>
-        <div className="flex items-center gap-1 sm:gap-2"><CheckCircle size={12} className="text-red-500 sm:w-4 sm:h-4"/> Verified: {globalStats.verified}</div>
-        <div className="flex items-center gap-1 sm:gap-2"><AlertTriangle size={12} className="text-slate-400 sm:w-4 sm:h-4"/> Ignored: {globalStats.ignored}</div>
-        <div className="flex items-center gap-1 sm:gap-2"><Flame size={12} className="text-orange-500 sm:w-4 sm:h-4"/> Heatmaps: {globalStats.heatmap}</div>
+      {/* Collapsible Incident Legend (Bottom Left) */}
+      <div className="absolute bottom-3 left-3 z-[400] flex flex-col items-start gap-1">
+        {showLegend && (
+          <div className="bg-slate-900/95 backdrop-blur-md text-[10px] sm:text-xs px-3 py-2 rounded-xl border border-slate-700 shadow-2xl text-slate-200 flex flex-col gap-1.5 mb-1 animate-in fade-in duration-150">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.8)]"></span>
+              <span>Public Verified</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-slate-400 shadow-[0_0_8px_rgba(148,163,184,0.8)]"></span>
+              <span>Action Ignored</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-orange-500 opacity-80 shadow-[0_0_8px_rgba(249,115,22,0.8)]"></span>
+              <span>Heatmap Aggregated</span>
+            </div>
+          </div>
+        )}
+        <button
+          onClick={() => setShowLegend(!showLegend)}
+          className="bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white px-2.5 py-1 rounded-lg border border-slate-700/80 text-[10px] font-bold flex items-center gap-1.5 shadow-lg transition-colors cursor-pointer"
+          title="Toggle Map Legend"
+          aria-label="Toggle Map Legend"
+        >
+          <Info size={11} className="text-cyan-400" />
+          <span>Legend</span>
+        </button>
       </div>
 
-      {/* Open-Source GeoJSON Attribution */}
-      <div className="absolute bottom-3 right-12 z-[400] bg-slate-900/80 backdrop-blur-md text-[9px] px-2 py-1 rounded-md border border-slate-800 text-slate-400 pointer-events-none hidden sm:block">
-        Natural Earth & GeoNames Open GeoJSON
-      </div>
-
+      {/* Main High-Performance Leaflet Canvas Container */}
       <MapContainer 
         center={[20, 0]} 
         zoom={2}
@@ -425,16 +502,21 @@ export default function MapClient() {
         attributionControl={false}
         zoomControl={false}
         className="w-full h-full rounded-xl z-0"
-        style={{ height: "100%", width: "100%", backgroundColor: "#aad3df" }} // Matches OSM water color
+        style={{ height: "100%", width: "100%", backgroundColor: "#aad3df" }}
       >
         <ZoomControl position="bottomright" />
-        <MapEvents setZoom={setCurrentZoom} />
+        <MapEvents setZoom={setCurrentZoom} setBounds={setMapBounds} />
         <MapController focusTarget={focusTarget} />
         <MapUrlSync />
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           className="map-tiles"
           noWrap={true}
+          keepBuffer={2}
+          updateWhenIdle={true}
+          updateWhenZooming={false}
+          maxNativeZoom={18}
+          minZoom={2}
         />
         
         {/* Country Polygons (Risk & Incidents) */}
@@ -443,7 +525,7 @@ export default function MapClient() {
             data={geoData} 
             style={styleFeature} 
             onEachFeature={onEachFeature} 
-            key={JSON.stringify(countryStats)}
+            key={`countries-layer-${Object.keys(countryStats).length}`}
           />
         )}
 
@@ -453,70 +535,67 @@ export default function MapClient() {
             data={districtsData}
             style={styleDistrictFeature}
             onEachFeature={onEachDistrictFeature}
-            key="districts-open-layer"
+            key={`districts-layer-${districtsData?.features?.length || 0}`}
           />
         )}
 
-        {/* Open-Source Cities & Populated Places (Natural Earth & GeoNames) */}
-        {(activeLayer === "all" || activeLayer === "cities") && citiesData?.features && (
-          citiesData.features.map((city, idx) => {
-            const [lng, lat] = city.geometry.coordinates;
-            const isCapital = city.properties.type?.toLowerCase().includes("capital");
-            // At zoom < 4 only show national capitals; at zoom >= 4 show all cities
-            if (currentZoom < 4 && !isCapital) return null;
+        {/* Dynamic LOD Viewport-Culled Populated Cities (Max ~60 rendered markers) */}
+        {visibleCities.map((city, idx) => {
+          const [lng, lat] = city.geometry.coordinates;
+          const isCapital = city.properties.type?.toLowerCase().includes("capital");
 
-            return (
-              <CircleMarker
-                key={`city-marker-${city.id || idx}-${lat}-${lng}-${idx}`}
-                center={[lat, lng]}
-                radius={currentZoom >= 7 ? 6 : (isCapital ? 5 : 3.5)}
-                pathOptions={{
-                  fillColor: isCapital ? "#06b6d4" : "#6366f1",
-                  color: "#ffffff",
-                  weight: 1,
-                  opacity: 0.9,
-                  fillOpacity: 0.85
-                }}
-              >
-                <Popup>
-                  <div className="text-slate-900 w-full max-w-[240px]">
-                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-1">
-                      <Building2 size={12} />
-                      <span>{city.properties.type || "Populated Place"}</span>
-                    </div>
-                    <h3 className="font-bold text-base text-slate-950 mb-0.5">{city.properties.name}</h3>
-                    <p className="text-xs text-slate-600 mb-2">
-                      {[city.properties.district, city.properties.country].filter(Boolean).join(", ")}
-                    </p>
-                    <div className="bg-slate-100 rounded-lg p-2 text-xs mb-2.5 space-y-1">
-                      <div className="flex items-center justify-between">
-                        <span className="text-slate-500">Sector Code:</span>
-                        <span className="font-mono font-bold text-slate-800">{city.properties.plusCode || "N/A"}</span>
-                      </div>
-                      {city.properties.population > 0 && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-slate-500">Population:</span>
-                          <span className="font-bold text-slate-700">{Number(city.properties.population).toLocaleString()}</span>
-                        </div>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => setFocusTarget({ lat, lng, zoom: 12 })}
-                      className="w-full bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-xs font-bold py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
-                    >
-                      <MapPin size={12} />
-                      <span>Focus City Sector</span>
-                    </button>
+          return (
+            <CircleMarker
+              key={`city-marker-${city.id || idx}-${lat}-${lng}-${idx}`}
+              center={[lat, lng]}
+              radius={currentZoom >= 7 ? 6 : (isCapital ? 5 : 3.5)}
+              pathOptions={{
+                fillColor: isCapital ? "#06b6d4" : "#6366f1",
+                color: "#ffffff",
+                weight: 1,
+                opacity: 0.9,
+                fillOpacity: 0.85
+              }}
+            >
+              <Popup>
+                <div className="text-slate-900 w-full max-w-[240px]">
+                  <div className="flex items-center gap-1.5 text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-1">
+                    <Building2 size={12} />
+                    <span>{city.properties.type || "Populated Place"}</span>
                   </div>
-                </Popup>
-              </CircleMarker>
-            );
-          })
-        )}
+                  <h3 className="font-bold text-base text-slate-950 mb-0.5">{city.properties.name}</h3>
+                  <p className="text-xs text-slate-600 mb-2">
+                    {[city.properties.district, city.properties.country].filter(Boolean).join(", ")}
+                  </p>
+                  <div className="bg-slate-100 rounded-lg p-2 text-xs mb-2.5 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500">Sector Code:</span>
+                      <span className="font-mono font-bold text-slate-800">{city.properties.plusCode || "N/A"}</span>
+                    </div>
+                    {city.properties.population > 0 && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500">Population:</span>
+                        <span className="font-bold text-slate-700">{Number(city.properties.population).toLocaleString()}</span>
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => setFocusTarget({ lat, lng, zoom: 12 })}
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-xs font-bold py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                  >
+                    <MapPin size={12} />
+                    <span>Focus City Sector</span>
+                  </button>
+                </div>
+              </Popup>
+            </CircleMarker>
+          );
+        })}
 
+        {/* Incident Reports Clustered */}
         <MarkerClusterGroup
           chunkedLoading
-          maxClusterRadius={50}
+          maxClusterRadius={45}
         >
           {reports.map((report, idx) => {
             const reportKey = `report-marker-${report.id || idx}-${idx}`;
@@ -599,34 +678,46 @@ export default function MapClient() {
             </button>
             
             <div className="mb-6 pr-8">
-              {selectedReport.status === "ACTION_IGNORED" && (
-                <div className="inline-block bg-slate-700 text-slate-200 text-xs font-bold px-2 py-1 rounded mb-3 uppercase tracking-wide">
-                  Action Ignored
+              <span className={`inline-block text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-3 ${
+                selectedReport.status === "PUBLIC_VERIFIED" 
+                  ? "bg-red-500/20 text-red-400 border border-red-500/30" 
+                  : "bg-slate-500/20 text-slate-400 border border-slate-500/30"
+              }`}>
+                {selectedReport.status === "PUBLIC_VERIFIED" ? "Public Verified Incident" : "Action Ignored"}
+              </span>
+              <h2 className="text-2xl font-bold text-white mb-1 break-words">{selectedReport.facilityName || "Unnamed Facility / Incident"}</h2>
+              <p className="text-sm text-slate-400 break-words">{selectedReport.region}, {selectedReport.country}</p>
+              {selectedReport.plusCode && (
+                <div className="mt-1 text-xs font-mono text-cyan-400">
+                  Sector Grid: {selectedReport.plusCode}
                 </div>
               )}
-              {selectedReport.status === "PUBLIC_VERIFIED" && (
-                <div className="inline-block bg-red-900/50 text-red-400 text-xs font-bold px-2 py-1 rounded mb-3 uppercase tracking-wide">
-                  Verified Incident
-                </div>
-              )}
-              <h2 className="text-2xl font-bold text-white mb-1">{selectedReport.facilityName || "Incident Report"}</h2>
-              <p className="text-indigo-400 font-semibold">{selectedReport.category}</p>
-              <p className="text-slate-400 text-sm mt-1">{selectedReport.region}, {selectedReport.country}</p>
             </div>
 
-            <div className="mb-6">
-              <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Experience Summary</h3>
-              <div className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap bg-slate-950/50 p-4 rounded-lg border border-slate-800">
-                {selectedReport.summary ? selectedReport.summary.replace(/([^\n])\n([^\n])/g, '$1 $2') : ""}
+            <div className="grid grid-cols-2 gap-4 mb-6 bg-slate-950/50 p-4 rounded-xl border border-slate-800">
+              <div>
+                <span className="block text-xs text-slate-500 uppercase tracking-wider font-semibold">Category</span>
+                <span className="text-sm font-medium text-slate-200">{selectedReport.category}</span>
+              </div>
+              <div>
+                <span className="block text-xs text-slate-500 uppercase tracking-wider font-semibold">Incident Date</span>
+                <span className="text-sm font-medium text-slate-200">{selectedReport.incidentDate || "Undisclosed"}</span>
               </div>
             </div>
 
-            {selectedReport.status === "ACTION_IGNORED" && (
-              <div className="bg-slate-800 border border-slate-700 p-4 rounded-lg mb-6">
-                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Institutional Response</h3>
-                <p className="text-sm text-slate-300 whitespace-pre-wrap leading-relaxed">
-                  {selectedReport.authorityDetails ? selectedReport.authorityDetails.replace(/([^\n])\n([^\n])/g, '$1 $2') : "Reported to authorities. No action taken."}
-                </p>
+            <div className="mb-6">
+              <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Detailed Narrative</h3>
+              <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800 text-slate-300 text-sm whitespace-pre-wrap leading-relaxed break-words">
+                {selectedReport.summary}
+              </div>
+            </div>
+
+            {selectedReport.allegedPerpetrators && (
+              <div className="mb-6">
+                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Perpetrators / Practitioners</h3>
+                <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800 text-slate-300 text-sm break-words">
+                  {selectedReport.allegedPerpetrators}
+                </div>
               </div>
             )}
 

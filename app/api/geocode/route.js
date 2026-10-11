@@ -3,6 +3,30 @@ import { encodePlusCode, decodePlusCode, isValidPlusCode } from "@/lib/pluscode"
 
 export const runtime = "edge";
 
+// High-speed in-memory edge cache (LRU-like Map) for forward geocoding
+const forwardGeocodeCache = new Map();
+const MAX_CACHE_SIZE = 300;
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+function getCachedGeocode(key) {
+  const cached = forwardGeocodeCache.get(key);
+  if (!cached) return null;
+  if (Date.now() - cached.timestamp > CACHE_TTL_MS) {
+    forwardGeocodeCache.delete(key);
+    return null;
+  }
+  return cached.data;
+}
+
+function setCachedGeocode(key, data) {
+  if (forwardGeocodeCache.size >= MAX_CACHE_SIZE) {
+    // Evict oldest entry
+    const oldestKey = forwardGeocodeCache.keys().next().value;
+    if (oldestKey) forwardGeocodeCache.delete(oldestKey);
+  }
+  forwardGeocodeCache.set(key, { data, timestamp: Date.now() });
+}
+
 /**
  * Robust Forward Geocoding API powered by Photon by Komoot.
  * Includes tiered query resolution and fallback to OpenStreetMap Nominatim.
@@ -15,7 +39,7 @@ async function queryPhoton(queryString) {
         "User-Agent": "SOGI-Shield/1.0 (Global Human Rights Documentation; contact@sogi-shield.org)",
         "Accept": "application/json"
       },
-      signal: AbortSignal.timeout(5000)
+      signal: AbortSignal.timeout(4000)
     });
 
     if (res.ok) {
@@ -57,7 +81,7 @@ async function queryNominatim(queryString) {
         "User-Agent": "SOGI-Shield/1.0 (Global Human Rights Documentation; contact@sogi-shield.org)",
         "Accept": "application/json"
       },
-      signal: AbortSignal.timeout(5000)
+      signal: AbortSignal.timeout(4000)
     });
 
     if (res.ok) {
@@ -86,6 +110,7 @@ async function queryNominatim(queryString) {
 
 /**
  * Executes tiered geocoding with intelligent fallback:
+ * 0. Direct Plus Code Mathematical Resolution (Instant, Offline, 0ms)
  * 1. Specific full query (facility + region + country)
  * 2. Broad regional query (region + country) if specific query is unindexed
  */
@@ -120,14 +145,20 @@ async function performForwardGeocode(params) {
     return { error: "Please provide a region, country, or location query to geocode.", status: 400 };
   }
 
+  const cacheKey = uniqueCandidates.join("|").toLowerCase();
+  const cached = getCachedGeocode(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
   // Tier 0: Direct Plus Code Mathematical Resolution (Instant, Offline, Zero-Network)
   for (const query of uniqueCandidates) {
     if (isValidPlusCode(query)) {
       const decoded = decodePlusCode(query);
       if (decoded) {
         const fullPlusCode = encodePlusCode(decoded.lat, decoded.lng);
-        let country = "";
-        let region = "";
+        let plusCountry = "";
+        let plusRegion = "";
         let formattedAddress = `Plus Code: ${fullPlusCode}`;
         try {
           const revRes = await fetch(`https://photon.komoot.io/reverse?lat=${decoded.lat}&lon=${decoded.lng}`, {
@@ -141,25 +172,27 @@ async function performForwardGeocode(params) {
             const revData = await revRes.json();
             if (revData && revData.features && revData.features[0]) {
               const p = revData.features[0].properties || {};
-              country = p.country || "";
-              region = p.state || p.district || p.city || "";
-              if (country || region) {
-                formattedAddress = `${fullPlusCode} (${[region, country].filter(Boolean).join(", ")})`;
+              plusCountry = p.country || "";
+              plusRegion = p.state || p.district || p.city || "";
+              if (plusCountry || plusRegion) {
+                formattedAddress = `${fullPlusCode} (${[plusRegion, plusCountry].filter(Boolean).join(", ")})`;
               }
             }
           }
         } catch {}
 
-        return {
+        const result = {
           success: true,
           lat: decoded.lat,
           lng: decoded.lng,
           plusCode: fullPlusCode,
-          country: country || "Detected Location",
-          region: region || `Sector ${fullPlusCode.slice(0, 8)}`,
+          country: plusCountry || "Detected Location",
+          region: plusRegion || `Sector ${fullPlusCode.slice(0, 8)}`,
           formattedAddress,
           source: "plus_code_direct"
         };
+        setCachedGeocode(cacheKey, result);
+        return result;
       }
     }
   }
@@ -168,11 +201,17 @@ async function performForwardGeocode(params) {
   for (const query of uniqueCandidates) {
     // Tier 1: Photon by Komoot
     const photonResult = await queryPhoton(query);
-    if (photonResult) return photonResult;
+    if (photonResult) {
+      setCachedGeocode(cacheKey, photonResult);
+      return photonResult;
+    }
 
     // Tier 2: Nominatim
     const nomResult = await queryNominatim(query);
-    if (nomResult) return nomResult;
+    if (nomResult) {
+      setCachedGeocode(cacheKey, nomResult);
+      return nomResult;
+    }
   }
 
   return {
@@ -180,6 +219,11 @@ async function performForwardGeocode(params) {
     status: 404
   };
 }
+
+const CACHE_HEADERS = {
+  "Cache-Control": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400",
+  "CDN-Cache-Control": "public, s-maxage=86400"
+};
 
 export async function GET(req) {
   try {
@@ -193,7 +237,7 @@ export async function GET(req) {
     if (result.error) {
       return NextResponse.json({ success: false, message: result.error }, { status: result.status });
     }
-    return NextResponse.json(result);
+    return NextResponse.json(result, { headers: CACHE_HEADERS });
   } catch (err) {
     console.error("Geocoding GET route error:", err);
     return NextResponse.json({ success: false, message: "Internal server error" }, { status: 500 });
@@ -212,7 +256,7 @@ export async function POST(req) {
     if (result.error) {
       return NextResponse.json({ success: false, message: result.error }, { status: result.status });
     }
-    return NextResponse.json(result);
+    return NextResponse.json(result, { headers: CACHE_HEADERS });
   } catch (err) {
     console.error("Geocoding POST route error:", err);
     return NextResponse.json({ success: false, message: "Internal server error" }, { status: 500 });
