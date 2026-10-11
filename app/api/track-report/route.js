@@ -1,12 +1,26 @@
 import { NextResponse } from 'next/server';
 import { getDocument } from '@/lib/edgeFirebase';
 
+const TRACKING_CODE_REGEX = /^[A-Za-z0-9_-]{5,64}$/;
+
 export async function POST(request) {
   try {
-    const { trackingCode } = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ success: false, message: 'Invalid JSON request payload' }, { status: 400 });
+    }
 
-    if (!trackingCode) {
+    const trackingCode = body?.trackingCode;
+
+    if (!trackingCode || typeof trackingCode !== 'string') {
       return NextResponse.json({ success: false, message: 'Missing tracking code' }, { status: 400 });
+    }
+
+    const trimmedCode = trackingCode.trim();
+    if (!TRACKING_CODE_REGEX.test(trimmedCode)) {
+      return NextResponse.json({ success: false, message: 'Invalid tracking code format' }, { status: 400 });
     }
 
     if (process.env.NEXT_PUBLIC_USE_MOCK === 'true') {
@@ -14,13 +28,16 @@ export async function POST(request) {
     }
 
     // 1. Fetch the secret document via REST API
-    const secretDoc = await getDocument('report_secrets', trackingCode);
+    const secretDoc = await getDocument('report_secrets', trimmedCode);
 
-    if (!secretDoc) {
+    if (!secretDoc || !secretDoc.reportId) {
       return NextResponse.json({ success: false, message: 'Invalid tracking code' }, { status: 404 });
     }
 
     const reportId = secretDoc.reportId;
+    if (typeof reportId !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/.test(reportId)) {
+      return NextResponse.json({ success: false, message: 'Malformed report reference' }, { status: 500 });
+    }
 
     // 2. Fetch the actual report data via REST API
     const reportData = await getDocument('reports', reportId);
@@ -29,7 +46,7 @@ export async function POST(request) {
       return NextResponse.json({ success: false, message: 'Report data missing' }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, report: { ...reportData, _docId: reportId, trackingCode } });
+    return NextResponse.json({ success: true, report: { ...reportData, _docId: reportId, trackingCode: trimmedCode } });
 
   } catch (error) {
     console.error('Error tracking report:', error);

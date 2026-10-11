@@ -6,6 +6,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { collection, getDocs, query } from "firebase/firestore/lite";
 import { db, isMockMode } from "@/lib/firebase";
+import { isValidWebUrl } from "@/lib/utils";
 import { Maximize2, Minimize2, X, Shield, CheckCircle, AlertTriangle, Flame } from "lucide-react";
 
 function MapEvents({ setZoom }) {
@@ -368,13 +369,22 @@ export default function MapClient() {
               <div>
                 <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Public Evidence Links</h3>
                 <ul className="list-disc pl-4 space-y-2">
-                  {selectedReport.evidenceLinks.map((link, i) => (
-                    <li key={i}>
-                      <a href={link} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 hover:underline break-all">
-                        {link}
-                      </a>
-                    </li>
-                  ))}
+                  {selectedReport.evidenceLinks.map((link, i) => {
+                    const isSafe = isValidWebUrl(link);
+                    return (
+                      <li key={i}>
+                        {isSafe ? (
+                          <a href={link} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 hover:underline break-all">
+                            {link}
+                          </a>
+                        ) : (
+                          <span className="text-slate-400 font-mono text-xs break-all">
+                            {link}
+                          </span>
+                        )}
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             )}

@@ -28,7 +28,7 @@ import {
   ChevronRight
 } from "lucide-react";
 import { db, isMockMode } from "@/lib/firebase";
-import { sanitizeReportPayload, classifyReport } from "@/lib/utils";
+import { sanitizeReportPayload, classifyReport, isValidWebUrl } from "@/lib/utils";
 import { Turnstile } from '@marsidev/react-turnstile';
 import { generateComplaintPdf } from "@/lib/generateComplaintPdf";
 import { saveLocalReport } from "@/lib/localStore";
@@ -105,6 +105,7 @@ export default function ReportPage() {
   }, []);
 
   const handleAutofillDemo = () => {
+    if (!isMockMode) return;
     setFormData({
       country: "India",
       region: "Maharashtra",
@@ -125,14 +126,7 @@ export default function ReportPage() {
   const detectedLinks = (formData.evidenceLinks || "")
     .split(/[\n,]+/)
     .map(l => l.trim())
-    .filter(l => {
-      try {
-        new URL(l);
-        return true;
-      } catch {
-        return false;
-      }
-    });
+    .filter(isValidWebUrl);
 
   // Live status calculation
   const liveStatus = detectedLinks.length > 0
@@ -809,12 +803,12 @@ export default function ReportPage() {
 
       <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8 bg-slate-900/60 backdrop-blur-xl border border-white/10 p-5 sm:p-10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
         
-        {/* Dev Mode Testing Bar */}
-        {(isMockMode || process.env.NODE_ENV === 'development') && (
+        {/* Mock Mode Testing Bar */}
+        {isMockMode && (
           <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 bg-indigo-950/40 border border-indigo-500/30 rounded-2xl">
             <span className="text-xs font-mono text-indigo-300 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-              Dev Build Mode: Instant Mock Testing Active
+              Mock Mode: Instant Mock Testing Active
             </span>
             <button
               type="button"

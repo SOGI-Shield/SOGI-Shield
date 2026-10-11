@@ -25,17 +25,20 @@ export default function CommunityCautionCard({ report }) {
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const canvasRef = useRef(null);
 
-  // Determine origin safely
-  const [origin, setOrigin] = useState("https://sogi-shield.org");
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      setOrigin(window.location.origin);
-    }
-  }, []);
+  const sector = region || country || "Sector";
 
-  const shareUrl = lat && lng 
+  // 1. Get origin for the functional QR link (includes https:// or http://)
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+
+  // 2. Get host for the clean visual text footer (e.g., "sogi-shield.org" or "localhost:3000")
+  const displayHost = typeof window !== 'undefined' ? window.location.host : 'sogi-shield.org';
+
+  // 3. Construct your live map URL for the QR code
+  const qrTargetUrl = lat && lng 
     ? `${origin}/?lat=${lat}&lng=${lng}&zoom=11`
-    : `${origin}`;
+    : `${origin}/#map?sector=${encodeURIComponent(sector)}`;
+
+  const shareUrl = qrTargetUrl;
 
   const warningText = `⚠️ SOGI Safety Alert: Incident flagged near ${region || "Sector"}, ${country || "Global"} (${category || "Safety Violation"}). Live safety map updated on SOGI-Shield: ${shareUrl}`;
 
@@ -169,13 +172,13 @@ export default function CommunityCautionCard({ report }) {
     ctx.fillText("Zero-Touch Confidentiality • No Metadata Logged", 40, 400);
     ctx.fillStyle = "#818cf8";
     ctx.font = "bold 13px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-    ctx.fillText("SOGI-Shield Global Human Rights Platform | sogi-shield.org", 40, 425);
+    ctx.fillText(`SOGI-Shield Global Human Rights Platform | ${displayHost}`, 40, 425);
 
     // Draw QR Code on the right
     let targetQr = qrCodeUrl;
-    if (!targetQr && shareUrl) {
+    if (!targetQr && qrTargetUrl) {
       try {
-        targetQr = await QRCode.toDataURL(shareUrl, {
+        targetQr = await QRCode.toDataURL(qrTargetUrl, {
           width: 240,
           margin: 1,
           color: { dark: "#0f172a", light: "#ffffff" },
