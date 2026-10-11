@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { Search, ShieldCheck, ShieldAlert, Activity, AlertCircle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search, ShieldCheck, ShieldAlert, Activity, AlertCircle, FileText, Download, Share2, ExternalLink } from "lucide-react";
 import { collection, query, where, getDocs, updateDoc, doc } from "firebase/firestore/lite";
 import { db, isMockMode } from "@/lib/firebase";
+import { generateComplaintPdf } from "@/lib/generateComplaintPdf";
+import { getLocalReportByTrackingCode, updateLocalReportStatus } from "@/lib/localStore";
 
 export default function TrackCasePage() {
   const [trackingCode, setTrackingCode] = useState("");
@@ -11,22 +13,42 @@ export default function TrackCasePage() {
   const [report, setReport] = useState(null);
   const [error, setError] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
-  const handleSearch = async (e) => {
-    e.preventDefault();
-    if (!trackingCode) return;
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("code");
+      if (code) {
+        setTrackingCode(code);
+        executeSearch(code);
+      }
+    }
+  }, []);
+
+  const executeSearch = async (codeToSearch) => {
+    const code = (codeToSearch || trackingCode || "").trim();
+    if (!code) return;
     
     setIsSearching(true);
     setError(null);
     setReport(null);
     
     try {
+      // 1. Check local dev store first (makes newly submitted dev reports immediately available)
+      const localFound = getLocalReportByTrackingCode(code);
+      if (localFound) {
+        setReport({ ...localFound, _docId: localFound.id, trackingCode: code });
+        setIsSearching(false);
+        return;
+      }
+
       if (isMockMode) {
         const m = await import('@/src/data/mockReports.json');
         const mockData = m.default || m;
-        const found = mockData.find(r => r.trackingCode === trackingCode);
+        const found = mockData.find(r => r.trackingCode === code);
         if (found) {
-          setReport({ ...found, _docId: found.id });
+          setReport({ ...found, _docId: found.id, trackingCode: code });
         } else {
           setError("No incident found with this tracking code.");
         }
@@ -34,7 +56,7 @@ export default function TrackCasePage() {
         const { getDoc, doc } = await import("firebase/firestore/lite");
         
         // 1. Fetch the secret document by tracking code (Document ID)
-        const secretRef = doc(db, "report_secrets", trackingCode);
+        const secretRef = doc(db, "report_secrets", code);
         const secretSnap = await getDoc(secretRef);
         
         if (!secretSnap.exists()) {
@@ -55,7 +77,7 @@ export default function TrackCasePage() {
           return;
         }
         
-        setReport({ ...reportSnap.data(), _docId: reportId, trackingCode });
+        setReport({ ...reportSnap.data(), _docId: reportId, trackingCode: code });
       }
     } catch (err) {
       console.error(err);
@@ -65,10 +87,42 @@ export default function TrackCasePage() {
     }
   };
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+    executeSearch(trackingCode);
+  };
+
+  const handleDownloadPdf = async () => {
+    if (!report) return;
+    setIsDownloadingPdf(true);
+    try {
+      await generateComplaintPdf(report, { action: "download" });
+    } catch (err) {
+      console.error("PDF generation failed:", err);
+      alert("Failed to generate PDF. Please try again.");
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  };
+
+  const handlePreviewPdf = async () => {
+    if (!report) return;
+    setIsDownloadingPdf(true);
+    try {
+      await generateComplaintPdf(report, { action: "open" });
+    } catch (err) {
+      console.error("PDF preview failed:", err);
+      alert("Failed to preview PDF. Please try again.");
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  };
+
   const updateStatus = async (newStatus) => {
     if (!report || !report.trackingCode) return;
     setIsUpdating(true);
     try {
+      updateLocalReportStatus(report.trackingCode, newStatus);
       if (isMockMode) {
         setReport({ ...report, status: newStatus });
       } else {
@@ -237,6 +291,38 @@ export default function TrackCasePage() {
                 <p className="text-slate-300 text-base leading-relaxed bg-black/40 p-4 sm:p-6 rounded-2xl border border-white/5 break-words whitespace-pre-wrap shadow-inner">
                   {report.summary}
                 </p>
+              </div>
+
+              {/* Legal Recourse & Community Warning Actions */}
+              <div className="sm:col-span-2 mt-6 pt-6 border-t border-white/10 flex flex-col sm:flex-row gap-3">
+                <button
+                  type="button"
+                  onClick={handleDownloadPdf}
+                  disabled={isDownloadingPdf}
+                  className="flex-1 bg-gradient-to-r from-cyan-500 via-indigo-500 to-pink-500 hover:from-cyan-400 hover:via-indigo-400 hover:to-pink-400 text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-[0_0_15px_rgba(99,102,241,0.3)] flex items-center justify-center gap-2 text-sm border border-white/20 disabled:opacity-50"
+                >
+                  <Download size={18} />
+                  <span>{isDownloadingPdf ? "Building PDF..." : "Download Dossier PDF"}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handlePreviewPdf}
+                  disabled={isDownloadingPdf}
+                  className="bg-white/10 hover:bg-white/15 text-white font-bold py-3.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2 text-sm border border-white/10 disabled:opacity-50"
+                  title="Open and print PDF in browser"
+                >
+                  <ExternalLink size={18} className="text-cyan-400" />
+                  <span>Preview / Print in Browser</span>
+                </button>
+                <a
+                  href={`/?lat=${report.lat || 20}&lng=${report.lng || 0}&zoom=11`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-white/10 hover:bg-white/15 text-white font-bold py-3.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2 text-sm border border-white/10"
+                >
+                  <Share2 size={18} className="text-rose-400" />
+                  <span>View Map</span>
+                </a>
               </div>
             </div>
           </div>

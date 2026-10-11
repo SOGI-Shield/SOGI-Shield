@@ -22,8 +22,17 @@ export default function HomepageMetrics() {
   useEffect(() => {
     if (isMockMode) {
       import('@/src/data/mockReports.json').then(m => {
-        const reports = m.default || m;
-        calculateStats(reports);
+        const staticReports = m.default || m;
+        import('@/lib/localStore').then(({ getLocalReports }) => {
+          const localReports = getLocalReports();
+          const combined = [
+            ...localReports,
+            ...staticReports.filter(s => !localReports.some(l => l.id === s.id))
+          ];
+          calculateStats(combined);
+        }).catch(() => {
+          calculateStats(staticReports);
+        });
       });
       return;
     }
