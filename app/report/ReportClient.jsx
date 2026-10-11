@@ -14,7 +14,18 @@ import {
   ArrowRight, 
   Shield, 
   Sparkles,
-  ExternalLink
+  ExternalLink,
+  Lock,
+  EyeOff,
+  Award,
+  Zap,
+  HelpCircle,
+  HeartHandshake,
+  CheckCircle2,
+  Activity,
+  Layers,
+  MapPin,
+  ChevronRight
 } from "lucide-react";
 import { db, isMockMode } from "@/lib/firebase";
 import { sanitizeReportPayload, classifyReport } from "@/lib/utils";
@@ -24,6 +35,38 @@ import { saveLocalReport } from "@/lib/localStore";
 import CommunityCautionCard from "@/components/CommunityCautionCard";
 import RegionalImpactPreview from "@/components/RegionalImpactPreview";
 import EvidenceLockerResources from "@/components/EvidenceLockerResources";
+
+const NARRATIVE_STARTERS = [
+  {
+    label: "Timeline & Setting",
+    icon: "📅",
+    text: "On [Date/Approximate Time] in [City/State/Location], the incident occurred when "
+  },
+  {
+    label: "Coercive Misconduct",
+    icon: "🛑",
+    text: "I was subjected to non-consensual aversion therapy / forced conversion practices / psychological intimidation aimed at "
+  },
+  {
+    label: "Practitioners / Perpetrators",
+    icon: "👥",
+    text: "The clinic staff / counselors / authorities involved identified themselves as [Titles or Names if known] and stated "
+  },
+  {
+    label: "Harm & Inaction",
+    icon: "💔",
+    text: "This resulted in unlawful detention / severe psychological distress / restriction of liberty, and local remedies failed because "
+  }
+];
+
+const CATEGORY_PRESETS = [
+  { id: "Conversion Therapy / Unlicensed Counseling", icon: "🧠", short: "Conversion Therapy", desc: "Aversion counseling, pseudo-science, forced identity change" },
+  { id: "Forced Confinement", icon: "🚪", short: "Forced Confinement", desc: "Detention in ashrams, rehabilitation centers, or homes" },
+  { id: "Medical Misconduct / Refusal of Care", icon: "🩺", short: "Medical Denial", desc: "Denied HRT, refusal of emergency treatment, psychiatric abuse" },
+  { id: "State / Police Harassment", icon: "⚖️", short: "Police Harassment", desc: "Arbitrary arrest, extortion, invasive searches, blackmail" },
+  { id: "Coercive Practice", icon: "⚠️", short: "Coercive Practice", desc: "Family coercion, forced marriage, threat of honor crimes" },
+  { id: "Other", icon: "📋", short: "Other Misconduct", desc: "Any other human rights infringement based on SOGI" },
+];
 
 export default function ReportPage() {
   const [formData, setFormData] = useState({
@@ -74,6 +117,55 @@ export default function ReportPage() {
       actionIgnored: true,
       website_hp: "",
     });
+  };
+
+  const [submittingStep, setSubmittingStep] = useState(0);
+
+  // Live valid links count
+  const detectedLinks = (formData.evidenceLinks || "")
+    .split(/[\n,]+/)
+    .map(l => l.trim())
+    .filter(l => {
+      try {
+        new URL(l);
+        return true;
+      } catch {
+        return false;
+      }
+    });
+
+  // Live status calculation
+  const liveStatus = detectedLinks.length > 0
+    ? (formData.reportedToAuthorities && formData.actionIgnored ? 'ACTION_IGNORED' : 'PUBLIC_VERIFIED')
+    : 'HEATMAP_AGGREGATED';
+
+  // Words count in summary
+  const summaryWords = (formData.summary?.trim().split(/\s+/).filter(Boolean) || []).length;
+
+  // Courage & Documentation strength score (0 - 100%)
+  const calculateStrength = () => {
+    let score = 0;
+    if (formData.country?.trim() && formData.region?.trim()) score += 25;
+    if (formData.category?.trim()) score += 20;
+    if (summaryWords >= 30) score += 30;
+    else if (summaryWords >= 10) score += 15;
+    else if (summaryWords > 0) score += 5;
+    if (detectedLinks.length > 0) score += 15;
+    if (formData.facilityName?.trim()) score += 10;
+    return Math.min(100, score);
+  };
+  const strengthScore = calculateStrength();
+
+  const handleInsertStarter = (starterText) => {
+    setFormData(prev => {
+      const current = prev.summary || "";
+      const separator = current.trim() ? "\n\n" : "";
+      return { ...prev, summary: current + separator + starterText };
+    });
+  };
+
+  const handleCategorySelect = (categoryId) => {
+    setFormData(prev => ({ ...prev, category: categoryId }));
   };
 
   const handleChange = (e) => {
@@ -605,33 +697,113 @@ export default function ReportPage() {
 
   return (
     <div className="flex-1 container mx-auto px-4 py-8 sm:py-12 max-w-4xl relative z-10">
-      <div className="mb-8 sm:mb-10 text-center">
-        <h1 className="text-3xl sm:text-4xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-indigo-400 to-pink-400 drop-shadow-[0_0_15px_rgba(99,102,241,0.2)]">File an Incident Report</h1>
-        <p className="text-slate-300 text-base sm:text-lg">Your privacy is our priority. No IP addresses or browser metadata are logged.</p>
+      
+      {/* Header */}
+      <div className="mb-8 sm:mb-10 text-center max-w-3xl mx-auto">
+        <div className="inline-flex items-center gap-2 bg-indigo-950/70 border border-indigo-500/40 px-3.5 py-1.5 rounded-full text-xs font-bold text-indigo-300 uppercase tracking-widest mb-4 shadow-[0_0_15px_rgba(99,102,241,0.2)]">
+          <Shield size={14} className="text-cyan-400" />
+          <span>Zero-Touch Confidential Documentation Grid</span>
+        </div>
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-indigo-400 to-pink-400 drop-shadow-[0_0_15px_rgba(99,102,241,0.2)]">
+          Document an Incident Safely
+        </h1>
+        <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
+          Your testimony creates an auditable record of SOGI human rights misconduct. 
+          Zero IP addresses logged, zero tracking cookies, and 100% client-side privacy.
+        </p>
       </div>
 
-      <div className="bg-slate-900/60 backdrop-blur-xl border border-indigo-500/30 rounded-3xl p-6 sm:p-8 mb-8 sm:mb-10 flex flex-col sm:flex-row gap-4 sm:gap-6 shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-cyan-500 via-indigo-500 to-pink-500"></div>
-        <Info className="text-indigo-400 flex-shrink-0 mt-1 drop-shadow-[0_0_10px_rgba(129,140,248,0.6)]" size={32} />
-        <div>
-          <h3 className="font-bold text-xl text-white mb-2">How Classification Works</h3>
-          <p className="text-base text-slate-300 mb-4 leading-relaxed">
-            Our Zero-Touch Automated Classification engine determines how your report is displayed:
-          </p>
-          <ul className="text-sm text-slate-300 space-y-4">
-            <li className="flex items-start gap-3 bg-white/5 p-4 rounded-xl border border-white/5">
-              <ShieldCheck className="text-rose-400 mt-0.5 flex-shrink-0 drop-shadow-[0_0_8px_rgba(244,63,94,0.6)]" size={20} />
-              <span className="leading-relaxed"><strong className="text-white">PUBLIC_VERIFIED:</strong> If you attach valid evidence URLs, your report will be marked as verified and display facility details (RED marker).</span>
-            </li>
-            <li className="flex items-start gap-3 bg-white/5 p-4 rounded-xl border border-white/5">
-              <div className="w-5 h-5 rounded-full bg-slate-500 mt-0.5 flex-shrink-0 shadow-[0_0_10px_rgba(100,116,139,0.5)]"></div>
-              <span className="leading-relaxed"><strong className="text-white">ACTION_IGNORED:</strong> If you attach evidence, report it to authorities, and explicitly flag it as ignored, it highlights institutional negligence (GREY marker).</span>
-            </li>
-            <li className="flex items-start gap-3 bg-white/5 p-4 rounded-xl border border-white/5">
-              <ShieldAlert className="text-emerald-400 mt-0.5 flex-shrink-0 drop-shadow-[0_0_8px_rgba(52,211,153,0.6)]" size={20} />
-              <span className="leading-relaxed"><strong className="text-white">HEATMAP_AGGREGATED:</strong> If you submit without evidence links, your report remains unverified and anonymous (EMERALD zone).</span>
-            </li>
-          </ul>
+      {/* Zero-Knowledge Protection HUD */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
+        <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 p-4 rounded-2xl flex items-center gap-3 shadow-lg">
+          <div className="p-2.5 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+            <Lock size={18} />
+          </div>
+          <div>
+            <span className="block text-xs font-bold text-white">Zero IP Logging</span>
+            <span className="text-[11px] text-slate-400">Headers purged at network edge</span>
+          </div>
+        </div>
+
+        <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 p-4 rounded-2xl flex items-center gap-3 shadow-lg">
+          <div className="p-2.5 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+            <ShieldCheck size={18} />
+          </div>
+          <div>
+            <span className="block text-xs font-bold text-white">Client Synthesis</span>
+            <span className="text-[11px] text-slate-400">UN PDF & Card built on device</span>
+          </div>
+        </div>
+
+        <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 p-4 rounded-2xl flex items-center justify-between shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30">
+              <Zap size={18} />
+            </div>
+            <div>
+              <span className="block text-xs font-bold text-white">Quick Escape</span>
+              <span className="text-[11px] text-slate-400">Wipes session immediately</span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handlePanicExit}
+            className="text-[11px] font-bold bg-rose-600/30 hover:bg-rose-600 text-rose-200 hover:text-white px-2.5 py-1 rounded-lg border border-rose-500/40 transition-colors"
+          >
+            Exit
+          </button>
+        </div>
+      </div>
+
+      {/* Courage & Documentation Strength Meter */}
+      <div className="bg-gradient-to-br from-slate-900/90 via-indigo-950/40 to-slate-900/90 border border-indigo-500/30 rounded-3xl p-5 sm:p-6 mb-8 shadow-2xl relative overflow-hidden">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">
+              <Activity size={18} />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-white flex items-center gap-2">
+                <span>Case Impact & Documentation Strength</span>
+                <span className="text-xs font-mono text-cyan-300 font-normal">({strengthScore}%)</span>
+              </h2>
+              <p className="text-xs text-slate-400">
+                {strengthScore < 40 && "Step 1: Adding location & misconduct initiates your regional safety flag."}
+                {strengthScore >= 40 && strengthScore < 75 && "Step 2: Good factual details. Strengthen with specific events or dates."}
+                {strengthScore >= 75 && "Step 3: High-impact court-ready documentation! Generates actionable UN complaint."}
+              </p>
+            </div>
+          </div>
+
+          {/* Live Status Badge Preview */}
+          <div className="flex-shrink-0">
+            {liveStatus === "PUBLIC_VERIFIED" && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-950/80 border border-rose-500/50 text-rose-300 text-xs font-bold animate-pulse">
+                <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+                Level 1: Public Verified Pin
+              </span>
+            )}
+            {liveStatus === "ACTION_IGNORED" && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/80 border border-slate-500/50 text-slate-300 text-xs font-bold">
+                <span className="w-2 h-2 rounded-full bg-slate-400"></span>
+                Action Ignored (Neglect Flagged)
+              </span>
+            )}
+            {liveStatus === "HEATMAP_AGGREGATED" && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 text-xs font-bold">
+                <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                Protected Heatmap Zone
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="w-full bg-black/50 h-2.5 rounded-full overflow-hidden border border-white/5">
+          <div 
+            className="h-full bg-gradient-to-r from-emerald-500 via-indigo-500 to-pink-500 transition-all duration-500 rounded-full"
+            style={{ width: `${Math.max(8, strengthScore)}%` }}
+          ></div>
         </div>
       </div>
 
@@ -667,83 +839,303 @@ export default function ReportPage() {
           />
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-bold text-slate-300 mb-2 uppercase tracking-wide">Country *</label>
-            <input required name="country" maxLength={100} value={formData.country} onChange={handleChange} className="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-slate-600" placeholder="e.g., India" />
+        {/* Section 1: Geographic Location */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 border-b border-white/10 pb-2">
+            <MapPin size={18} className="text-cyan-400" />
+            <span className="text-sm font-bold text-white uppercase tracking-wider">1. Incident Location</span>
           </div>
-          <div>
-            <label className="block text-sm font-bold text-slate-300 mb-2 uppercase tracking-wide">State / Region *</label>
-            <input required name="region" maxLength={100} value={formData.region} onChange={handleChange} className="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-slate-600" placeholder="e.g., Maharashtra" />
-          </div>
-        </div>
 
-        <div>
-          <label className="block text-sm font-bold text-slate-300 mb-2 uppercase tracking-wide">Facility / Practice Name (Optional)</label>
-          <input name="facilityName" maxLength={200} value={formData.facilityName} onChange={handleChange} className="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-slate-600" placeholder="Name of clinic, institution, or organization" />
-        </div>
-
-        <div>
-          <label className="block text-sm font-bold text-slate-300 mb-2 uppercase tracking-wide">Misconduct Category *</label>
-          <div className="relative">
-            <select required name="category" value={formData.category} onChange={handleChange} style={{ colorScheme: 'dark' }} className="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all appearance-none cursor-pointer">
-              <option value="">Select a category...</option>
-              <option value="Conversion Therapy / Unlicensed Counseling">Conversion Therapy / Unlicensed Counseling</option>
-              <option value="Forced Confinement">Forced Confinement</option>
-              <option value="Medical Misconduct / Refusal of Care">Medical Misconduct / Refusal of Care</option>
-              <option value="State / Police Harassment">State / Police Harassment</option>
-              <option value="Coercive Practice">Coercive Practice</option>
-              <option value="Other">Other</option>
-            </select>
-            <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+              <label className="block text-xs font-bold text-slate-300 mb-2 uppercase tracking-wide">Country *</label>
+              <input 
+                required 
+                name="country" 
+                maxLength={100} 
+                value={formData.country} 
+                onChange={handleChange} 
+                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-slate-600 text-sm" 
+                placeholder="e.g., India" 
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-300 mb-2 uppercase tracking-wide">State / Province / Region *</label>
+              <input 
+                required 
+                name="region" 
+                maxLength={100} 
+                value={formData.region} 
+                onChange={handleChange} 
+                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-slate-600 text-sm" 
+                placeholder="e.g., Maharashtra" 
+              />
             </div>
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-bold text-slate-300 mb-2 uppercase tracking-wide">Experience Summary *</label>
-          <textarea required name="summary" maxLength={5000} value={formData.summary} onChange={handleChange} rows={5} className="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-slate-600 leading-relaxed" placeholder="Describe the incident objectively..."></textarea>
+        {/* Section 2: Facility / Entity Name */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between border-b border-white/10 pb-2">
+            <div className="flex items-center gap-2">
+              <Layers size={18} className="text-indigo-400" />
+              <span className="text-sm font-bold text-white uppercase tracking-wider">2. Involved Facility or Entity</span>
+            </div>
+            <span className="text-[11px] text-slate-400">Optional</span>
+          </div>
+
+          <div>
+            <input 
+              name="facilityName" 
+              maxLength={200} 
+              value={formData.facilityName} 
+              onChange={handleChange} 
+              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-slate-600 text-sm" 
+              placeholder="Name of clinic, hospital, rehabilitation ashram, or organization" 
+            />
+            <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
+              * Privacy Shield: If no public evidence is attached, this entity name is automatically scrubbed to keep your report anonymous.
+            </p>
+          </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-bold text-slate-300 mb-2 uppercase tracking-wide">Public Evidence Links</label>
-          <textarea name="evidenceLinks" maxLength={20000} value={formData.evidenceLinks} onChange={handleChange} rows={3} className="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-slate-600 leading-relaxed" placeholder="https://drive.google.com/..., https://news.example.com/...&#10;Separate multiple links with commas or new lines."></textarea>
+        {/* Section 3: Misconduct Category */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 border-b border-white/10 pb-2">
+            <AlertTriangle size={18} className="text-pink-400" />
+            <span className="text-sm font-bold text-white uppercase tracking-wider">3. Misconduct Category *</span>
+          </div>
+
+          {/* Interactive Preset Pills */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+            {CATEGORY_PRESETS.map((preset) => {
+              const isSelected = formData.category === preset.id;
+              return (
+                <button
+                  type="button"
+                  key={preset.id}
+                  onClick={() => handleCategorySelect(preset.id)}
+                  className={`p-3 rounded-2xl border text-left transition-all flex flex-col justify-between ${
+                    isSelected
+                      ? "bg-indigo-600/30 border-cyan-400 shadow-[0_0_15px_rgba(56,189,248,0.3)] text-white"
+                      : "bg-black/30 border-white/5 hover:border-white/20 text-slate-300 hover:text-white"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-lg">{preset.icon}</span>
+                    {isSelected && <Check size={14} className="text-cyan-400" />}
+                  </div>
+                  <span className="text-xs font-bold leading-tight">{preset.short}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="relative pt-1">
+            <select 
+              required 
+              name="category" 
+              value={formData.category} 
+              onChange={handleChange} 
+              style={{ colorScheme: 'dark' }} 
+              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all appearance-none cursor-pointer text-sm"
+            >
+              <option value="">Or select from list...</option>
+              {CATEGORY_PRESETS.map(p => (
+                <option key={p.id} value={p.id}>{p.id}</option>
+              ))}
+            </select>
+            <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400 pt-1">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
+          </div>
         </div>
 
-        <div className="border-t border-white/10 pt-8 mt-8">
-          <label className="flex items-start gap-4 mb-6 cursor-pointer group">
-            <input type="checkbox" name="reportedToAuthorities" checked={formData.reportedToAuthorities} onChange={handleChange} className="mt-1 w-6 h-6 rounded-md border-slate-700 text-indigo-500 focus:ring-indigo-500 focus:ring-offset-slate-900 bg-black/40 cursor-pointer" />
-            <span className="text-base font-medium text-slate-300 group-hover:text-white transition-colors">I have reported this to official authorities (e.g., Police, State Medical Board, NHRC).</span>
+        {/* Section 4: Narrative Experience with Guided Prompts */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between border-b border-white/10 pb-2">
+            <div className="flex items-center gap-2">
+              <FileText size={18} className="text-rose-400" />
+              <span className="text-sm font-bold text-white uppercase tracking-wider">4. Factual Experience Narrative *</span>
+            </div>
+            <span className="text-[11px] font-mono text-slate-400">
+              {summaryWords} words
+            </span>
+          </div>
+
+          {/* Guided Trauma-Informed Starters */}
+          <div className="bg-black/30 border border-white/5 rounded-2xl p-3.5 space-y-2">
+            <span className="block text-[11px] font-bold uppercase tracking-wider text-indigo-300">
+              💡 Need help structuring your testimony? Click a starter prompt:
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {NARRATIVE_STARTERS.map((starter, idx) => (
+                <button
+                  type="button"
+                  key={idx}
+                  onClick={() => handleInsertStarter(starter.text)}
+                  className="bg-white/5 hover:bg-white/15 text-slate-300 hover:text-white px-2.5 py-1 rounded-lg text-xs font-medium border border-white/5 hover:border-white/20 transition-all flex items-center gap-1.5"
+                >
+                  <span>{starter.icon}</span>
+                  <span>{starter.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <textarea 
+              required 
+              name="summary" 
+              maxLength={5000} 
+              value={formData.summary} 
+              onChange={handleChange} 
+              rows={5} 
+              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-slate-600 leading-relaxed text-sm" 
+              placeholder="Describe what occurred objectively. Mention dates, methods, facility statements, or coercion used..."
+            ></textarea>
+            
+            <div className="flex items-start gap-2 mt-2 text-[11px] text-amber-300/80 bg-amber-950/20 p-2.5 rounded-xl border border-amber-500/20">
+              <Shield size={14} className="flex-shrink-0 mt-0.5 text-amber-400" />
+              <span>
+                <strong>Confidentiality Protection:</strong> Do not include your real name or personal phone number in the summary text. Refer to yourself as "the survivor" or "the individual" for maximum deniability.
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Section 5: Public Evidence Links */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between border-b border-white/10 pb-2">
+            <div className="flex items-center gap-2">
+              <Share2 size={18} className="text-cyan-400" />
+              <span className="text-sm font-bold text-white uppercase tracking-wider">5. Corroborating Evidence Links</span>
+            </div>
+            {detectedLinks.length > 0 ? (
+              <span className="text-[11px] font-bold text-rose-300 bg-rose-950/60 px-2 py-0.5 rounded-full border border-rose-500/30">
+                ✓ {detectedLinks.length} Verifiable Link{detectedLinks.length > 1 ? "s" : ""}
+              </span>
+            ) : (
+              <span className="text-[11px] text-slate-400">Optional</span>
+            )}
+          </div>
+
+          <div>
+            <textarea 
+              name="evidenceLinks" 
+              maxLength={20000} 
+              value={formData.evidenceLinks} 
+              onChange={handleChange} 
+              rows={2} 
+              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-slate-600 leading-relaxed text-sm" 
+              placeholder="Google Drive affidavits, news investigations, social evidence, audio transcripts (comma or line separated)..."
+            ></textarea>
+            <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
+              * Attaching valid public evidence elevates your report from an anonymous heatmap cluster to a <strong>Level 1 Public Verified Pin</strong>.
+            </p>
+          </div>
+        </div>
+
+        {/* Section 6: Institutional Response & Negligence */}
+        <div className="border-t border-white/10 pt-6">
+          <label className="flex items-start gap-3 mb-4 cursor-pointer group">
+            <input 
+              type="checkbox" 
+              name="reportedToAuthorities" 
+              checked={formData.reportedToAuthorities} 
+              onChange={handleChange} 
+              className="mt-1 w-5 h-5 rounded border-slate-700 text-indigo-500 focus:ring-indigo-500 bg-black/40 cursor-pointer" 
+            />
+            <span className="text-sm font-medium text-slate-300 group-hover:text-white transition-colors">
+              I have reported this incident to official authorities (Police, State Medical Council, Human Rights Commission).
+            </span>
           </label>
           
           {formData.reportedToAuthorities && (
-            <div className="pl-10 space-y-6 animate-in slide-in-from-top-2 duration-300">
+            <div className="pl-8 space-y-4 animate-in slide-in-from-top-2 duration-300">
               <div>
-                <label className="block text-sm font-bold text-slate-300 mb-2 uppercase tracking-wide">Authority Details</label>
-                <input name="authorityDetails" maxLength={5000} value={formData.authorityDetails} onChange={handleChange} className="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-slate-600" placeholder="e.g., Filed complaint with State Medical Council on Oct 14" />
+                <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wide">Authority Details</label>
+                <input 
+                  name="authorityDetails" 
+                  maxLength={5000} 
+                  value={formData.authorityDetails} 
+                  onChange={handleChange} 
+                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-slate-600 text-sm" 
+                  placeholder="e.g., Lodged formal complaint with District Magistrate and Medical Council" 
+                />
               </div>
-              <label className="flex items-start gap-4 cursor-pointer group bg-white/5 p-5 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
-                <input type="checkbox" name="actionIgnored" checked={formData.actionIgnored} onChange={handleChange} className="mt-1 w-6 h-6 rounded-md border-slate-700 text-rose-500 focus:ring-rose-500 focus:ring-offset-slate-900 bg-black/40 cursor-pointer" />
-                <span className="text-sm font-medium text-slate-300 leading-relaxed">
-                  <strong className="text-rose-400 block mb-1 text-base">Flag as ACTION_IGNORED:</strong> 
-                  Authorities have failed to launch an investigation or take action despite evidence. (This highlights institutional negligence on the map as a GREY marker).
+
+              <label className="flex items-start gap-3 cursor-pointer group bg-rose-950/20 p-4 rounded-xl border border-rose-500/30 hover:bg-rose-950/30 transition-colors">
+                <input 
+                  type="checkbox" 
+                  name="actionIgnored" 
+                  checked={formData.actionIgnored} 
+                  onChange={handleChange} 
+                  className="mt-1 w-5 h-5 rounded border-slate-700 text-rose-500 focus:ring-rose-500 bg-black/40 cursor-pointer" 
+                />
+                <span className="text-xs font-medium text-slate-300 leading-relaxed">
+                  <strong className="text-rose-300 block mb-0.5 text-sm">Flag as ACTION_IGNORED:</strong> 
+                  Authorities were formally notified but failed to investigate or provide remedies. (Pins institutional negligence on the map as a GREY marker).
                 </span>
               </label>
             </div>
           )}
         </div>
 
+        {/* Real-World Protections Delivered Immediately Upon Submission */}
+        <div className="bg-black/40 border border-white/10 rounded-2xl p-5 space-y-3">
+          <span className="text-xs font-bold text-indigo-300 uppercase tracking-widest block">
+            Immediate Protections You Receive Upon Submission:
+          </span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-300">
+            <div className="flex items-start gap-2.5 bg-white/5 p-3 rounded-xl border border-white/5">
+              <FileText size={16} className="text-cyan-400 flex-shrink-0 mt-0.5" />
+              <span><strong>UN/HRC Complaint Dossier:</strong> Downloadable PDF formatted for UN Special Procedures.</span>
+            </div>
+            <div className="flex items-start gap-2.5 bg-white/5 p-3 rounded-xl border border-white/5">
+              <AlertTriangle size={16} className="text-rose-400 flex-shrink-0 mt-0.5" />
+              <span><strong>Mutual-Aid Caution Card:</strong> Instant visual card with QR code for WhatsApp/Signal groups.</span>
+            </div>
+            <div className="flex items-start gap-2.5 bg-white/5 p-3 rounded-xl border border-white/5">
+              <Shield size={16} className="text-emerald-400 flex-shrink-0 mt-0.5" />
+              <span><strong>Secret Tracking Key:</strong> Check status and add updates with zero personal accounts.</span>
+            </div>
+            <div className="flex items-start gap-2.5 bg-white/5 p-3 rounded-xl border border-white/5">
+              <Activity size={16} className="text-indigo-400 flex-shrink-0 mt-0.5" />
+              <span><strong>Immutable Record:</strong> Permanent proof logged against institutional cover-ups.</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Submission Button */}
         <button 
           type="submit" 
           disabled={isSubmitting || rateLimited}
-          className="w-full mt-4 bg-gradient-to-r from-cyan-500 via-indigo-500 to-pink-500 hover:from-cyan-400 hover:via-indigo-400 hover:to-pink-400 text-white font-bold py-4 sm:py-5 rounded-xl transition-all shadow-[0_0_20px_rgba(99,102,241,0.4)] hover:shadow-[0_0_30px_rgba(99,102,241,0.6)] disabled:opacity-50 disabled:shadow-none text-base sm:text-lg tracking-wide border border-white/20"
+          className="w-full bg-gradient-to-r from-cyan-500 via-indigo-500 to-pink-500 hover:from-cyan-400 hover:via-indigo-400 hover:to-pink-400 text-white font-bold py-4 sm:py-5 rounded-xl transition-all shadow-[0_0_20px_rgba(99,102,241,0.4)] hover:shadow-[0_0_30px_rgba(99,102,241,0.6)] disabled:opacity-50 disabled:shadow-none text-base sm:text-lg tracking-wide border border-white/20 flex items-center justify-center gap-2"
         >
-          {isSubmitting ? "Encrypting & Submitting..." : rateLimited ? "Rate Limited (Wait 5m)" : "Submit Incident Report"}
+          {isSubmitting ? (
+            <span className="flex items-center gap-2 animate-pulse">
+              <Shield size={20} className="animate-spin text-cyan-300" />
+              <span>
+                {submittingStep === 1 && "1/4 Purging device telemetry & headers..."}
+                {submittingStep === 2 && "2/4 Geocoding incident sector..."}
+                {submittingStep === 3 && "3/4 Generating zero-knowledge key..."}
+                {submittingStep >= 4 && "4/4 Synthesizing client protections..."}
+                {submittingStep === 0 && "Submitting securely..."}
+              </span>
+            </span>
+          ) : rateLimited ? (
+            "Rate Limited (Please wait 5m)"
+          ) : (
+            <>
+              <Shield size={20} className="text-white" />
+              <span>Submit Confidential Incident Report</span>
+            </>
+          )}
         </button>
 
         {submitStatus === 'error' && (
-          <div className="p-5 bg-rose-900/40 border border-rose-500/50 rounded-xl text-rose-200 text-center font-bold shadow-lg">
+          <div className="p-4 bg-rose-900/40 border border-rose-500/50 rounded-xl text-rose-200 text-center font-bold text-sm shadow-lg">
             {errorMessage || "An error occurred while submitting. Please try again."}
           </div>
         )}
@@ -751,4 +1143,5 @@ export default function ReportPage() {
       </form>
     </div>
   );
+}
 }
