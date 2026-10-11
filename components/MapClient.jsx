@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, CircleMarker, GeoJSON, useMapEvents, ZoomControl } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, CircleMarker, GeoJSON, useMapEvents, useMap, ZoomControl } from "react-leaflet";
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -14,6 +14,22 @@ function MapEvents({ setZoom }) {
       setZoom(map.getZoom());
     }
   });
+  return null;
+}
+
+function MapUrlSync() {
+  const map = useMap();
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const lat = parseFloat(params.get("lat"));
+      const lng = parseFloat(params.get("lng"));
+      const zoom = parseInt(params.get("zoom"), 10) || 10;
+      if (!isNaN(lat) && !isNaN(lng)) {
+        map.setView([lat, lng], zoom, { animate: true });
+      }
+    }
+  }, [map]);
   return null;
 }
 
@@ -208,6 +224,7 @@ export default function MapClient() {
       >
         <ZoomControl position="bottomright" />
         <MapEvents setZoom={setCurrentZoom} />
+        <MapUrlSync />
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           className="map-tiles"
