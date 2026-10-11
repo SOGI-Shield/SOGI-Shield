@@ -1,12 +1,20 @@
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: false,
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,
-      'firebase/app': 'firebase/app/dist/esm/index.esm.js',
-      'firebase/firestore/lite': 'firebase/firestore/lite/dist/esm/index.esm.js',
-      'firebase/firestore': 'firebase/firestore/dist/esm/index.esm.js',
+      'firebase/app': path.resolve(__dirname, 'node_modules/firebase/app/dist/esm/index.esm.js'),
+      'firebase/firestore/lite': path.resolve(__dirname, 'node_modules/firebase/firestore/lite/dist/esm/index.esm.js'),
+      'firebase/firestore': path.resolve(__dirname, 'node_modules/firebase/firestore/dist/esm/index.esm.js'),
+      '@firebase/firestore/lite': path.resolve(__dirname, 'node_modules/@firebase/firestore/dist/lite/index.browser.esm.js'),
+      '@firebase/firestore': path.resolve(__dirname, 'node_modules/@firebase/firestore/dist/index.esm.js'),
     };
     return config;
   },
