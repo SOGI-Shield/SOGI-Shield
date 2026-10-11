@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { collection, getDocs, query } from "firebase/firestore/lite";
-import { db, isMockMode } from "@/lib/firebase";
+import { subscribeReports, fetchAllReports, initBackgroundPoller } from "@/lib/reportsCache";
 import Link from "next/link";
 
 export default function HomepageMetrics() {
   const [stats, setStats] = useState({ total: 0, verified: 0, ignored: 0, heatmap: 0 });
 
   const calculateStats = (reports) => {
+    if (!reports || !Array.isArray(reports)) return;
     const newStats = { total: 0, verified: 0, ignored: 0, heatmap: 0 };
     reports.forEach(report => {
       newStats.total++;
@@ -20,48 +20,22 @@ export default function HomepageMetrics() {
   };
 
   useEffect(() => {
-    if (isMockMode) {
-      import('@/src/data/mockReports.json').then(m => {
-        const staticReports = m.default || m;
-        import('@/lib/localStore').then(({ getLocalReports }) => {
-          const localReports = getLocalReports();
-          const combined = [
-            ...localReports,
-            ...staticReports.filter(s => !localReports.some(l => l.id === s.id))
-          ];
-          calculateStats(combined);
-        }).catch(() => {
-          calculateStats(staticReports);
-        });
-      });
-      return;
-    }
-
-    if (process.env.NEXT_PUBLIC_FIREBASE_API_KEY && process.env.NEXT_PUBLIC_FIREBASE_API_KEY !== 'your_api_key_here' && db) {
-      const q = query(collection(db, "reports"));
-      const fetchReports = async () => {
-        try {
-          const snapshot = await getDocs(q);
-          const fetched = snapshot.docs.map(doc => doc.data());
-          calculateStats(fetched);
-        } catch (e) {
-          console.error("Failed to fetch reports for metrics:", e);
-        }
-      };
-      fetchReports();
-      const interval = setInterval(fetchReports, 60000);
-      return () => clearInterval(interval);
-    }
+    initBackgroundPoller();
+    const unsubscribe = subscribeReports((reports) => {
+      calculateStats(reports);
+    });
+    fetchAllReports();
+    return () => unsubscribe();
   }, []);
 
   return (
     <section className="w-full max-w-6xl mt-8 mb-24 px-4 sm:px-0 relative z-10">
       <div className="bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-3xl p-6 sm:p-12 text-center shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative overflow-hidden">
         {/* Background glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-gradient-to-r from-indigo-600/10 via-purple-600/10 to-pink-600/10 blur-[100px] rounded-full pointer-events-none"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-linear-to-r from-indigo-600/10 via-purple-600/10 to-pink-600/10 blur-[100px] rounded-full pointer-events-none"></div>
         
         <h2 className="text-2xl sm:text-4xl font-extrabold text-white mb-10 relative z-10">
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-indigo-400">{stats.total.toLocaleString()}+</span> Incidents Documented Globally
+          <span className="text-transparent bg-clip-text bg-linear-to-r from-cyan-400 to-indigo-400">{stats.total.toLocaleString()}+</span> Incidents Documented Globally
         </h2>
         
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12 relative z-10 max-w-4xl mx-auto">
@@ -88,7 +62,7 @@ export default function HomepageMetrics() {
           </p>
           <Link 
             href="/report" 
-            className="inline-block bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-400 hover:via-purple-400 hover:to-pink-400 text-white font-bold py-4 px-8 sm:px-10 rounded-full transition-all shadow-[0_0_20px_rgba(168,85,247,0.4)] hover:shadow-[0_0_30px_rgba(168,85,247,0.6)] text-base sm:text-lg border border-white/20"
+            className="inline-block bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-400 hover:via-purple-400 hover:to-pink-400 text-white font-bold py-4 px-8 sm:px-10 rounded-full transition-all shadow-[0_0_20px_rgba(168,85,247,0.4)] hover:shadow-[0_0_30px_rgba(168,85,247,0.6)] text-base sm:text-lg border border-white/20"
           >
             File an Incident Report
           </Link>

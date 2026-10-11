@@ -152,11 +152,16 @@ async function main() {
   }
 
   console.log(`\n🗑️  Branches to delete (${toDelete.length}):`);
+  const SAFE_BRANCH_REGEX = /^[a-zA-Z0-9._\-/]+$/;
   for (const item of toDelete) {
+    if (!SAFE_BRANCH_REGEX.test(item.branch)) {
+      console.warn(`  [!] Skipping branch with unsafe name: ${item.branch}`);
+      continue;
+    }
     if (isDryRun) {
       console.log(`  - [DRY RUN] Would delete ${item.branch} [${item.reason}]`);
     } else {
-      const res = runCommand(`git branch -D ${item.branch}`);
+      runCommand(`git branch -D ${item.branch}`);
       console.log(`  - Deleted ${item.branch} [${item.reason}]`);
     }
   }

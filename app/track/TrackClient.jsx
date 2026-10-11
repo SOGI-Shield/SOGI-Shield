@@ -1,32 +1,28 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Search, ShieldCheck, ShieldAlert, Activity, AlertCircle, FileText, Download, Share2, ExternalLink } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Search, ShieldCheck, ShieldAlert, Activity, AlertCircle, FileText, Download, Share2, ExternalLink, MapPin } from "lucide-react";
 import { collection, query, where, getDocs, updateDoc, doc } from "firebase/firestore/lite";
 import { db, isMockMode } from "@/lib/firebase";
 import { generateComplaintPdf } from "@/lib/generateComplaintPdf";
 import { getLocalReportByTrackingCode, updateLocalReportStatus } from "@/lib/localStore";
+import { isValidWebUrl } from "@/lib/utils";
 
 export default function TrackCasePage() {
-  const [trackingCode, setTrackingCode] = useState("");
+  const [trackingCode, setTrackingCode] = useState(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("code") || "";
+    }
+    return "";
+  });
   const [isSearching, setIsSearching] = useState(false);
   const [report, setReport] = useState(null);
   const [error, setError] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get("code");
-      if (code) {
-        setTrackingCode(code);
-        executeSearch(code);
-      }
-    }
-  }, []);
-
-  const executeSearch = async (codeToSearch) => {
+  const executeSearch = useCallback(async (codeToSearch) => {
     const code = (codeToSearch || trackingCode || "").trim();
     if (!code) return;
     
@@ -85,7 +81,19 @@ export default function TrackCasePage() {
     } finally {
       setIsSearching(false);
     }
-  };
+  }, [trackingCode]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("code");
+      if (code) {
+        queueMicrotask(() => {
+          executeSearch(code);
+        });
+      }
+    }
+  }, [executeSearch]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -182,12 +190,12 @@ export default function TrackCasePage() {
   return (
     <div className="flex-1 container mx-auto px-4 py-8 sm:py-12 max-w-3xl relative z-10">
       <div className="text-center mb-8 sm:mb-10">
-        <h1 className="text-3xl sm:text-4xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-rose-400 drop-shadow-[0_0_15px_rgba(244,63,94,0.2)]">Track Your Case</h1>
+        <h1 className="text-3xl sm:text-4xl font-extrabold mb-4 text-transparent bg-clip-text bg-linear-to-r from-purple-400 via-pink-400 to-rose-400 drop-shadow-[0_0_15px_rgba(244,63,94,0.2)]">Track Your Case</h1>
         <p className="text-slate-300 text-base sm:text-lg">Enter your secure tracking code to view the status of your incident report.</p>
       </div>
 
       <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 p-6 sm:p-8 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] mb-8 sm:mb-10 relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-rose-500"></div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-purple-500 via-pink-500 to-rose-500"></div>
         <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4">
           <input 
             type="text" 
@@ -200,7 +208,7 @@ export default function TrackCasePage() {
           <button 
             type="submit" 
             disabled={isSearching}
-            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white font-bold py-3 sm:py-4 px-8 sm:px-10 rounded-xl transition-all shadow-[0_0_15px_rgba(236,72,153,0.4)] hover:shadow-[0_0_25px_rgba(236,72,153,0.6)] disabled:opacity-50 disabled:shadow-none flex items-center justify-center sm:justify-start gap-3 text-base sm:text-lg border border-white/20"
+            className="bg-linear-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white font-bold py-3 sm:py-4 px-8 sm:px-10 rounded-xl transition-all shadow-[0_0_15px_rgba(236,72,153,0.4)] hover:shadow-[0_0_25px_rgba(236,72,153,0.6)] disabled:opacity-50 disabled:shadow-none flex items-center justify-center sm:justify-start gap-3 text-base sm:text-lg border border-white/20"
           >
             <Search size={24} />
             {isSearching ? "Searching..." : "Lookup"}
@@ -216,7 +224,7 @@ export default function TrackCasePage() {
       {report && (
         <div className="space-y-6 sm:space-y-8 animate-in slide-in-from-bottom-4 duration-500">
           <div className={`p-6 sm:p-8 rounded-3xl border backdrop-blur-xl ${getStatusDisplay(report.status).color} flex items-start gap-4 sm:gap-5 transition-all shadow-xl relative overflow-hidden`}>
-            <div className="flex-shrink-0 mt-1">
+            <div className="shrink-0 mt-1">
               {getStatusDisplay(report.status).icon}
             </div>
             <div className="relative z-10">
@@ -275,6 +283,9 @@ export default function TrackCasePage() {
               <div>
                 <span className="block text-slate-500 mb-2 uppercase tracking-wider font-bold text-xs">Location</span>
                 <span className="text-white text-base break-words">{report.region}, {report.country}</span>
+                {report.plusCode && (
+                  <span className="block text-xs font-mono text-cyan-400 mt-1">Plus Code: {report.plusCode}</span>
+                )}
               </div>
               <div>
                 <span className="block text-slate-500 mb-2 uppercase tracking-wider font-bold text-xs">Category</span>
@@ -293,13 +304,36 @@ export default function TrackCasePage() {
                 </p>
               </div>
 
+              {report.evidenceLinks && report.evidenceLinks.length > 0 && (
+                <div className="sm:col-span-2 mt-4">
+                  <span className="block text-slate-500 mb-2 uppercase tracking-wider font-bold text-xs">Public Corroborating Evidence</span>
+                  <ul className="space-y-1.5 bg-black/40 p-4 rounded-xl border border-white/5">
+                    {report.evidenceLinks.map((link, idx) => {
+                      const isSafe = isValidWebUrl(link);
+                      return (
+                        <li key={idx} className="flex items-center gap-2 text-sm">
+                          <ExternalLink size={14} className="text-cyan-400 shrink-0" />
+                          {isSafe ? (
+                            <a href={link} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 hover:underline break-all">
+                              {link}
+                            </a>
+                          ) : (
+                            <span className="text-slate-400 break-all">{link}</span>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
+
               {/* Legal Recourse & Community Warning Actions */}
               <div className="sm:col-span-2 mt-6 pt-6 border-t border-white/10 flex flex-col sm:flex-row gap-3">
                 <button
                   type="button"
                   onClick={handleDownloadPdf}
                   disabled={isDownloadingPdf}
-                  className="flex-1 bg-gradient-to-r from-cyan-500 via-indigo-500 to-pink-500 hover:from-cyan-400 hover:via-indigo-400 hover:to-pink-400 text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-[0_0_15px_rgba(99,102,241,0.3)] flex items-center justify-center gap-2 text-sm border border-white/20 disabled:opacity-50"
+                  className="flex-1 bg-linear-to-r from-cyan-500 via-indigo-500 to-pink-500 hover:from-cyan-400 hover:via-indigo-400 hover:to-pink-400 text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-[0_0_15px_rgba(99,102,241,0.3)] flex items-center justify-center gap-2 text-sm border border-white/20 disabled:opacity-50"
                 >
                   <Download size={18} />
                   <span>{isDownloadingPdf ? "Building PDF..." : "Download Dossier PDF"}</span>

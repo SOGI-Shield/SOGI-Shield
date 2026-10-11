@@ -20,8 +20,12 @@ service cloud.firestore {
       // 2. CREATE RULES: Strict Schema Validation
       allow create: if 
         // Must contain ONLY these specific fields
-        hasOnlyAllowedFields(['id', 'timestamp', 'country', 'region', 'category', 'summary', 'evidenceLinks', 'status', 'verificationScore', 'lat', 'lng', 'facilityName', 'reportedToAuthorities', 'authorityDetails']) &&
+        hasOnlyAllowedFields(['id', 'timestamp', 'country', 'region', 'category', 'summary', 'evidenceLinks', 'status', 'verificationScore', 'lat', 'lng', 'facilityName', 'plusCode', 'reportedToAuthorities', 'authorityDetails']) &&
         
+        // Ensure document ID matches payload ID
+        isValidString(reportId, 1, 100) &&
+        request.resource.data.id == reportId &&
+
         // Validate required field types and lengths
         isValidString(request.resource.data.country, 1, 100) &&
         isValidString(request.resource.data.region, 1, 100) &&
@@ -44,6 +48,11 @@ service cloud.firestore {
           isValidString(request.resource.data.facilityName, 0, 200)
         ) &&
         (
+          !('plusCode' in request.resource.data) || 
+          request.resource.data.plusCode == null || 
+          isValidString(request.resource.data.plusCode, 0, 50)
+        ) &&
+        (
           !('authorityDetails' in request.resource.data) || 
           request.resource.data.authorityDetails == null || 
           isValidString(request.resource.data.authorityDetails, 0, 20000)
@@ -61,7 +70,7 @@ service cloud.firestore {
           request.resource.data.lng is number
         );
       
-      // 3. UPDATE RULES: Disabled on client. Requires Admin SDK.
+      // 3. UPDATE RULES: Disabled on client. Requires Edge REST / Service Account.
       allow update: if false;
 
       // 4. DELETE RULES: Strict Deny (Zero-touch approach)
@@ -69,9 +78,16 @@ service cloud.firestore {
     }
 
     match /report_secrets/{trackingCode} {
-      allow create: if hasOnlyAllowedFields(['reportId']);
+      allow create: if hasOnlyAllowedFields(['reportId']) &&
+        isValidString(trackingCode, 5, 64) &&
+        isValidString(request.resource.data.reportId, 1, 100);
       allow get: if true;
       allow list, update, delete: if false;
+    }
+
+    // Default deny for all other collections
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

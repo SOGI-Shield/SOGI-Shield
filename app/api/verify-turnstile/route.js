@@ -1,11 +1,20 @@
 import { NextResponse } from 'next/server';
 
+export const runtime = 'edge';
+
 export async function POST(request) {
   try {
-    const { token } = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ success: false, message: 'Invalid JSON request payload' }, { status: 400 });
+    }
 
-    if (!token) {
-      return NextResponse.json({ success: false, message: 'Missing Turnstile token' }, { status: 400 });
+    const token = body?.token;
+
+    if (!token || typeof token !== 'string' || token.length > 2048) {
+      return NextResponse.json({ success: false, message: 'Missing or invalid Turnstile token' }, { status: 400 });
     }
 
     // In development or mock mode, automatically pass verification for seamless local testing
@@ -26,6 +35,7 @@ export async function POST(request) {
     const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
       method: 'POST',
       body: verifyData,
+      signal: AbortSignal.timeout(5000)
     });
 
     const data = await response.json();

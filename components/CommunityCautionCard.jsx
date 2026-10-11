@@ -13,7 +13,8 @@ import {
   ExternalLink,
   MessageSquare,
   Send,
-  Shield
+  Shield,
+  MapPin
 } from "lucide-react";
 
 export default function CommunityCautionCard({ report }) {
@@ -25,19 +26,23 @@ export default function CommunityCautionCard({ report }) {
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const canvasRef = useRef(null);
 
-  // Determine origin safely
-  const [origin, setOrigin] = useState("https://sogi-shield.org");
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      setOrigin(window.location.origin);
-    }
-  }, []);
+  const plusCode = report?.plusCode || (lat && lng ? encodePlusCode(lat, lng) : null);
+  const sector = plusCode ? `Plus Code ${plusCode}` : (region || country || "Sector");
 
-  const shareUrl = lat && lng 
-    ? `${origin}/?lat=${lat}&lng=${lng}&zoom=11`
-    : `${origin}`;
+  // 1. Get origin for the functional QR link (includes https:// or http://)
+  const resolvedOrigin = typeof window !== 'undefined' && window.location.origin ? window.location.origin : 'https://sogi-shield.org';
 
-  const warningText = `⚠️ SOGI Safety Alert: Incident flagged near ${region || "Sector"}, ${country || "Global"} (${category || "Safety Violation"}). Live safety map updated on SOGI-Shield: ${shareUrl}`;
+  // 2. Get host for the clean visual text footer (e.g., "sogi-shield.org" or "localhost:3000")
+  const displayHost = typeof window !== 'undefined' && window.location.host ? window.location.host : 'sogi-shield.org';
+
+  // 3. Construct live map URL for the QR code
+  const qrTargetUrl = lat && lng 
+    ? `${resolvedOrigin}/?lat=${lat}&lng=${lng}&zoom=11`
+    : `${resolvedOrigin}/#map?sector=${encodeURIComponent(sector)}`;
+
+  const shareUrl = qrTargetUrl;
+
+  const warningText = `⚠️ SOGI Safety Alert: Incident flagged near ${region || "Area"}, ${country || "Global"}${plusCode ? ` (Plus Code: ${plusCode})` : ""} (${category || "Safety Violation"}). Live safety map updated on SOGI-Shield: ${shareUrl}`;
 
   // Generate QR Code
   useEffect(() => {
@@ -123,7 +128,7 @@ export default function CommunityCautionCard({ report }) {
     // Sector Location (constrained so it never overlaps the QR box at x=540)
     ctx.fillStyle = "#38bdf8"; // sky blue
     ctx.font = "bold 22px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-    const locText = `${region || "Sector"}, ${country || "Global"}`;
+    const locText = `${region || "Area"}, ${country || "Global"}`;
     let displayLoc = locText;
     if (ctx.measureText(displayLoc).width > 480) {
       while (displayLoc.length > 3 && ctx.measureText(displayLoc + "...").width > 480) {
@@ -131,11 +136,20 @@ export default function CommunityCautionCard({ report }) {
       }
       displayLoc += "...";
     }
-    ctx.fillText(displayLoc, 40, 150);
+    ctx.fillText(displayLoc, 40, 145);
+
+    // Plus Code badge if available
+    let nextY = 175;
+    if (plusCode) {
+      ctx.fillStyle = "#38bdf8";
+      ctx.font = "bold 13px 'Courier New', monospace";
+      ctx.fillText(`PLUS CODE: ${plusCode}`, 40, nextY);
+      nextY += 22;
+    }
 
     // Category
     ctx.fillStyle = "#94a3b8"; // slate-400
-    ctx.font = "16px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+    ctx.font = "15px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
     let catText = `Category: ${category || "Human Rights Violation"}`;
     if (ctx.measureText(catText).width > 480) {
       while (catText.length > 3 && ctx.measureText(catText + "...").width > 480) {
@@ -143,7 +157,7 @@ export default function CommunityCautionCard({ report }) {
       }
       catText += "...";
     }
-    ctx.fillText(catText, 40, 185);
+    ctx.fillText(catText, 40, nextY);
 
     // Descriptive advisory box
     ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
@@ -169,13 +183,13 @@ export default function CommunityCautionCard({ report }) {
     ctx.fillText("Zero-Touch Confidentiality • No Metadata Logged", 40, 400);
     ctx.fillStyle = "#818cf8";
     ctx.font = "bold 13px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-    ctx.fillText("SOGI-Shield Global Human Rights Platform | sogi-shield.org", 40, 425);
+    ctx.fillText(`SOGI-Shield Global Human Rights Platform | ${displayHost}`, 40, 425);
 
     // Draw QR Code on the right
     let targetQr = qrCodeUrl;
-    if (!targetQr && shareUrl) {
+    if (!targetQr && qrTargetUrl) {
       try {
-        targetQr = await QRCode.toDataURL(shareUrl, {
+        targetQr = await QRCode.toDataURL(qrTargetUrl, {
           width: 240,
           margin: 1,
           color: { dark: "#0f172a", light: "#ffffff" },
@@ -327,7 +341,7 @@ export default function CommunityCautionCard({ report }) {
 
   return (
     <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 sm:p-8 shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative overflow-hidden flex flex-col justify-between">
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-rose-500 via-pink-500 to-indigo-500"></div>
+      <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-rose-500 via-pink-500 to-indigo-500"></div>
       <canvas ref={canvasRef} className="hidden" />
 
       <div>
@@ -350,8 +364,8 @@ export default function CommunityCautionCard({ report }) {
         </div>
 
         {/* Visual Caution Card Preview */}
-        <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 border border-rose-500/30 rounded-2xl p-5 sm:p-6 mb-6 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 via-orange-500 to-rose-500"></div>
+        <div className="bg-linear-to-br from-slate-950 via-slate-900 to-slate-950 border border-rose-500/30 rounded-2xl p-5 sm:p-6 mb-6 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-red-500 via-orange-500 to-rose-500"></div>
           
           <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6">
             <div className="space-y-3 flex-1 text-center sm:text-left">
@@ -360,8 +374,14 @@ export default function CommunityCautionCard({ report }) {
                 ⚠️ SOGI Safety Alert
               </div>
               <h4 className="text-xl sm:text-2xl font-extrabold text-white leading-tight">
-                Incident Flagged near {region || "Sector"}, {country || "Global"}
+                Incident Flagged near {region || "Area"}, {country || "Global"}
               </h4>
+              {plusCode && (
+                <div className="inline-flex items-center gap-1.5 bg-cyan-950/60 border border-cyan-500/40 text-cyan-300 font-mono text-xs px-2.5 py-1 rounded-lg">
+                  <MapPin size={12} className="text-cyan-400" />
+                  <span>Plus Code: <strong>{plusCode}</strong></span>
+                </div>
+              )}
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
                 Live decentralized safety map updated on <span className="text-indigo-300 font-semibold">SOGI-Shield</span>. Exercise heightened situational awareness in this vicinity.
               </p>
@@ -375,7 +395,8 @@ export default function CommunityCautionCard({ report }) {
 
             {/* QR Code Frame */}
             {qrCodeUrl && (
-              <div className="bg-white p-2.5 rounded-xl shadow-xl flex-shrink-0 flex flex-col items-center">
+              <div className="bg-white p-2.5 rounded-xl shadow-xl shrink-0 flex flex-col items-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={qrCodeUrl} alt="Scan for Live Safety Map" className="w-28 h-28 sm:w-32 sm:h-32 object-contain" />
                 <span className="text-[10px] font-bold text-slate-800 uppercase tracking-wider mt-1 text-center">
                   Scan for Map
@@ -411,7 +432,7 @@ export default function CommunityCautionCard({ report }) {
           <button
             onClick={handleDownloadCard}
             disabled={isGeneratingImage}
-            className="w-full bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 active:from-rose-700 active:to-pink-700 text-white font-bold py-3.5 px-3 rounded-xl transition-all shadow-[0_0_15px_rgba(244,63,94,0.4)] flex items-center justify-center gap-2 text-sm border border-rose-400/30 disabled:opacity-50"
+            className="w-full bg-linear-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 active:from-rose-700 active:to-pink-700 text-white font-bold py-3.5 px-3 rounded-xl transition-all shadow-[0_0_15px_rgba(244,63,94,0.4)] flex items-center justify-center gap-2 text-sm border border-rose-400/30 disabled:opacity-50"
           >
             <Download size={17} />
             <span>{isGeneratingImage ? "Rendering..." : "Download (.PNG)"}</span>

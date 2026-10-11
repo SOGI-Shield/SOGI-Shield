@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { MapContainer, TileLayer, CircleMarker, useMap } from "react-leaflet";
 import L from "leaflet";
-import "leaflet/dist/leaflet.css";
 
 function RecenterMap({ lat, lng }) {
   const map = useMap();
@@ -32,6 +31,7 @@ export default function MiniImpactMap({ lat, lng, category, status }) {
         dragging={true}
         zoomControl={false}
         attributionControl={false}
+        preferCanvas={true}
         className="w-full h-full z-0"
         style={{ height: "100%", width: "100%", backgroundColor: "#0f172a" }}
       >
@@ -39,6 +39,9 @@ export default function MiniImpactMap({ lat, lng, category, status }) {
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           className="map-tiles grayscale contrast-125 opacity-75"
+          keepBuffer={2}
+          updateWhenIdle={true}
+          updateWhenZooming={false}
         />
         
         {/* Pulsing Outer Ring */}

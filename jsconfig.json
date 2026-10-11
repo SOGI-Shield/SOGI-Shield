@@ -1,9 +1,11 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
     "paths": {
       "@/*": ["./*"]
-    }
+    },
+    "jsx": "preserve"
   },
-  "include": ["**/*.js", "**/*.jsx", "**/*.mjs", "**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules", ".next"]
+  "include": ["**/*.js", "**/*.jsx"],
+  "exclude": ["node_modules", ".open-next", ".next"]
 }
