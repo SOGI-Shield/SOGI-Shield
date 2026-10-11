@@ -3,11 +3,10 @@ import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, CircleMarker, GeoJSON, useMapEvents, useMap, ZoomControl } from "react-leaflet";
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from "leaflet";
-import "leaflet/dist/leaflet.css";
 import { collection, getDocs, query } from "firebase/firestore/lite";
 import { db, isMockMode } from "@/lib/firebase";
 import { isValidWebUrl } from "@/lib/utils";
-import { Maximize2, Minimize2, X, Shield, CheckCircle, AlertTriangle, Flame } from "lucide-react";
+import { Maximize2, Minimize2, X, Shield, CheckCircle, AlertTriangle, Flame, Loader2 } from "lucide-react";
 
 function MapEvents({ setZoom }) {
   const map = useMapEvents({
@@ -89,6 +88,8 @@ export default function MapClient() {
     }
   }, []);
 
+  const [isLoadingReports, setIsLoadingReports] = useState(true);
+
   useEffect(() => {
     if (isMockMode) {
       import('@/src/data/mockReports.json').then(m => {
@@ -100,10 +101,15 @@ export default function MapClient() {
             ...staticReports.filter(s => !localReports.some(l => l.id === s.id))
           ];
           setReports(combined);
+          setIsLoadingReports(false);
         }).catch(() => {
           setReports(staticReports);
+          setIsLoadingReports(false);
         });
-      }).catch(e => console.error("Failed to load mock reports:", e));
+      }).catch(e => {
+        console.error("Failed to load mock reports:", e);
+        setIsLoadingReports(false);
+      });
       return;
     }
 
@@ -116,6 +122,8 @@ export default function MapClient() {
           setReports(fetched);
         } catch (e) {
           console.error("Failed to fetch reports:", e);
+        } finally {
+          setIsLoadingReports(false);
         }
       };
       
@@ -125,6 +133,7 @@ export default function MapClient() {
       return () => clearInterval(interval);
     } else {
       setReports([]);
+      setIsLoadingReports(false);
       console.warn("Firebase API key is missing. Map will remain empty.");
     }
   }, []);
@@ -198,21 +207,33 @@ export default function MapClient() {
 
   return (
     <div className={containerClasses}>
+      {/* Fullscreen Toggle (enabled on all screen sizes with 44px touch target) */}
       <button 
         onClick={toggleFullscreen}
-        className="hidden sm:block absolute top-4 right-4 z-[400] bg-slate-900/80 hover:bg-indigo-600 text-white p-2 rounded-lg backdrop-blur shadow border border-slate-700 transition-colors pointer-events-auto"
+        className="absolute top-3 right-3 sm:top-4 sm:right-4 z-[400] bg-slate-900/90 hover:bg-indigo-600 active:bg-indigo-700 text-white min-w-[44px] min-h-[44px] p-2.5 rounded-xl backdrop-blur-md shadow-lg border border-slate-700/80 transition-all pointer-events-auto flex items-center justify-center cursor-pointer"
         title="Toggle Fullscreen"
+        aria-label="Toggle Fullscreen"
       >
         {isFullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
       </button>
 
-      <div className="absolute bottom-4 left-2 sm:bottom-6 sm:left-4 z-[400] bg-slate-900/80 backdrop-blur text-[10px] sm:text-sm px-2 py-1.5 sm:px-4 sm:py-3 rounded-lg border border-slate-700 shadow-lg pointer-events-none text-slate-200">
-        <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2"><span className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.8)]"></span> Public Verified</div>
-        <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2"><span className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-slate-400 shadow-[0_0_8px_rgba(148,163,184,0.8)]"></span> Action Ignored</div>
-        <div className="flex items-center gap-1.5 sm:gap-2"><span className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-orange-500 opacity-80 shadow-[0_0_8px_rgba(249,115,22,0.8)]"></span> Heatmap Aggregated</div>
+      {/* Loading Indicator */}
+      {isLoadingReports && (
+        <div className="absolute top-16 right-3 sm:top-16 sm:right-4 z-[400] bg-slate-900/90 backdrop-blur-md border border-cyan-500/30 px-3 py-1.5 rounded-full text-[10px] sm:text-xs font-bold text-cyan-300 shadow-lg flex items-center gap-1.5 sm:gap-2 pointer-events-none animate-pulse">
+          <Loader2 size={12} className="animate-spin text-cyan-400" />
+          <span>Syncing pins...</span>
+        </div>
+      )}
+
+      {/* Incident Status Legend */}
+      <div className="absolute bottom-3 left-3 sm:bottom-6 sm:left-4 z-[400] bg-slate-900/90 backdrop-blur-md text-[10px] sm:text-xs px-2.5 py-2 sm:px-4 sm:py-3 rounded-xl border border-slate-700/80 shadow-lg pointer-events-none text-slate-200 flex flex-col gap-1 sm:gap-1.5">
+        <div className="flex items-center gap-1.5 sm:gap-2"><span className="w-2.5 h-2.5 rounded-full bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.8)]"></span> Public Verified</div>
+        <div className="flex items-center gap-1.5 sm:gap-2"><span className="w-2.5 h-2.5 rounded-full bg-slate-400 shadow-[0_0_8px_rgba(148,163,184,0.8)]"></span> Action Ignored</div>
+        <div className="flex items-center gap-1.5 sm:gap-2"><span className="w-2.5 h-2.5 rounded-full bg-orange-500 opacity-80 shadow-[0_0_8px_rgba(249,115,22,0.8)]"></span> Heatmap Aggregated</div>
       </div>
 
-      <div className="absolute top-2 left-1/2 -translate-x-1/2 md:top-auto md:bottom-6 md:left-1/2 md:-translate-x-1/2 z-[400] bg-slate-900/90 backdrop-blur-md text-[10px] sm:text-sm px-2 py-1.5 sm:px-6 sm:py-3 rounded-md md:rounded-full border border-slate-800 shadow-xl pointer-events-none text-slate-200 flex flex-wrap justify-center w-[92%] md:w-auto items-center gap-2 md:gap-6">
+      {/* Global Incident Stats HUD */}
+      <div className="absolute top-3 left-3 sm:top-auto sm:bottom-6 sm:left-1/2 sm:-translate-x-1/2 z-[400] bg-slate-900/90 backdrop-blur-md text-[10px] sm:text-sm px-2.5 py-1.5 sm:px-6 sm:py-3 rounded-xl sm:rounded-full border border-slate-800 shadow-xl pointer-events-none text-slate-200 flex flex-wrap justify-center max-w-[calc(100%-68px)] sm:max-w-none items-center gap-1.5 sm:gap-6">
         <div className="flex items-center gap-1 sm:gap-2 font-bold"><Shield size={12} className="text-indigo-400 sm:w-4 sm:h-4"/> <span className="hidden sm:inline">Total Incidents:</span><span className="sm:hidden">Total:</span> {globalStats.total}</div>
         <div className="w-px h-4 bg-slate-700 hidden sm:block"></div>
         <div className="flex items-center gap-1 sm:gap-2"><CheckCircle size={12} className="text-red-500 sm:w-4 sm:h-4"/> Verified: {globalStats.verified}</div>
@@ -266,7 +287,7 @@ export default function MapClient() {
                       <p className="text-sm mb-3 break-words whitespace-pre-wrap">{truncateWords(report.summary)}</p>
                       <button 
                         onClick={() => setSelectedReport(report)}
-                        className="w-full bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-800 text-xs font-bold py-3 rounded transition-colors"
+                        className="w-full min-h-[44px] bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-900 text-xs font-bold py-2.5 px-3 rounded-lg transition-colors flex items-center justify-center cursor-pointer shadow-sm"
                       >
                         Read Full Report
                       </button>
@@ -287,7 +308,7 @@ export default function MapClient() {
                       <p className="text-sm mb-3 break-words whitespace-pre-wrap">{truncateWords(report.summary)}</p>
                       <button 
                         onClick={() => setSelectedReport(report)}
-                        className="w-full bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-800 text-xs font-bold py-3 rounded transition-colors"
+                        className="w-full min-h-[44px] bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-900 text-xs font-bold py-2.5 px-3 rounded-lg transition-colors flex items-center justify-center cursor-pointer shadow-sm"
                       >
                         Read Full Report
                       </button>
@@ -325,10 +346,11 @@ export default function MapClient() {
       {/* Full Report Modal */}
       {selectedReport && (
         <div className="fixed inset-0 z-[1050] bg-slate-950/80 backdrop-blur flex items-center justify-center p-2 sm:p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-xl max-w-2xl w-full max-h-[85vh] sm:max-h-[90vh] overflow-y-auto p-4 sm:p-6 shadow-2xl relative text-left">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-2xl w-full max-h-[85vh] sm:max-h-[90vh] overflow-y-auto p-4 sm:p-6 shadow-2xl relative text-left">
             <button 
               onClick={() => setSelectedReport(null)}
-              className="absolute top-2 sm:top-4 right-2 sm:right-4 p-3 text-slate-400 hover:text-white active:bg-slate-800 rounded-full transition-colors"
+              className="absolute top-2 sm:top-4 right-2 sm:right-4 min-w-[44px] min-h-[44px] p-2 text-slate-400 hover:text-white active:bg-slate-800 rounded-full transition-colors flex items-center justify-center"
+              aria-label="Close report details"
             >
               <X size={24} />
             </button>

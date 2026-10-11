@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { MapContainer, TileLayer, CircleMarker, useMap } from "react-leaflet";
 import L from "leaflet";
-import "leaflet/dist/leaflet.css";
 
 function RecenterMap({ lat, lng }) {
   const map = useMap();

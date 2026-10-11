@@ -6,6 +6,7 @@ import { collection, query, where, getDocs, updateDoc, doc } from "firebase/fire
 import { db, isMockMode } from "@/lib/firebase";
 import { generateComplaintPdf } from "@/lib/generateComplaintPdf";
 import { getLocalReportByTrackingCode, updateLocalReportStatus } from "@/lib/localStore";
+import { isValidWebUrl } from "@/lib/utils";
 
 export default function TrackCasePage() {
   const [trackingCode, setTrackingCode] = useState("");
@@ -292,6 +293,29 @@ export default function TrackCasePage() {
                   {report.summary}
                 </p>
               </div>
+
+              {report.evidenceLinks && report.evidenceLinks.length > 0 && (
+                <div className="sm:col-span-2 mt-4">
+                  <span className="block text-slate-500 mb-2 uppercase tracking-wider font-bold text-xs">Public Corroborating Evidence</span>
+                  <ul className="space-y-1.5 bg-black/40 p-4 rounded-xl border border-white/5">
+                    {report.evidenceLinks.map((link, idx) => {
+                      const isSafe = isValidWebUrl(link);
+                      return (
+                        <li key={idx} className="flex items-center gap-2 text-sm">
+                          <ExternalLink size={14} className="text-cyan-400 flex-shrink-0" />
+                          {isSafe ? (
+                            <a href={link} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 hover:underline break-all">
+                              {link}
+                            </a>
+                          ) : (
+                            <span className="text-slate-400 break-all">{link}</span>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
 
               {/* Legal Recourse & Community Warning Actions */}
               <div className="sm:col-span-2 mt-6 pt-6 border-t border-white/10 flex flex-col sm:flex-row gap-3">

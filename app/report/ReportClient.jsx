@@ -25,10 +25,12 @@ import {
   Activity,
   Layers,
   MapPin,
-  ChevronRight
+  ChevronRight,
+  Navigation,
+  RefreshCw
 } from "lucide-react";
 import { db, isMockMode } from "@/lib/firebase";
-import { sanitizeReportPayload, classifyReport, isValidWebUrl } from "@/lib/utils";
+import { sanitizeReportPayload, classifyReport, isValidWebUrl, normalizeWebUrl } from "@/lib/utils";
 import { Turnstile } from '@marsidev/react-turnstile';
 import { generateComplaintPdf } from "@/lib/generateComplaintPdf";
 import { saveLocalReport } from "@/lib/localStore";
@@ -92,6 +94,99 @@ export default function ReportPage() {
   const [copiedCode, setCopiedCode] = useState(false);
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const [activeTab, setActiveTab] = useState("all"); // 'all' | 'personal' | 'community'
+  const [isDetectingLocation, setIsDetectingLocation] = useState(false);
+  const [detectedLocationInfo, setDetectedLocationInfo] = useState(null);
+  const [detectedCoords, setDetectedCoords] = useState(null);
+  const [customCategory, setCustomCategory] = useState("");
+
+  const handleAutoDetectLocation = () => {
+    if (typeof window === "undefined" || !navigator.geolocation) {
+      setDetectedLocationInfo({
+        error: true,
+        message: "Geolocation is not supported by your browser."
+      });
+      return;
+    }
+
+    setIsDetectingLocation(true);
+    setDetectedLocationInfo(null);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          setDetectedCoords({ lat: latitude, lng: longitude });
+
+          // Call reverse geocoding API powered by Photon by Komoot
+          const res = await fetch(`/api/reverse-geocode?lat=${latitude}&lng=${longitude}`);
+          const data = await res.json();
+
+          if (data && data.success) {
+            setFormData(prev => ({
+              ...prev,
+              country: data.country && data.country !== "Unknown" ? data.country : prev.country,
+              region: data.region && data.region !== "Sector" ? data.region : prev.region,
+              facilityName: prev.facilityName || (data.city ? data.city : "")
+            }));
+
+            setDetectedLocationInfo({
+              error: false,
+              message: `Auto-detected via Photon: ${data.formattedAddress || `${data.region}, ${data.country}`}`,
+              source: data.source
+            });
+          } else {
+            setDetectedLocationInfo({
+              error: false,
+              message: `Coordinates detected (${latitude.toFixed(4)}, ${longitude.toFixed(4)}). Please enter Region/Country.`,
+              source: "coordinates"
+            });
+          }
+        } catch (err) {
+          console.warn("Reverse geocode failed:", err);
+          setDetectedLocationInfo({
+            error: true,
+            message: "Unable to reverse geocode coordinates. You can type Country and Region manually."
+          });
+        } finally {
+          setIsDetectingLocation(false);
+        }
+      },
+      (geoError) => {
+        setIsDetectingLocation(false);
+        let msg = "Could not access location. Please enter Country and Region manually.";
+        if (geoError.code === 1) msg = "Location permission denied. Please enter Country and Region manually.";
+        else if (geoError.code === 2) msg = "Position unavailable. Please enter Country and Region manually.";
+        else if (geoError.code === 3) msg = "Location request timed out. Please enter manually.";
+        setDetectedLocationInfo({ error: true, message: msg });
+      },
+      { timeout: 10000, enableHighAccuracy: false, maximumAge: 60000 }
+    );
+  };
+
+  const handleResetForm = () => {
+    setFormData({
+      country: "",
+      region: "",
+      facilityName: "",
+      category: "",
+      summary: "",
+      evidenceLinks: "",
+      reportedToAuthorities: false,
+      authorityDetails: "",
+      actionIgnored: false,
+      website_hp: "",
+    });
+    setSubmitStatus(null);
+    setTrackingCodeResult("");
+    setSubmittedReport(null);
+    setDetectedCoords(null);
+    setDetectedLocationInfo(null);
+    setCustomCategory("");
+    setErrorMessage("");
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
 
   useEffect(() => {
     // Check rate limit on load - skip in development or mock mode so testing is seamless
@@ -125,8 +220,8 @@ export default function ReportPage() {
   // Live valid links count
   const detectedLinks = (formData.evidenceLinks || "")
     .split(/[\n,]+/)
-    .map(l => l.trim())
-    .filter(isValidWebUrl);
+    .map(l => normalizeWebUrl(l))
+    .filter(Boolean);
 
   // Live status calculation
   const liveStatus = detectedLinks.length > 0
@@ -214,7 +309,9 @@ export default function ReportPage() {
     // Honeypot check
     if (formData.website_hp) {
       console.warn("Honeypot triggered. Silently aborting.");
-      setSubmitStatus('success'); // Fake success for bots
+      setSubmitStatus('success');
+      setTrackingCodeResult("SOGI-SHIELD-PROTECTED");
+      setSubmittedReport({ country: "Anonymous", region: "Sector" });
       return;
     }
 
@@ -224,7 +321,38 @@ export default function ReportPage() {
       return;
     }
 
+    // Explicit validation before proceeding
+    const trimmedCountry = formData.country?.trim();
+    const trimmedRegion = formData.region?.trim();
+    const trimmedCategory = formData.category?.trim();
+    const trimmedSummary = formData.summary?.trim();
+
+    if (!trimmedCountry) {
+      setErrorMessage("Please specify the Country where the incident occurred.");
+      setSubmitStatus('error');
+      return;
+    }
+
+    if (!trimmedRegion) {
+      setErrorMessage("Please specify the State / Province / Region.");
+      setSubmitStatus('error');
+      return;
+    }
+
+    if (!trimmedCategory) {
+      setErrorMessage("Please select a Misconduct Category.");
+      setSubmitStatus('error');
+      return;
+    }
+
+    if (!trimmedSummary || trimmedSummary.length < 10) {
+      setErrorMessage("Please provide a factual narrative of the incident (at least 10 characters).");
+      setSubmitStatus('error');
+      return;
+    }
+
     setIsSubmitting(true);
+    setSubmittingStep(1);
     setSubmitStatus(null);
     setErrorMessage("");
 
@@ -246,57 +374,74 @@ export default function ReportPage() {
         }
       }
 
-      // Process evidence links
-      const linksArray = formData.evidenceLinks
+      // Process, normalize, and cap evidence links to max 10 (strictly complying with firestore.rules)
+      const linksArray = (formData.evidenceLinks || "")
         .split(/[\n,]+/)
-        .map(l => l.trim())
-        .filter(l => l.length > 0);
+        .map(normalizeWebUrl)
+        .filter(Boolean)
+        .slice(0, 10);
 
       // Sanitize and prepare base payload
+      const resolvedCategory = (trimmedCategory === "Other" && customCategory?.trim())
+        ? `Other: ${customCategory.trim()}`.slice(0, 100)
+        : trimmedCategory;
+
       const basePayload = sanitizeReportPayload({
         ...formData,
+        country: trimmedCountry,
+        region: trimmedRegion,
+        category: resolvedCategory,
+        summary: trimmedSummary,
         evidenceLinks: linksArray
       });
 
       // Run Zero-Touch Classification locally
       const finalReport = classifyReport(basePayload);
 
-      // Fetch accurate coordinates via OpenStreetMap Nominatim
-      try {
-        let geoData = null;
-        // Attempt 1: Region + Country
-        const query1 = encodeURIComponent(`${finalReport.region}, ${finalReport.country}`);
-        const res1 = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query1}&limit=1`);
-        geoData = await res1.json();
-        
-        // Attempt 2: If Region+Country fails (e.g. too specific/typos), fallback to Country only
-        if (!geoData || geoData.length === 0) {
-          const query2 = encodeURIComponent(`${finalReport.country}`);
-          const res2 = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query2}&limit=1`);
-          geoData = await res2.json();
-        }
-        
-        if (geoData && geoData.length > 0) {
-          finalReport.lat = parseFloat(geoData[0].lat);
-          finalReport.lng = parseFloat(geoData[0].lon);
-        } else {
+      // Step 2: Geocoding incident sector (Photon by Komoot, Nominatim)
+      setSubmittingStep(2);
+      
+      // If we already detected coordinates via reverse geocoding, use them directly!
+      if (detectedCoords && typeof detectedCoords.lat === 'number' && typeof detectedCoords.lng === 'number') {
+        finalReport.lat = detectedCoords.lat;
+        finalReport.lng = detectedCoords.lng;
+      } else {
+        try {
+          const geoRes = await fetch('/api/geocode', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              region: finalReport.region,
+              country: finalReport.country,
+              address: formData.facilityName || ""
+            })
+          });
+
+          const geoData = await geoRes.json();
+          if (geoData && geoData.success && typeof geoData.lat === 'number' && typeof geoData.lng === 'number') {
+            finalReport.lat = geoData.lat;
+            finalReport.lng = geoData.lng;
+          } else {
+            if (isMockMode || process.env.NODE_ENV === 'development') {
+              finalReport.lat = 18.5204 + (Math.random() - 0.5) * 0.05;
+              finalReport.lng = 73.8567 + (Math.random() - 0.5) * 0.05;
+            } else {
+              throw new Error(geoData?.message || "Could not find this location on the map. Please check your spelling for Region/Country.");
+            }
+          }
+        } catch (err) {
+          console.warn("Geocoding notice:", err);
           if (isMockMode || process.env.NODE_ENV === 'development') {
             finalReport.lat = 18.5204 + (Math.random() - 0.5) * 0.05;
             finalReport.lng = 73.8567 + (Math.random() - 0.5) * 0.05;
           } else {
-            throw new Error("Could not find this location on the map. Please check your spelling for Region/Country.");
+            throw new Error(err.message || "Failed to locate the address. Please simplify the region/city name.");
           }
-        }
-      } catch (err) {
-        console.warn("Geocoding notice:", err);
-        if (isMockMode || process.env.NODE_ENV === 'development') {
-          finalReport.lat = 18.5204 + (Math.random() - 0.5) * 0.05;
-          finalReport.lng = 73.8567 + (Math.random() - 0.5) * 0.05;
-        } else {
-          throw new Error(err.message || "Failed to locate the address. Please simplify the region/city name.");
         }
       }
 
+      // Step 3: Generating zero-knowledge key
+      setSubmittingStep(3);
       const reportId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2);
       finalReport.id = reportId;
 
@@ -310,6 +455,7 @@ export default function ReportPage() {
         ...finalReport,
         trackingCode: generatedTrackingCode,
         facilityName: formData.facilityName || null,
+        evidenceLinks: linksArray, // Preserved for user's personal client-side UN PDF dossier
         reportedToAuthorities: formData.reportedToAuthorities,
         authorityDetails: formData.authorityDetails,
         actionIgnored: formData.actionIgnored
@@ -317,6 +463,9 @@ export default function ReportPage() {
       
       // Crucial security fix: Delete trackingCode from the public document so it isn't leaked
       delete finalReport.trackingCode;
+
+      // Step 4: Synthesizing client protections
+      setSubmittingStep(4);
 
       // Always save to local dev store in mock mode or development
       if (isMockMode || process.env.NODE_ENV === 'development') {
@@ -333,12 +482,14 @@ export default function ReportPage() {
       } else {
         // Simulate network request
         console.log("Mock submission saved to local store:", finalReport);
-        await new Promise(resolve => setTimeout(resolve, 800));
+        await new Promise(resolve => setTimeout(resolve, 600));
       }
 
-      // Update Rate Limit
+      // Update Rate Limit (only enforced in production outside mock mode)
       localStorage.setItem('sogi_last_submit', Date.now().toString());
-      setRateLimited(true);
+      if (!isMockMode && process.env.NODE_ENV !== 'development') {
+        setRateLimited(true);
+      }
 
       setTrackingCodeResult(generatedTrackingCode);
       setSubmittedReport(fullClientCopy);
@@ -350,6 +501,8 @@ export default function ReportPage() {
         summary: "", evidenceLinks: "", reportedToAuthorities: false, 
         authorityDetails: "", actionIgnored: false, website_hp: "" 
       });
+      setDetectedCoords(null);
+      setDetectedLocationInfo(null);
       
     } catch (error) {
       console.error("Error submitting report:", error);
@@ -357,6 +510,7 @@ export default function ReportPage() {
       setSubmitStatus('error');
     } finally {
       setIsSubmitting(false);
+      setSubmittingStep(0);
     }
   };
 
@@ -671,10 +825,10 @@ export default function ReportPage() {
               <ArrowRight size={14} />
             </a>
             <button
-              onClick={() => window.location.reload()}
-              className="text-indigo-400 hover:text-pink-400 active:text-pink-300 font-bold uppercase tracking-wider text-xs py-2.5 px-4 rounded-xl transition-colors"
+              onClick={handleResetForm}
+              className="text-indigo-400 hover:text-pink-400 active:text-pink-300 font-bold uppercase tracking-wider text-xs py-2.5 px-4 rounded-xl transition-colors cursor-pointer"
             >
-              Submit another report (after 5 mins)
+              Submit another report
             </button>
             <button
               onClick={handlePanicExit}
@@ -833,12 +987,57 @@ export default function ReportPage() {
           />
         )}
 
+        {/* Top Error Banner (if submission failed) */}
+        {submitStatus === 'error' && (
+          <div className="p-4 bg-rose-900/50 border border-rose-500/60 rounded-2xl text-rose-200 text-center font-bold text-sm shadow-lg flex items-center justify-center gap-2">
+            <AlertTriangle size={18} className="text-rose-400 flex-shrink-0" />
+            <span>{errorMessage || "An error occurred while submitting. Please check your details and try again."}</span>
+          </div>
+        )}
+
         {/* Section 1: Geographic Location */}
         <div className="space-y-4">
-          <div className="flex items-center gap-2 border-b border-white/10 pb-2">
-            <MapPin size={18} className="text-cyan-400" />
-            <span className="text-sm font-bold text-white uppercase tracking-wider">1. Incident Location</span>
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-2">
+            <div className="flex items-center gap-2">
+              <MapPin size={18} className="text-cyan-400" />
+              <span className="text-sm font-bold text-white uppercase tracking-wider">1. Incident Location</span>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleAutoDetectLocation}
+              disabled={isDetectingLocation}
+              className="inline-flex items-center gap-1.5 text-xs bg-cyan-950/60 hover:bg-cyan-900/60 active:bg-cyan-800 text-cyan-300 hover:text-cyan-200 border border-cyan-500/40 px-3 py-1.5 rounded-xl transition-all shadow-sm font-semibold cursor-pointer disabled:opacity-50"
+              title="Reverse geocode current location via Photon by Komoot"
+            >
+              {isDetectingLocation ? (
+                <>
+                  <Activity size={13} className="animate-spin text-cyan-400" />
+                  <span>Reverse Geocoding (Photon)...</span>
+                </>
+              ) : (
+                <>
+                  <Navigation size={13} className="text-cyan-400" />
+                  <span>Auto-Detect Location (Photon)</span>
+                </>
+              )}
+            </button>
           </div>
+
+          {detectedLocationInfo && (
+            <div className={`p-3 rounded-xl text-xs flex items-center gap-2 border animate-in fade-in duration-300 ${
+              detectedLocationInfo.error
+                ? "bg-rose-950/40 border-rose-500/40 text-rose-300"
+                : "bg-emerald-950/40 border-emerald-500/40 text-emerald-300"
+            }`}>
+              {detectedLocationInfo.error ? (
+                <AlertTriangle size={14} className="text-rose-400 flex-shrink-0" />
+              ) : (
+                <CheckCircle2 size={14} className="text-emerald-400 flex-shrink-0" />
+              )}
+              <span>{detectedLocationInfo.message}</span>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
@@ -943,6 +1142,22 @@ export default function ReportPage() {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
             </div>
           </div>
+
+          {formData.category === "Other" && (
+            <div className="pt-2">
+              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                Specify Misconduct Details (Optional):
+              </label>
+              <input 
+                type="text" 
+                maxLength={80} 
+                value={customCategory} 
+                onChange={(e) => setCustomCategory(e.target.value)} 
+                placeholder="e.g. Workplace discrimination, housing eviction, online outing..." 
+                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-slate-600 text-sm" 
+              />
+            </div>
+          )}
         </div>
 
         {/* Section 4: Narrative Experience with Guided Prompts */}

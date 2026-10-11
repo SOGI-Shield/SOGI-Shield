@@ -28,15 +28,27 @@ export default function CommunityCautionCard({ report }) {
   const sector = region || country || "Sector";
 
   // 1. Get origin for the functional QR link (includes https:// or http://)
-  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  const [origin, setOrigin] = useState(
+    typeof window !== 'undefined' && window.location.origin ? window.location.origin : 'https://sogi-shield.org'
+  );
 
   // 2. Get host for the clean visual text footer (e.g., "sogi-shield.org" or "localhost:3000")
-  const displayHost = typeof window !== 'undefined' ? window.location.host : 'sogi-shield.org';
+  const [displayHost, setDisplayHost] = useState(
+    typeof window !== 'undefined' && window.location.host ? window.location.host : 'sogi-shield.org'
+  );
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if (window.location.origin) setOrigin(window.location.origin);
+      if (window.location.host) setDisplayHost(window.location.host);
+    }
+  }, []);
 
   // 3. Construct your live map URL for the QR code
+  const resolvedOrigin = origin || 'https://sogi-shield.org';
   const qrTargetUrl = lat && lng 
-    ? `${origin}/?lat=${lat}&lng=${lng}&zoom=11`
-    : `${origin}/#map?sector=${encodeURIComponent(sector)}`;
+    ? `${resolvedOrigin}/?lat=${lat}&lng=${lng}&zoom=11`
+    : `${resolvedOrigin}/#map?sector=${encodeURIComponent(sector)}`;
 
   const shareUrl = qrTargetUrl;
 
