@@ -8,7 +8,7 @@ const MapClient = dynamic(() => import('./MapClient'), {
   loading: () => (
     <div className="w-full h-full min-h-[450px] md:min-h-[700px] flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-xl border border-white/10 rounded-xl relative overflow-hidden">
       {/* Background ambient glow */}
-      <div className="absolute inset-0 bg-gradient-to-tr from-cyan-950/30 via-slate-900/40 to-pink-950/20 pointer-events-none" />
+      <div className="absolute inset-0 bg-linear-to-tr from-cyan-950/30 via-slate-900/40 to-pink-950/20 pointer-events-none" />
       
       {/* Radar pulse animation */}
       <div className="relative mb-6 flex items-center justify-center">

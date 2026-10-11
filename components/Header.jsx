@@ -15,7 +15,7 @@ export default function Header() {
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <Link href="/" onClick={closeMenu} className="flex items-center gap-2 group z-[60]">
           <Shield size={24} className="sm:w-7 sm:h-7 text-indigo-400 group-hover:text-pink-400 transition-colors duration-300" />
-          <span className="text-lg sm:text-xl font-bold tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-indigo-400 to-pink-400">
+          <span className="text-lg sm:text-xl font-bold tracking-wider bg-clip-text text-transparent bg-linear-to-r from-cyan-400 via-indigo-400 to-pink-400">
             SOGI-Shield
           </span>
         </Link>

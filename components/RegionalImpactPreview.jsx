@@ -19,12 +19,12 @@ export default function RegionalImpactPreview({ report }) {
 
   return (
     <div className="bg-slate-900/60 backdrop-blur-xl border border-indigo-500/30 rounded-3xl p-5 sm:p-7 shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative overflow-hidden flex flex-col justify-between">
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500"></div>
+      <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-emerald-500 via-teal-500 to-cyan-500"></div>
 
       <div>
         {/* Collective Impact Notification */}
         <div className="flex items-start gap-3 mb-4">
-          <div className="p-2.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl flex-shrink-0 mt-0.5">
+          <div className="p-2.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl shrink-0 mt-0.5">
             <Radio size={22} className="animate-pulse" />
           </div>
           <div>

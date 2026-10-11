@@ -47,11 +47,11 @@ Sincerely,
     <div className="flex-1 container mx-auto px-4 py-8 sm:py-12 max-w-5xl relative z-10">
       <div className="mb-8 sm:mb-12 text-center max-w-3xl mx-auto">
         <div className="flex justify-center mb-6">
-          <div className="p-4 bg-gradient-to-br from-pink-500/20 to-rose-500/20 border border-pink-500/30 rounded-2xl shadow-[0_0_20px_rgba(244,63,94,0.3)]">
+          <div className="p-4 bg-linear-to-br from-pink-500/20 to-rose-500/20 border border-pink-500/30 rounded-2xl shadow-[0_0_20px_rgba(244,63,94,0.3)]">
             <FileText size={48} className="text-pink-400 drop-shadow-[0_0_10px_rgba(244,63,94,0.5)]" />
           </div>
         </div>
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 sm:mb-6 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-indigo-400 to-pink-400 drop-shadow-[0_0_15px_rgba(99,102,241,0.2)]">Global Human Rights Action Portal</h1>
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 sm:mb-6 text-transparent bg-clip-text bg-linear-to-r from-cyan-400 via-indigo-400 to-pink-400 drop-shadow-[0_0_15px_rgba(99,102,241,0.2)]">Global Human Rights Action Portal</h1>
         <p className="text-slate-300 text-base sm:text-lg leading-relaxed">
           Take your documentation a step further. Use our standardized legal complaint format to report incidents directly to international human rights commissions and local authorities worldwide.
         </p>
@@ -82,7 +82,7 @@ Sincerely,
           </div>
 
           <div className="bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-3xl shadow-lg relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-indigo-500 to-pink-500"></div>
+            <div className="absolute top-0 left-0 w-1 h-full bg-linear-to-b from-indigo-500 to-pink-500"></div>
             <h3 className="font-bold text-indigo-300 mb-4 uppercase tracking-widest text-sm">Guidelines for Reporting</h3>
             <ul className="text-sm text-slate-300 space-y-4 list-disc pl-4 marker:text-indigo-500 leading-relaxed">
               <li><strong className="text-white">Be factual:</strong> Stick strictly to the facts of what happened without emotional exaggeration.</li>
@@ -101,7 +101,7 @@ Sincerely,
             </div>
             <button 
               onClick={copyToClipboard}
-              className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 active:from-pink-700 active:to-rose-700 text-white font-bold py-3 px-6 rounded-xl transition-all flex items-center gap-2 text-sm shrink-0 w-full sm:w-auto justify-center shadow-[0_0_15px_rgba(225,29,72,0.4)] hover:shadow-[0_0_25px_rgba(225,29,72,0.6)] border border-rose-400/30 uppercase tracking-wider"
+              className="bg-linear-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 active:from-pink-700 active:to-rose-700 text-white font-bold py-3 px-6 rounded-xl transition-all flex items-center gap-2 text-sm shrink-0 w-full sm:w-auto justify-center shadow-[0_0_15px_rgba(225,29,72,0.4)] hover:shadow-[0_0_25px_rgba(225,29,72,0.6)] border border-rose-400/30 uppercase tracking-wider"
             >
               {copied ? <><CheckCircle2 size={18} /> Copied!</> : <><Copy size={18} /> Copy Template</>}
             </button>

@@ -341,7 +341,7 @@ export default function CommunityCautionCard({ report }) {
 
   return (
     <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 sm:p-8 shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative overflow-hidden flex flex-col justify-between">
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-rose-500 via-pink-500 to-indigo-500"></div>
+      <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-rose-500 via-pink-500 to-indigo-500"></div>
       <canvas ref={canvasRef} className="hidden" />
 
       <div>
@@ -364,8 +364,8 @@ export default function CommunityCautionCard({ report }) {
         </div>
 
         {/* Visual Caution Card Preview */}
-        <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 border border-rose-500/30 rounded-2xl p-5 sm:p-6 mb-6 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 via-orange-500 to-rose-500"></div>
+        <div className="bg-linear-to-br from-slate-950 via-slate-900 to-slate-950 border border-rose-500/30 rounded-2xl p-5 sm:p-6 mb-6 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-red-500 via-orange-500 to-rose-500"></div>
           
           <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6">
             <div className="space-y-3 flex-1 text-center sm:text-left">
@@ -395,7 +395,7 @@ export default function CommunityCautionCard({ report }) {
 
             {/* QR Code Frame */}
             {qrCodeUrl && (
-              <div className="bg-white p-2.5 rounded-xl shadow-xl flex-shrink-0 flex flex-col items-center">
+              <div className="bg-white p-2.5 rounded-xl shadow-xl shrink-0 flex flex-col items-center">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={qrCodeUrl} alt="Scan for Live Safety Map" className="w-28 h-28 sm:w-32 sm:h-32 object-contain" />
                 <span className="text-[10px] font-bold text-slate-800 uppercase tracking-wider mt-1 text-center">
@@ -432,7 +432,7 @@ export default function CommunityCautionCard({ report }) {
           <button
             onClick={handleDownloadCard}
             disabled={isGeneratingImage}
-            className="w-full bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 active:from-rose-700 active:to-pink-700 text-white font-bold py-3.5 px-3 rounded-xl transition-all shadow-[0_0_15px_rgba(244,63,94,0.4)] flex items-center justify-center gap-2 text-sm border border-rose-400/30 disabled:opacity-50"
+            className="w-full bg-linear-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 active:from-rose-700 active:to-pink-700 text-white font-bold py-3.5 px-3 rounded-xl transition-all shadow-[0_0_15px_rgba(244,63,94,0.4)] flex items-center justify-center gap-2 text-sm border border-rose-400/30 disabled:opacity-50"
           >
             <Download size={17} />
             <span>{isGeneratingImage ? "Rendering..." : "Download (.PNG)"}</span>
