@@ -1,6 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: false,
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      'firebase/app': 'firebase/app/dist/esm/index.esm.js',
+      'firebase/firestore/lite': 'firebase/firestore/lite/dist/esm/index.esm.js',
+      'firebase/firestore': 'firebase/firestore/dist/esm/index.esm.js',
+    };
+    return config;
+  },
   async headers() {
     return [
       {
