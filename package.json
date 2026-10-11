@@ -1,11 +1,11 @@
 {
-  "name": "@SOGI-Shield/sogi-shield",
-  "version": "1.0.10",
+  "name": "@sogi-shield/sogi-shield",
+  "version": "1.2.1",
   "private": false,
   "license": "GPL-3.0-or-later",
   "repository": "https://github.com/SOGI-Shield/SOGI-Shield",
   "publishConfig": {
-    "@SOGI-Shield:registry": "https://npm.pkg.github.com"
+    "@sogi-shield:registry": "https://npm.pkg.github.com"
   },
   "scripts": {
     "dev": "next dev",

@@ -604,9 +604,9 @@ export default function MapClient() {
                 <Marker key={reportKey} position={[Number(report.lat), Number(report.lng)]} icon={icons.red}>
                   <Popup>
                     <div className="text-slate-900 w-full max-w-[260px]">
-                      <h3 className="font-bold text-lg mb-1 break-words">{report.facilityName || "Verified Incident"}</h3>
-                      <p className="text-sm font-semibold text-red-600 mb-2 break-words">{report.category}</p>
-                      <p className="text-sm mb-3 break-words whitespace-pre-wrap">{truncateWords(report.summary)}</p>
+                      <h3 className="font-bold text-lg mb-1 wrap-break-word">{report.facilityName || "Verified Incident"}</h3>
+                      <p className="text-sm font-semibold text-red-600 mb-2 wrap-break-word">{report.category}</p>
+                      <p className="text-sm mb-3 wrap-break-word whitespace-pre-wrap">{truncateWords(report.summary)}</p>
                       <button 
                         onClick={() => setSelectedReport(report)}
                         className="w-full min-h-[44px] bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-900 text-xs font-bold py-2.5 px-3 rounded-lg transition-colors flex items-center justify-center cursor-pointer shadow-sm"
@@ -625,9 +625,9 @@ export default function MapClient() {
                       <div className="inline-block bg-slate-200 text-slate-700 text-xs font-bold px-2 py-1 rounded mb-2 uppercase tracking-wide">
                         Action Ignored
                       </div>
-                      <h3 className="font-bold text-lg mb-1 break-words">{report.facilityName || "Incident"}</h3>
-                      <p className="text-sm font-semibold text-slate-600 mb-2 break-words">{report.category}</p>
-                      <p className="text-sm mb-3 break-words whitespace-pre-wrap">{truncateWords(report.summary)}</p>
+                      <h3 className="font-bold text-lg mb-1 wrap-break-word">{report.facilityName || "Incident"}</h3>
+                      <p className="text-sm font-semibold text-slate-600 mb-2 wrap-break-word">{report.category}</p>
+                      <p className="text-sm mb-3 wrap-break-word whitespace-pre-wrap">{truncateWords(report.summary)}</p>
                       <button 
                         onClick={() => setSelectedReport(report)}
                         className="w-full min-h-[44px] bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-900 text-xs font-bold py-2.5 px-3 rounded-lg transition-colors flex items-center justify-center cursor-pointer shadow-sm"
@@ -685,8 +685,8 @@ export default function MapClient() {
               }`}>
                 {selectedReport.status === "PUBLIC_VERIFIED" ? "Public Verified Incident" : "Action Ignored"}
               </span>
-              <h2 className="text-2xl font-bold text-white mb-1 break-words">{selectedReport.facilityName || "Unnamed Facility / Incident"}</h2>
-              <p className="text-sm text-slate-400 break-words">{selectedReport.region}, {selectedReport.country}</p>
+              <h2 className="text-2xl font-bold text-white mb-1 wrap-break-word">{selectedReport.facilityName || "Unnamed Facility / Incident"}</h2>
+              <p className="text-sm text-slate-400 wrap-break-word">{selectedReport.region}, {selectedReport.country}</p>
               {selectedReport.plusCode && (
                 <div className="mt-1 text-xs font-mono text-cyan-400">
                   Sector Grid: {selectedReport.plusCode}
@@ -707,7 +707,7 @@ export default function MapClient() {
 
             <div className="mb-6">
               <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Detailed Narrative</h3>
-              <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800 text-slate-300 text-sm whitespace-pre-wrap leading-relaxed break-words">
+              <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800 text-slate-300 text-sm whitespace-pre-wrap leading-relaxed wrap-break-word">
                 {selectedReport.summary}
               </div>
             </div>
@@ -715,7 +715,7 @@ export default function MapClient() {
             {selectedReport.allegedPerpetrators && (
               <div className="mb-6">
                 <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Perpetrators / Practitioners</h3>
-                <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800 text-slate-300 text-sm break-words">
+                <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800 text-slate-300 text-sm wrap-break-word">
                   {selectedReport.allegedPerpetrators}
                 </div>
               </div>
