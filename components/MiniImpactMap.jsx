@@ -71,8 +71,8 @@ export default function MiniImpactMap({ lat, lng, category, status }) {
       </MapContainer>
 
       {/* Floating status tag on map */}
-      <div className="absolute top-3 left-3 z-[400] bg-slate-950/90 backdrop-blur-md px-3 py-1 rounded-full border border-white/15 text-xs font-mono text-[#00D99D] flex items-center gap-1.5 shadow-lg">
-        <span className="w-2 h-2 rounded-full bg-[#00D99D] animate-ping"></span>
+      <div className="absolute top-3 left-3 z-[400] bg-slate-950/90 backdrop-blur-md px-3 py-1 rounded-full border border-white/15 text-xs font-mono text-mint flex items-center gap-1.5 shadow-lg">
+        <span className="w-2 h-2 rounded-full bg-mint animate-ping"></span>
         <span>LIVE CLUSTER PING ACTIVE</span>
       </div>
     </div>

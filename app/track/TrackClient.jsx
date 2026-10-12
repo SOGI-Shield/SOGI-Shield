@@ -158,24 +158,24 @@ export default function TrackCasePage() {
     switch (status) {
       case 'PUBLIC_VERIFIED':
         return {
-          icon: <ShieldCheck className="text-[#FB4E77]" size={32} />,
+          icon: <ShieldCheck className="text-coral" size={32} />,
           title: "Public & Verified",
           desc: "Your incident is publicly visible on the map with a Coral Rose (#FB4E77) marker, including facility details. Evidence has been verified.",
-          color: "border-[#FB4E77]/50 bg-[#FB4E77]/10 text-rose-200"
+          color: "border-coral/50 bg-coral/10 text-rose-200"
         };
       case 'ACTION_IGNORED':
         return {
           icon: <AlertCircle className="text-white" size={32} />,
           title: "Action Ignored / Institutional Neglect",
           desc: "Your incident is marked as ignored by authorities. It appears as an Electric Iris (#584BE0) marker on the map to highlight institutional inaction.",
-          color: "border-[#584BE0]/50 bg-[#584BE0]/15 text-slate-200"
+          color: "border-iris/50 bg-iris/15 text-slate-200"
         };
       case 'HEATMAP_AGGREGATED':
         return {
-          icon: <ShieldAlert className="text-[#00D99D]" size={32} />,
+          icon: <ShieldAlert className="text-mint" size={32} />,
           title: "Heatmap Aggregated",
           desc: "Your incident is aggregated anonymously into the regional heatmap (Vivid Mint #00D99D). Facility details are hidden to protect you.",
-          color: "border-[#00D99D]/50 bg-[#00D99D]/10 text-emerald-200"
+          color: "border-mint/50 bg-mint/10 text-emerald-200"
         };
       default:
         return {
@@ -190,25 +190,25 @@ export default function TrackCasePage() {
   return (
     <div className="flex-1 container mx-auto px-4 py-8 sm:py-12 max-w-3xl relative z-10">
       <div className="text-center mb-8 sm:mb-10">
-        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-linear-to-r from-[#FB4E77] via-[#584BE0] to-[#00D99D] drop-shadow-[0_0_20px_rgba(251,78,119,0.3)]">Track Your Case</h1>
+        <h1 className="text-3xl sm:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-linear-to-r from-coral via-iris to-mint drop-shadow-[0_0_20px_rgba(251,78,119,0.3)]">Track Your Case</h1>
         <p className="text-slate-300 text-base sm:text-lg">Enter your secure tracking code to view the status of your incident report.</p>
       </div>
 
       <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 p-6 sm:p-8 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] mb-8 sm:mb-10 relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-[#FB4E77] via-[#584BE0] to-[#00D99D]"></div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-coral via-iris to-mint"></div>
         <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4">
           <input 
             type="text" 
             placeholder="e.g., SOGI-2026-ABCD" 
             value={trackingCode}
             onChange={(e) => setTrackingCode(e.target.value)}
-            className="flex-1 bg-black/40 border border-white/10 rounded-xl px-5 py-3 sm:py-4 text-white focus:outline-none focus:border-[#584BE0] focus:ring-1 focus:ring-[#584BE0] transition-all uppercase font-mono tracking-widest placeholder:text-slate-600"
+            className="flex-1 bg-black/40 border border-white/10 rounded-xl px-5 py-3 sm:py-4 text-white focus:outline-none focus:border-iris focus:ring-1 focus:ring-iris transition-all uppercase font-mono tracking-widest placeholder:text-slate-600"
             required
           />
           <button 
             type="submit" 
             disabled={isSearching}
-            className="bg-linear-to-r from-[#FB4E77] to-[#584BE0] hover:opacity-95 text-white font-bold py-3 sm:py-4 px-8 sm:px-10 rounded-xl transition-all shadow-[0_0_20px_rgba(251,78,119,0.4)] disabled:opacity-50 disabled:shadow-none flex items-center justify-center sm:justify-start gap-3 text-base sm:text-lg border border-white/20 cursor-pointer active:scale-95"
+            className="bg-linear-to-r from-coral to-iris hover:opacity-95 text-white font-bold py-3 sm:py-4 px-8 sm:px-10 rounded-xl transition-all shadow-[0_0_20px_rgba(251,78,119,0.4)] disabled:opacity-50 disabled:shadow-none flex items-center justify-center sm:justify-start gap-3 text-base sm:text-lg border border-white/20 cursor-pointer active:scale-95"
           >
             <Search size={24} />
             {isSearching ? "Searching..." : "Lookup"}
@@ -235,7 +235,7 @@ export default function TrackCasePage() {
               
               <div className="mt-8 pt-8 border-t border-white/20">
                 <h3 className="font-bold mb-4 flex items-center gap-2 text-white text-lg">
-                  <Activity size={20} className="text-[#00D99D]" /> Change Case Status
+                  <Activity size={20} className="text-mint" /> Change Case Status
                 </h3>
                 <p className="text-slate-300 leading-relaxed mb-4 text-sm">
                   You can update your report's visibility and status at any time. If you feel unsafe, you can downgrade to an anonymous heatmap point. If authorities ignored your case, flag it to highlight institutional neglect.
@@ -245,7 +245,7 @@ export default function TrackCasePage() {
                     <button 
                       onClick={() => updateStatus('PUBLIC_VERIFIED')}
                       disabled={isUpdating}
-                      className="flex-1 bg-black/40 hover:bg-[#FB4E77]/20 text-[#FB4E77] border border-[#FB4E77]/40 hover:border-[#FB4E77]/70 py-3 px-4 rounded-xl transition-all font-bold text-xs uppercase tracking-wider disabled:opacity-50 cursor-pointer"
+                      className="flex-1 bg-black/40 hover:bg-coral/20 text-coral border border-coral/40 hover:border-coral/70 py-3 px-4 rounded-xl transition-all font-bold text-xs uppercase tracking-wider disabled:opacity-50 cursor-pointer"
                     >
                       Make Public & Verified
                     </button>
@@ -254,7 +254,7 @@ export default function TrackCasePage() {
                     <button 
                       onClick={() => updateStatus('HEATMAP_AGGREGATED')}
                       disabled={isUpdating}
-                      className="flex-1 bg-black/40 hover:bg-[#00D99D]/20 text-[#00D99D] border border-[#00D99D]/40 hover:border-[#00D99D]/70 py-3 px-4 rounded-xl transition-all font-bold text-xs uppercase tracking-wider disabled:opacity-50 cursor-pointer"
+                      className="flex-1 bg-black/40 hover:bg-mint/20 text-mint border border-mint/40 hover:border-mint/70 py-3 px-4 rounded-xl transition-all font-bold text-xs uppercase tracking-wider disabled:opacity-50 cursor-pointer"
                     >
                       Hide (Heatmap Only)
                     </button>
@@ -263,7 +263,7 @@ export default function TrackCasePage() {
                     <button 
                       onClick={() => updateStatus('ACTION_IGNORED')}
                       disabled={isUpdating}
-                      className="flex-1 bg-black/40 hover:bg-[#584BE0]/20 text-slate-200 hover:text-white border border-[#584BE0]/40 hover:border-[#584BE0]/70 py-3 px-4 rounded-xl transition-all font-bold text-xs uppercase tracking-wider disabled:opacity-50 cursor-pointer"
+                      className="flex-1 bg-black/40 hover:bg-iris/20 text-iris-400 hover:text-white border border-iris/40 hover:border-iris/70 py-3 px-4 rounded-xl transition-all font-bold text-xs uppercase tracking-wider disabled:opacity-50 cursor-pointer"
                     >
                       Flag as Ignored
                     </button>
@@ -284,7 +284,7 @@ export default function TrackCasePage() {
                 <span className="block text-slate-500 mb-2 uppercase tracking-wider font-bold text-xs">Location</span>
                 <span className="text-white text-base wrap-break-word">{report.region}, {report.country}</span>
                 {report.plusCode && (
-                  <span className="block text-xs font-mono text-[#00D99D] mt-1">Plus Code: {report.plusCode}</span>
+                  <span className="block text-xs font-mono text-mint mt-1">Plus Code: {report.plusCode}</span>
                 )}
               </div>
               <div>
@@ -312,9 +312,9 @@ export default function TrackCasePage() {
                       const isSafe = isValidWebUrl(link);
                       return (
                         <li key={idx} className="flex items-center gap-2 text-sm">
-                          <ExternalLink size={14} className="text-[#00D99D] shrink-0" />
+                          <ExternalLink size={14} className="text-mint shrink-0" />
                           {isSafe ? (
-                            <a href={link} target="_blank" rel="noopener noreferrer" className="text-[#00D99D] hover:underline break-all">
+                            <a href={link} target="_blank" rel="noopener noreferrer" className="text-mint hover:underline break-all">
                               {link}
                             </a>
                           ) : (
@@ -333,7 +333,7 @@ export default function TrackCasePage() {
                   type="button"
                   onClick={handleDownloadPdf}
                   disabled={isDownloadingPdf}
-                  className="flex-1 bg-linear-to-r from-[#FB4E77] via-[#584BE0] to-[#00D99D] hover:opacity-95 text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-[0_0_20px_rgba(251,78,119,0.3)] flex items-center justify-center gap-2 text-sm border border-white/20 disabled:opacity-50 cursor-pointer active:scale-95"
+                  className="flex-1 bg-linear-to-r from-coral via-iris to-mint hover:opacity-95 text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-[0_0_20px_rgba(251,78,119,0.3)] flex items-center justify-center gap-2 text-sm border border-white/20 disabled:opacity-50 cursor-pointer active:scale-95"
                 >
                   <Download size={18} />
                   <span>{isDownloadingPdf ? "Building PDF..." : "Download Dossier PDF"}</span>
@@ -345,7 +345,7 @@ export default function TrackCasePage() {
                   className="bg-white/10 hover:bg-white/15 text-white font-bold py-3.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2 text-sm border border-white/10 disabled:opacity-50 cursor-pointer"
                   title="Open and print PDF in browser"
                 >
-                  <ExternalLink size={18} className="text-[#00D99D]" />
+                  <ExternalLink size={18} className="text-mint" />
                   <span>Preview / Print</span>
                 </button>
                 <a
@@ -354,7 +354,7 @@ export default function TrackCasePage() {
                   rel="noopener noreferrer"
                   className="bg-white/10 hover:bg-white/15 text-white font-bold py-3.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2 text-sm border border-white/10"
                 >
-                  <Share2 size={18} className="text-[#FB4E77]" />
+                  <Share2 size={18} className="text-coral" />
                   <span>View Map</span>
                 </a>
               </div>

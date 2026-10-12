@@ -340,15 +340,15 @@ export default function CommunityCautionCard({ report }) {
   };
 
   return (
-    <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 hover:border-[#FB4E77]/40 rounded-3xl p-6 sm:p-8 shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative overflow-hidden flex flex-col justify-between transition-all">
-      <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-[#FB4E77] via-[#584BE0] to-[#00D99D]"></div>
+    <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 hover:border-coral/40 rounded-3xl p-6 sm:p-8 shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative overflow-hidden flex flex-col justify-between transition-all">
+      <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-coral via-iris to-mint"></div>
       <canvas ref={canvasRef} className="hidden" />
 
       <div>
         {/* Header */}
         <div className="flex items-start justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-[#FB4E77]/15 text-[#FB4E77] border border-[#FB4E77]/30 rounded-2xl">
+            <div className="p-3 bg-coral/15 text-coral border border-coral/30 rounded-2xl">
               <AlertTriangle size={24} className="drop-shadow-[0_0_8px_rgba(251,78,119,0.6)]" />
             </div>
             <div>
@@ -359,34 +359,34 @@ export default function CommunityCautionCard({ report }) {
             </div>
           </div>
           <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-slate-300">
-            <Shield size={12} className="text-[#00D99D]" /> 100% Anonymous
+            <Shield size={12} className="text-mint" /> 100% Anonymous
           </span>
         </div>
 
         {/* Visual Caution Card Preview */}
-        <div className="bg-linear-to-br from-slate-950 via-[#060913] to-slate-950 border border-[#FB4E77]/40 rounded-2xl p-5 sm:p-6 mb-6 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-[#FB4E77] via-[#584BE0] to-[#00D99D]"></div>
+        <div className="bg-linear-to-br from-slate-950 via-[#060913] to-slate-950 border border-coral/40 rounded-2xl p-5 sm:p-6 mb-6 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-coral via-iris to-mint"></div>
           
           <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6">
             <div className="space-y-3 flex-1 text-center sm:text-left">
-              <div className="inline-flex items-center gap-2 bg-[#FB4E77]/20 border border-[#FB4E77]/40 px-3 py-1 rounded-full text-xs font-bold text-[#FB4E77] uppercase tracking-wider">
-                <span className="w-2 h-2 rounded-full bg-[#FB4E77] animate-ping"></span>
+              <div className="inline-flex items-center gap-2 bg-coral/20 border border-coral/40 px-3 py-1 rounded-full text-xs font-bold text-coral uppercase tracking-wider">
+                <span className="w-2 h-2 rounded-full bg-coral animate-ping"></span>
                 ⚠️ SOGI Safety Alert
               </div>
               <h4 className="text-xl sm:text-2xl font-extrabold text-white leading-tight">
                 Incident Flagged near {region || "Area"}, {country || "Global"}
               </h4>
               {plusCode && (
-                <div className="inline-flex items-center gap-1.5 bg-[#00D99D]/15 border border-[#00D99D]/40 text-[#00D99D] font-mono text-xs px-2.5 py-1 rounded-lg">
-                  <MapPin size={12} className="text-[#00D99D]" />
+                <div className="inline-flex items-center gap-1.5 bg-mint/15 border border-mint/40 text-mint font-mono text-xs px-2.5 py-1 rounded-lg">
+                  <MapPin size={12} className="text-mint" />
                   <span>Plus Code: <strong>{plusCode}</strong></span>
                 </div>
               )}
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                Live decentralized safety map updated on <span className="text-[#00D99D] font-semibold">SOGI-Shield</span>. Exercise heightened situational awareness in this vicinity.
+                Live decentralized safety map updated on <span className="text-mint font-semibold">SOGI-Shield</span>. Exercise heightened situational awareness in this vicinity.
               </p>
               <div className="pt-1 flex flex-wrap items-center justify-center sm:justify-start gap-2 text-xs text-slate-400 font-mono">
-                <span className="px-2 py-0.5 rounded bg-white/5 border border-white/5 text-[#FB4E77] font-sans font-medium">
+                <span className="px-2 py-0.5 rounded bg-white/5 border border-white/5 text-coral font-sans font-medium">
                   {category}
                 </span>
                 <span>• No personal sender info</span>
@@ -416,7 +416,7 @@ export default function CommunityCautionCard({ report }) {
               onClick={handleCopyText}
               className="text-xs text-slate-300 hover:text-white flex items-center gap-1.5 bg-white/5 hover:bg-white/10 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
             >
-              {copiedText ? <><Check size={14} className="text-[#00D99D]" /> Copied!</> : <><Copy size={14} /> Copy Text</>}
+              {copiedText ? <><Check size={14} className="text-mint" /> Copied!</> : <><Copy size={14} /> Copy Text</>}
             </button>
           </div>
           <p className="text-xs text-slate-300 font-mono bg-black/50 p-2.5 rounded-xl border border-white/5 leading-relaxed break-all select-all">
@@ -432,7 +432,7 @@ export default function CommunityCautionCard({ report }) {
           <button
             onClick={handleDownloadCard}
             disabled={isGeneratingImage}
-            className="w-full bg-[#FB4E77] hover:opacity-95 text-white font-bold py-3.5 px-3 rounded-xl transition-all shadow-[0_0_15px_rgba(251,78,119,0.4)] flex items-center justify-center gap-2 text-sm border border-[#FB4E77]/40 disabled:opacity-50 cursor-pointer"
+            className="w-full bg-coral hover:opacity-95 text-white font-bold py-3.5 px-3 rounded-xl transition-all shadow-[0_0_15px_rgba(251,78,119,0.4)] flex items-center justify-center gap-2 text-sm border border-coral/40 disabled:opacity-50 cursor-pointer"
           >
             <Download size={17} />
             <span>{isGeneratingImage ? "Rendering..." : "Download (.PNG)"}</span>
@@ -445,7 +445,7 @@ export default function CommunityCautionCard({ report }) {
             className="w-full bg-white/10 hover:bg-white/15 active:bg-white/20 text-white font-bold py-3.5 px-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm border border-white/10 disabled:opacity-50 cursor-pointer"
             title="Open high-resolution graphic directly in browser"
           >
-            <ExternalLink size={17} className="text-[#00D99D]" />
+            <ExternalLink size={17} className="text-mint" />
             <span>Open in Tab</span>
           </button>
 
@@ -457,7 +457,7 @@ export default function CommunityCautionCard({ report }) {
           >
             {copiedImage ? (
               <>
-                <Check size={17} className="text-[#00D99D]" /> <span>Copied!</span>
+                <Check size={17} className="text-mint" /> <span>Copied!</span>
               </>
             ) : (
               <>
@@ -487,9 +487,9 @@ export default function CommunityCautionCard({ report }) {
 
           <button
             onClick={handleCopyLink}
-            className="bg-[#584BE0]/20 hover:bg-[#584BE0]/30 text-slate-200 hover:text-white border border-[#584BE0]/40 px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-bold transition-colors cursor-pointer"
+            className="bg-iris/20 hover:bg-iris/30 text-slate-200 hover:text-white border border-iris/40 px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-bold transition-colors cursor-pointer"
           >
-            {copiedLink ? <Check size={14} className="text-[#00D99D]" /> : <Copy size={14} />} 
+            {copiedLink ? <Check size={14} className="text-mint" /> : <Copy size={14} />} 
             {copiedLink ? "Link Copied" : "Copy Regional Link"}
           </button>
 

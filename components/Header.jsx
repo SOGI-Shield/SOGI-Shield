@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Shield, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import PanicButton from "./PanicButton";
 
@@ -32,12 +32,12 @@ export default function Header() {
         <div className="flex flex-1 items-center justify-end gap-2.5 sm:gap-6">
           {/* Desktop Nav */}
           <nav className="hidden md:flex gap-6 items-center">
-            <Link href="/about" className="text-slate-300 hover:text-white text-sm uppercase tracking-widest font-semibold transition-all">About</Link>
-            <Link href="/" className="text-slate-300 hover:text-white text-sm uppercase tracking-widest font-semibold transition-all">Global Map</Link>
-            <Link href="/report" className="text-slate-300 hover:text-[#00D99D] text-sm uppercase tracking-widest font-semibold transition-all">File Incident</Link>
+            <Link href="/about" className="text-slate-300 hover:text-[#FB4E77] text-sm uppercase tracking-widest font-semibold transition-all">About</Link>
+            <Link href="/" className="text-slate-300 hover:text-[#00D99D] text-sm uppercase tracking-widest font-semibold transition-all">Global Map</Link>
+            <Link href="/report" className="text-slate-300 hover:text-[#7b70ea] text-sm uppercase tracking-widest font-semibold transition-all">File Incident</Link>
             <Link href="/track" className="text-slate-300 hover:text-[#FB4E77] text-sm uppercase tracking-widest font-semibold transition-all">Track Case</Link>
-            <Link href="/action-portal" className="text-slate-300 hover:text-white text-sm uppercase tracking-widest font-semibold transition-all">Portal</Link>
-            <Link href="/privacy" className="text-slate-300 hover:text-white text-sm uppercase tracking-widest font-semibold transition-all">Privacy</Link>
+            <Link href="/action-portal" className="text-slate-300 hover:text-[#7b70ea] text-sm uppercase tracking-widest font-semibold transition-all">Portal</Link>
+            <Link href="/privacy" className="text-slate-300 hover:text-[#00D99D] text-sm uppercase tracking-widest font-semibold transition-all">Privacy</Link>
           </nav>
 
           <PanicButton />
@@ -64,12 +64,12 @@ export default function Header() {
               <span className="bg-clip-text text-transparent bg-linear-to-r from-[#FB4E77] to-[#00D99D]">Shield</span>
             </span>
           </div>
-          <Link href="/about" onClick={closeMenu} className="block w-full text-center py-3.5 text-lg text-slate-200 hover:text-white hover:bg-white/5 active:bg-white/10 font-bold uppercase tracking-widest transition-all">About</Link>
-          <Link href="/" onClick={closeMenu} className="block w-full text-center py-3.5 text-lg text-slate-200 hover:text-[#FB4E77] hover:bg-white/5 active:bg-white/10 font-bold uppercase tracking-widest transition-all">Global Map</Link>
-          <Link href="/report" onClick={closeMenu} className="block w-full text-center py-3.5 text-lg text-slate-200 hover:text-[#00D99D] hover:bg-white/5 active:bg-white/10 font-bold uppercase tracking-widest transition-all">File Incident</Link>
+          <Link href="/about" onClick={closeMenu} className="block w-full text-center py-3.5 text-lg text-slate-200 hover:text-[#FB4E77] hover:bg-white/5 active:bg-white/10 font-bold uppercase tracking-widest transition-all">About</Link>
+          <Link href="/" onClick={closeMenu} className="block w-full text-center py-3.5 text-lg text-slate-200 hover:text-[#00D99D] hover:bg-white/5 active:bg-white/10 font-bold uppercase tracking-widest transition-all">Global Map</Link>
+          <Link href="/report" onClick={closeMenu} className="block w-full text-center py-3.5 text-lg text-slate-200 hover:text-[#7b70ea] hover:bg-white/5 active:bg-white/10 font-bold uppercase tracking-widest transition-all">File Incident</Link>
           <Link href="/track" onClick={closeMenu} className="block w-full text-center py-3.5 text-lg text-slate-200 hover:text-[#FB4E77] hover:bg-white/5 active:bg-white/10 font-bold uppercase tracking-widest transition-all">Track Case</Link>
-          <Link href="/action-portal" onClick={closeMenu} className="block w-full text-center py-3.5 text-lg text-slate-200 hover:text-white hover:bg-white/5 active:bg-white/10 font-bold uppercase tracking-widest transition-all">Action Portal</Link>
-          <Link href="/privacy" onClick={closeMenu} className="block w-full text-center py-3.5 text-lg text-slate-200 hover:text-white hover:bg-white/5 active:bg-white/10 font-bold uppercase tracking-widest transition-all">Privacy Policy</Link>
+          <Link href="/action-portal" onClick={closeMenu} className="block w-full text-center py-3.5 text-lg text-slate-200 hover:text-[#7b70ea] hover:bg-white/5 active:bg-white/10 font-bold uppercase tracking-widest transition-all">Action Portal</Link>
+          <Link href="/privacy" onClick={closeMenu} className="block w-full text-center py-3.5 text-lg text-slate-200 hover:text-[#00D99D] hover:bg-white/5 active:bg-white/10 font-bold uppercase tracking-widest transition-all">Privacy Policy</Link>
         </div>
       )}
     </header>

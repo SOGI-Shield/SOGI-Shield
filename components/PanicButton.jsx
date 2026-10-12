@@ -18,7 +18,7 @@ export default function PanicButton() {
   return (
     <button
       onClick={handlePanic}
-      className="flex items-center justify-center gap-1.5 sm:gap-2 bg-[#FB4E77] hover:opacity-90 active:scale-95 border border-white/20 text-white px-3 sm:px-5 py-2 sm:py-2.5 rounded-full font-bold shadow-[0_0_15px_rgba(251,78,119,0.5)] hover:shadow-[0_0_20px_rgba(251,78,119,0.7)] transition-all z-50 text-xs sm:text-sm cursor-pointer"
+      className="flex items-center justify-center gap-1.5 sm:gap-2 bg-coral hover:opacity-90 active:scale-95 border border-white/20 text-white px-3 sm:px-5 py-2 sm:py-2.5 rounded-full font-bold shadow-[0_0_15px_rgba(251,78,119,0.5)] hover:shadow-[0_0_20px_rgba(251,78,119,0.7)] transition-all z-50 text-xs sm:text-sm cursor-pointer"
       aria-label="Quick Exit"
     >
       <AlertTriangle size={17} className="sm:w-5 sm:h-5 shrink-0" />

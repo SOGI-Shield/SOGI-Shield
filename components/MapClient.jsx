@@ -328,7 +328,7 @@ export default function MapClient() {
         <div className="flex items-center gap-1.5 sm:gap-2 pointer-events-auto flex-1 max-w-sm sm:max-w-md">
           <div className="relative flex-1">
             <div className="bg-slate-900/95 backdrop-blur-md border border-slate-700/90 rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2 flex items-center gap-2 shadow-xl">
-              <Search size={14} className="text-[#00D99D] shrink-0" />
+              <Search size={14} className="text-mint shrink-0" />
               <input
                 type="text"
                 value={citySearchQuery}
@@ -367,10 +367,10 @@ export default function MapClient() {
                       className="w-full px-3 py-2 text-left hover:bg-slate-800 active:bg-slate-700 border-b border-white/5 last:border-0 transition-colors cursor-pointer group"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-white group-hover:text-[#00D99D]">
+                        <span className="text-xs font-bold text-white group-hover:text-mint">
                           {city.properties.name}
                         </span>
-                        <span className="text-[10px] font-mono text-[#00D99D] bg-[#00D99D]/15 px-1.5 py-0.5 rounded border border-[#00D99D]/30">
+                        <span className="text-[10px] font-mono text-mint bg-mint/15 px-1.5 py-0.5 rounded border border-mint/30">
                           {city.properties.plusCode?.slice(0, 8)}
                         </span>
                       </div>
@@ -392,7 +392,7 @@ export default function MapClient() {
               title="Toggle Map Layers"
               aria-label="Toggle Map Layers"
             >
-              <Layers size={13} className="text-[#584BE0]" />
+              <Layers size={13} className="text-iris" />
               <span className="hidden sm:inline capitalize">{activeLayer}</span>
               <ChevronDown size={12} className={`transition-transform duration-200 ${showLayerMenu ? "rotate-180" : ""}`} />
             </button>
@@ -407,7 +407,7 @@ export default function MapClient() {
                       setShowLayerMenu(false);
                     }}
                     className={`w-full px-2.5 py-1.5 rounded-lg text-left text-xs font-semibold capitalize transition-colors cursor-pointer ${
-                      activeLayer === layer ? "bg-[#584BE0] text-white font-bold" : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                      activeLayer === layer ? "bg-iris text-white font-bold" : "text-slate-300 hover:bg-slate-800 hover:text-white"
                     }`}
                   >
                     {layer}
@@ -421,15 +421,15 @@ export default function MapClient() {
         {/* Right Toolbar: Sync Status + Fullscreen */}
         <div className="flex items-center gap-2 pointer-events-auto">
           {isLoadingReports && (
-            <div className="bg-slate-900/90 backdrop-blur-md border border-[#00D99D]/40 px-2.5 py-1.5 rounded-xl text-[10px] font-bold text-[#00D99D] shadow-lg flex items-center gap-1.5 animate-pulse">
-              <Loader2 size={12} className="animate-spin text-[#00D99D]" />
+            <div className="bg-slate-900/90 backdrop-blur-md border border-mint/40 px-2.5 py-1.5 rounded-xl text-[10px] font-bold text-mint shadow-lg flex items-center gap-1.5 animate-pulse">
+              <Loader2 size={12} className="animate-spin text-mint" />
               <span className="hidden sm:inline">Syncing...</span>
             </div>
           )}
 
           <button 
             onClick={toggleFullscreen}
-            className="bg-slate-900/95 hover:bg-[#584BE0] active:scale-95 text-white min-w-[36px] min-h-[36px] sm:min-w-[40px] sm:min-h-[40px] p-2 rounded-xl backdrop-blur-md shadow-lg border border-slate-700/90 transition-all flex items-center justify-center cursor-pointer"
+            className="bg-slate-900/95 hover:bg-slate-800 text-slate-300 hover:text-iris-400 hover:border-iris/50 active:scale-95 min-w-[36px] min-h-[36px] sm:min-w-[40px] sm:min-h-[40px] p-2 rounded-xl backdrop-blur-md shadow-lg border border-slate-700/90 transition-all flex items-center justify-center cursor-pointer"
             title="Toggle Fullscreen"
             aria-label="Toggle Fullscreen"
           >
@@ -441,25 +441,25 @@ export default function MapClient() {
       {/* Floating Global Incident Stats HUD (Centered, Non-Obtrusive) */}
       <div className="absolute bottom-14 left-3 right-3 sm:bottom-4 sm:left-1/2 sm:-translate-x-1/2 sm:right-auto z-[400] bg-slate-950/90 backdrop-blur-md text-[10px] sm:text-xs px-3 py-1.5 sm:px-5 sm:py-2.5 rounded-xl sm:rounded-full border border-white/10 shadow-2xl pointer-events-none text-slate-200 flex items-center justify-between sm:justify-center gap-2 sm:gap-5">
         <div className="flex items-center gap-1 font-bold">
-          <Shield size={12} className="text-[#00D99D]" />
+          <Shield size={12} className="text-slate-400" />
           <span className="hidden sm:inline">Incidents:</span>
           <span>{globalStats.total}</span>
         </div>
         <div className="w-px h-3 bg-slate-700 hidden sm:block"></div>
-        <div className="flex items-center gap-1 text-[#FB4E77] font-semibold">
-          <CheckCircle size={12} className="text-[#FB4E77]" />
+        <div className="flex items-center gap-1 text-coral font-semibold">
+          <CheckCircle size={12} className="text-coral" />
           <span className="hidden sm:inline">Verified:</span>
           <span>{globalStats.verified}</span>
         </div>
         <div className="w-px h-3 bg-slate-700 hidden sm:block"></div>
-        <div className="flex items-center gap-1 text-slate-200 font-semibold">
-          <AlertTriangle size={12} className="text-[#00D99D]" />
+        <div className="flex items-center gap-1 text-iris-400 font-semibold">
+          <AlertTriangle size={12} className="text-iris-400" />
           <span className="hidden sm:inline">Ignored:</span>
           <span>{globalStats.ignored}</span>
         </div>
         <div className="w-px h-3 bg-slate-700 hidden sm:block"></div>
-        <div className="flex items-center gap-1 text-[#00D99D] font-semibold">
-          <Flame size={12} className="text-[#00D99D]" />
+        <div className="flex items-center gap-1 text-mint font-semibold">
+          <Flame size={12} className="text-mint" />
           <span className="hidden sm:inline">Heatmaps:</span>
           <span>{globalStats.heatmap}</span>
         </div>
@@ -470,15 +470,15 @@ export default function MapClient() {
         {showLegend && (
           <div className="bg-slate-950/95 backdrop-blur-md text-[10px] sm:text-xs px-3 py-2 rounded-xl border border-white/15 shadow-2xl text-slate-200 flex flex-col gap-1.5 mb-1 animate-in fade-in duration-150">
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#FB4E77] shadow-[0_0_8px_rgba(251,78,119,0.8)]"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-coral shadow-[0_0_8px_rgba(251,78,119,0.8)]"></span>
               <span>Public Verified (#FB4E77)</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#584BE0] shadow-[0_0_8px_rgba(88,75,224,0.8)]"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-iris shadow-[0_0_8px_rgba(88,75,224,0.8)]"></span>
               <span>Action Ignored (#584BE0)</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#00D99D] shadow-[0_0_8px_rgba(0,217,157,0.8)]"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-mint shadow-[0_0_8px_rgba(0,217,157,0.8)]"></span>
               <span>Heatmap Aggregated (#00D99D)</span>
             </div>
           </div>
@@ -489,7 +489,7 @@ export default function MapClient() {
           title="Toggle Map Legend"
           aria-label="Toggle Map Legend"
         >
-          <Info size={11} className="text-[#00D99D]" />
+          <Info size={11} className="text-mint" />
           <span>Legend</span>
         </button>
       </div>
@@ -563,7 +563,7 @@ export default function MapClient() {
             >
               <Popup>
                 <div className="text-slate-900 w-full max-w-[240px]">
-                  <div className="flex items-center gap-1.5 text-[10px] font-bold text-[#584BE0] uppercase tracking-wider mb-1">
+                  <div className="flex items-center gap-1.5 text-[10px] font-bold text-iris uppercase tracking-wider mb-1">
                     <Building2 size={12} />
                     <span>{city.properties.type || "Populated Place"}</span>
                   </div>
@@ -585,7 +585,7 @@ export default function MapClient() {
                   </div>
                   <button
                     onClick={() => setFocusTarget({ lat, lng, zoom: 12 })}
-                    className="w-full bg-[#584BE0] hover:opacity-90 active:scale-95 text-white text-xs font-bold py-2 px-3 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                    className="w-full bg-iris hover:opacity-90 active:scale-95 text-white text-xs font-bold py-2 px-3 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
                   >
                     <MapPin size={12} />
                     <span>Focus City Sector</span>
@@ -609,7 +609,7 @@ export default function MapClient() {
                   <Popup>
                     <div className="text-slate-900 w-full max-w-[260px]">
                       <h3 className="font-bold text-lg mb-1 wrap-break-word">{report.facilityName || "Verified Incident"}</h3>
-                      <p className="text-sm font-semibold text-[#FB4E77] mb-2 wrap-break-word">{report.category}</p>
+                      <p className="text-sm font-semibold text-coral mb-2 wrap-break-word">{report.category}</p>
                       <p className="text-sm mb-3 wrap-break-word whitespace-pre-wrap">{truncateWords(report.summary)}</p>
                       <button 
                         onClick={() => setSelectedReport(report)}
@@ -626,7 +626,7 @@ export default function MapClient() {
                 <Marker key={reportKey} position={[Number(report.lat), Number(report.lng)]} icon={icons.grey}>
                   <Popup>
                     <div className="text-slate-900 w-full max-w-[260px]">
-                      <div className="inline-block bg-[#584BE0]/15 text-[#584BE0] text-xs font-bold px-2 py-1 rounded mb-2 uppercase tracking-wide border border-[#584BE0]/30">
+                      <div className="inline-block bg-iris/15 text-iris text-xs font-bold px-2 py-1 rounded mb-2 uppercase tracking-wide border border-iris/30">
                         Action Ignored
                       </div>
                       <h3 className="font-bold text-lg mb-1 wrap-break-word">{report.facilityName || "Incident"}</h3>
@@ -734,7 +734,7 @@ export default function MapClient() {
                     return (
                       <li key={i}>
                         {isSafe ? (
-                          <a href={link} target="_blank" rel="noopener noreferrer" className="text-[#00D99D] hover:underline break-all">
+                          <a href={link} target="_blank" rel="noopener noreferrer" className="text-mint hover:underline break-all">
                             {link}
                           </a>
                         ) : (

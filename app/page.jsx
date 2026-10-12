@@ -16,7 +16,7 @@ export default function Home() {
       <section className="w-full max-w-6xl mb-10 text-center mt-6 sm:mt-12 flex flex-col items-center">
         {/* Hero Headline with Clean White Contrast & Vibrant Brand Accent */}
         <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight text-white mb-5 max-w-4xl leading-[1.1]">
-          Documentation as <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#FB4E77] via-[#584BE0] to-[#00D99D]">Resistance</span>
+          Documentation as <span className="bg-clip-text text-transparent bg-linear-to-r from-coral via-iris to-mint">Resistance</span>
         </h1>
 
         <p className="text-base sm:text-xl text-slate-300 max-w-3xl mx-auto px-4 sm:px-0 leading-relaxed font-normal">
@@ -26,24 +26,24 @@ export default function Home() {
       </section>
 
       <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8 relative z-10">
-        <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 hover:border-[#00D99D]/40 p-5 sm:p-6 rounded-2xl flex items-start gap-4 transition-all shadow-lg hover:shadow-[0_0_25px_rgba(0,217,157,0.15)] group">
-          <div className="p-3 bg-[#00D99D]/15 text-[#00D99D] rounded-xl border border-[#00D99D]/30 shrink-0 group-hover:scale-105 transition-transform"><Globe2 size={24} /></div>
+        <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 hover:border-mint/40 p-5 sm:p-6 rounded-2xl flex items-start gap-4 transition-all shadow-lg hover:shadow-[0_0_25px_rgba(0,217,157,0.15)] group">
+          <div className="p-3 bg-mint/15 text-mint rounded-xl border border-mint/30 shrink-0 group-hover:scale-105 transition-transform"><Globe2 size={24} /></div>
           <div>
-            <h3 className="font-bold text-lg text-white group-hover:text-[#00D99D] transition-colors">Global Heatmap</h3>
+            <h3 className="font-bold text-lg text-white group-hover:text-mint transition-colors">Global Heatmap</h3>
             <p className="text-slate-400 text-sm mt-1 leading-relaxed">Aggregated, generalized data protects victims while showing crisis zones.</p>
           </div>
         </div>
-        <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 hover:border-[#FB4E77]/40 p-5 sm:p-6 rounded-2xl flex items-start gap-4 transition-all shadow-lg hover:shadow-[0_0_25px_rgba(251,78,119,0.15)] group">
-          <div className="p-3 bg-[#FB4E77]/15 text-[#FB4E77] rounded-xl border border-[#FB4E77]/30 shrink-0 group-hover:scale-105 transition-transform"><AlertCircle size={24} /></div>
+        <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 hover:border-coral/40 p-5 sm:p-6 rounded-2xl flex items-start gap-4 transition-all shadow-lg hover:shadow-[0_0_25px_rgba(251,78,119,0.15)] group">
+          <div className="p-3 bg-coral/15 text-coral rounded-xl border border-coral/30 shrink-0 group-hover:scale-105 transition-transform"><AlertCircle size={24} /></div>
           <div>
-            <h3 className="font-bold text-lg text-white group-hover:text-[#FB4E77] transition-colors">Verified Markers</h3>
+            <h3 className="font-bold text-lg text-white group-hover:text-coral transition-colors">Verified Markers</h3>
             <p className="text-slate-400 text-sm mt-1 leading-relaxed">Reports with public evidence links map distinct facility locations.</p>
           </div>
         </div>
-        <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 hover:border-[#584BE0]/50 p-5 sm:p-6 rounded-2xl flex items-start gap-4 transition-all shadow-lg hover:shadow-[0_0_25px_rgba(88,75,224,0.25)] group">
-          <div className="p-3 bg-[#584BE0]/20 text-white rounded-xl border border-[#584BE0]/40 shrink-0 group-hover:scale-105 transition-transform"><FileText size={24} className="text-[#00D99D]" /></div>
+        <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 hover:border-iris/40 p-5 sm:p-6 rounded-2xl flex items-start gap-4 transition-all shadow-lg hover:shadow-[0_0_25px_rgba(88,75,224,0.15)] group">
+          <div className="p-3 bg-iris/15 text-iris-400 rounded-xl border border-iris/30 shrink-0 group-hover:scale-105 transition-transform"><FileText size={24} /></div>
           <div>
-            <h3 className="font-bold text-lg text-white group-hover:text-white transition-colors">Action Portal</h3>
+            <h3 className="font-bold text-lg text-white group-hover:text-iris-400 transition-colors">Action Portal</h3>
             <p className="text-slate-400 text-sm mt-1 leading-relaxed">Copy templates to file complaints with the UN and international bodies.</p>
           </div>
         </div>

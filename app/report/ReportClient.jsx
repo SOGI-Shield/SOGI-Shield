@@ -592,10 +592,10 @@ export default function ReportPage() {
         
         {/* Reassurance Header Banner */}
         <div className="text-center mb-8 sm:mb-10 animate-in fade-in duration-500">
-          <div className="inline-flex items-center gap-2 bg-[#00D99D]/10 border border-[#00D99D]/40 px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold text-[#00D99D] uppercase tracking-widest mb-4 shadow-[0_0_15px_rgba(0,217,157,0.2)]">
-            <ShieldCheck size={18} className="text-[#00D99D]" /> Incident Logged Anonymously
+          <div className="inline-flex items-center gap-2 bg-mint/10 border border-mint/40 px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold text-mint uppercase tracking-widest mb-4 shadow-[0_0_15px_rgba(0,217,157,0.2)]">
+            <ShieldCheck size={18} className="text-mint" /> Incident Logged Anonymously
           </div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-[#FB4E77] via-[#584BE0] to-[#00D99D] drop-shadow-[0_0_20px_rgba(88,75,224,0.3)] mb-3">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-coral via-iris to-mint drop-shadow-[0_0_20px_rgba(88,75,224,0.3)] mb-3">
             Zero-Touch Protection Activated
           </h1>
           <p className="text-slate-300 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
@@ -608,14 +608,14 @@ export default function ReportPage() {
           
           {/* Quick Action 1: Download / Preview UN/HRC Complaint PDF */}
           <div
-            className="group p-5 bg-linear-to-br from-[#584BE0]/20 via-slate-900/90 to-slate-900/90 border border-[#584BE0]/40 rounded-3xl transition-all shadow-[0_4px_24px_rgba(88,75,224,0.2)] text-left flex flex-col justify-between"
+            className="group p-5 bg-linear-to-br from-iris/20 via-slate-900/90 to-slate-900/90 border border-iris/40 rounded-3xl transition-all shadow-[0_4px_24px_rgba(88,75,224,0.2)] text-left flex flex-col justify-between"
           >
             <div>
               <div className="flex items-center justify-between mb-3">
-                <span className="p-2.5 bg-[#584BE0]/20 text-[#a59bfb] rounded-xl border border-[#584BE0]/30">
+                <span className="p-2.5 bg-iris/20 text-[#a59bfb] rounded-xl border border-iris/30">
                   <FileText size={22} />
                 </span>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-[#a59bfb] bg-[#584BE0]/20 px-2.5 py-0.5 rounded-full border border-[#584BE0]/30">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#a59bfb] bg-iris/20 px-2.5 py-0.5 rounded-full border border-iris/30">
                   Pillar 1: Personal
                 </span>
               </div>
@@ -631,7 +631,7 @@ export default function ReportPage() {
                 type="button"
                 onClick={handleDownloadPdf}
                 disabled={isDownloadingPdf}
-                className="flex-1 bg-linear-to-r from-[#584BE0] to-[#00D99D] hover:from-[#6b5ff5] hover:to-[#1fe2a9] text-white font-bold py-2 px-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 text-xs border border-[#584BE0]/40 disabled:opacity-50"
+                className="flex-1 bg-linear-to-r from-iris to-mint hover:from-[#6b5ff5] hover:to-[#1fe2a9] text-white font-bold py-2 px-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 text-xs border border-iris/40 disabled:opacity-50"
               >
                 <Download size={13} />
                 <span>{isDownloadingPdf ? "Building..." : "Download"}</span>
@@ -643,7 +643,7 @@ export default function ReportPage() {
                 className="bg-white/10 hover:bg-white/20 text-slate-200 font-bold py-2 px-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 text-xs border border-white/10 disabled:opacity-50"
                 title="Preview and print directly in browser tab"
               >
-                <ExternalLink size={13} className="text-[#00D99D]" />
+                <ExternalLink size={13} className="text-mint" />
                 <span>Preview</span>
               </button>
             </div>
@@ -655,25 +655,25 @@ export default function ReportPage() {
               const el = document.getElementById("community-shield-section");
               if (el) el.scrollIntoView({ behavior: "smooth" });
             }}
-            className="group p-5 bg-linear-to-br from-[#FB4E77]/20 via-slate-900/90 to-slate-900/90 hover:from-[#FB4E77]/30 hover:via-slate-800/90 hover:to-slate-800/90 border border-[#FB4E77]/40 hover:border-[#FB4E77] rounded-3xl transition-all shadow-[0_4px_24px_rgba(251,78,119,0.2)] hover:shadow-[0_4px_32px_rgba(251,78,119,0.4)] text-left flex flex-col justify-between"
+            className="group p-5 bg-linear-to-br from-coral/20 via-slate-900/90 to-slate-900/90 hover:from-coral/30 hover:via-slate-800/90 hover:to-slate-800/90 border border-coral/40 hover:border-coral rounded-3xl transition-all shadow-[0_4px_24px_rgba(251,78,119,0.2)] hover:shadow-[0_4px_32px_rgba(251,78,119,0.4)] text-left flex flex-col justify-between"
           >
             <div>
               <div className="flex items-center justify-between mb-3">
-                <span className="p-2.5 bg-[#FB4E77]/20 text-[#FB4E77] rounded-xl border border-[#FB4E77]/30">
+                <span className="p-2.5 bg-coral/20 text-coral rounded-xl border border-coral/30">
                   <Share2 size={22} />
                 </span>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-[#FB4E77] bg-[#FB4E77]/10 px-2.5 py-0.5 rounded-full border border-[#FB4E77]/30">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-coral bg-coral/10 px-2.5 py-0.5 rounded-full border border-coral/30">
                   Pillar 2: Community
                 </span>
               </div>
-              <h3 className="font-bold text-white text-base sm:text-lg group-hover:text-[#FB4E77] transition-colors">
+              <h3 className="font-bold text-white text-base sm:text-lg group-hover:text-coral transition-colors">
                 Warn Community Groups
               </h3>
               <p className="text-slate-400 text-xs mt-1.5 leading-relaxed">
                 Forward discreet caution graphic or text to Signal, Telegram, & WhatsApp.
               </p>
             </div>
-            <div className="mt-4 pt-3 border-t border-white/10 flex items-center gap-1.5 text-xs font-bold text-[#FB4E77] group-hover:text-[#FB4E77]/80">
+            <div className="mt-4 pt-3 border-t border-white/10 flex items-center gap-1.5 text-xs font-bold text-coral group-hover:text-coral/80">
               <Share2 size={14} />
               <span>Generate Caution Card ↓</span>
             </div>
@@ -700,7 +700,7 @@ export default function ReportPage() {
                 Instantly wipe local and session data and redirect browser to Wikipedia.
               </p>
             </div>
-            <div className="mt-4 pt-3 border-t border-white/10 flex items-center gap-1.5 text-xs font-bold text-[#FB4E77] group-hover:text-white">
+            <div className="mt-4 pt-3 border-t border-white/10 flex items-center gap-1.5 text-xs font-bold text-coral group-hover:text-white">
               <AlertTriangle size={14} />
               <span>Leave Immediately ↗</span>
             </div>
@@ -710,10 +710,10 @@ export default function ReportPage() {
 
         {/* Secret Tracking Code Card */}
         <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 p-6 sm:p-8 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] mb-10 relative overflow-hidden text-center group">
-          <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-[#FB4E77] via-[#584BE0] to-[#00D99D]"></div>
+          <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-coral via-iris to-mint"></div>
           
-          <div className="inline-flex items-center gap-2 bg-[#584BE0]/20 border border-[#584BE0]/40 px-3 py-1 rounded-full text-xs font-bold text-slate-200 uppercase tracking-widest mb-3">
-            <Shield size={14} className="text-[#00D99D]" />
+          <div className="inline-flex items-center gap-2 bg-iris/20 border border-iris/40 px-3 py-1 rounded-full text-xs font-bold text-slate-200 uppercase tracking-widest mb-3">
+            <Shield size={14} className="text-mint" />
             Your Private Incident Key
           </div>
           
@@ -730,16 +730,16 @@ export default function ReportPage() {
             </span>
             <button
               onClick={copyToClipboard}
-              className="bg-[#584BE0]/40 hover:bg-[#584BE0]/70 active:bg-[#584BE0] border border-[#584BE0]/50 text-white font-bold px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 text-sm shadow-lg ml-1"
+              className="bg-iris/40 hover:bg-iris/70 active:bg-iris border border-iris/50 text-white font-bold px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 text-sm shadow-lg ml-1"
               title="Copy to clipboard"
             >
-              {copiedCode ? <><Check size={16} className="text-[#00D99D]" /> Copied!</> : <><Copy size={16} /> Copy Code</>}
+              {copiedCode ? <><Check size={16} className="text-mint" /> Copied!</> : <><Copy size={16} /> Copy Code</>}
             </button>
           </div>
 
           {submittedReport?.plusCode && (
-            <div className="mt-4 inline-flex items-center gap-2 bg-[#00D99D]/10 border border-[#00D99D]/40 px-3.5 py-1.5 rounded-xl text-xs font-mono text-[#00D99D] shadow-sm">
-              <MapPin size={14} className="text-[#00D99D]" />
+            <div className="mt-4 inline-flex items-center gap-2 bg-mint/10 border border-mint/40 px-3.5 py-1.5 rounded-xl text-xs font-mono text-mint shadow-sm">
+              <MapPin size={14} className="text-mint" />
               <span>Plus Code (Geographic Sector): <strong>{submittedReport.plusCode}</strong></span>
             </div>
           )}
@@ -761,8 +761,8 @@ export default function ReportPage() {
             onClick={() => setActiveTab("personal")}
             className={`px-4 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider transition-all flex items-center gap-2 ${
               activeTab === "personal"
-                ? "bg-[#584BE0] text-white border border-[#584BE0] shadow-md shadow-[#584BE0]/30"
-                : "text-slate-400 hover:text-white hover:bg-white/5"
+                ? "bg-iris/30 text-white border border-iris/50 shadow-md"
+                : "text-slate-400 hover:text-iris-400 hover:bg-white/5"
             }`}
           >
             <FileText size={15} /> 1. Personal Shield
@@ -771,8 +771,8 @@ export default function ReportPage() {
             onClick={() => setActiveTab("community")}
             className={`px-4 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider transition-all flex items-center gap-2 ${
               activeTab === "community"
-                ? "bg-[#FB4E77]/30 text-[#FB4E77] border border-[#FB4E77]/50 shadow-md"
-                : "text-slate-400 hover:text-[#FB4E77] hover:bg-white/5"
+                ? "bg-coral/30 text-coral border border-coral/50 shadow-md"
+                : "text-slate-400 hover:text-coral hover:bg-white/5"
             }`}
           >
             <Share2 size={15} /> 2. Community Shield
@@ -783,12 +783,12 @@ export default function ReportPage() {
         {(activeTab === "all" || activeTab === "personal") && (
           <section className="mb-12 animate-in fade-in duration-300">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-[#584BE0]/20 text-[#a59bfb] border border-[#584BE0]/30 flex items-center justify-center font-bold text-lg">
+              <div className="w-10 h-10 rounded-xl bg-iris/20 text-[#a59bfb] border border-iris/30 flex items-center justify-center font-bold text-lg">
                 1
               </div>
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
-                  Pillar 1: The Personal Shield <span className="text-xs bg-[#584BE0]/20 text-[#a59bfb] px-2 py-0.5 rounded-full border border-[#584BE0]/30 font-normal">Immediate Legal Recourse</span>
+                  Pillar 1: The Personal Shield <span className="text-xs bg-iris/20 text-[#a59bfb] px-2 py-0.5 rounded-full border border-iris/30 font-normal">Immediate Legal Recourse</span>
                 </h2>
                 <p className="text-slate-400 text-xs sm:text-sm">
                   Automated legal drafting and personal evidence protection without touching backend storage.
@@ -800,11 +800,11 @@ export default function ReportPage() {
               
               {/* Automated Legal Dossier Download Card */}
               <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 sm:p-8 shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative overflow-hidden flex flex-col justify-between">
-                <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-[#FB4E77] via-[#584BE0] to-[#00D99D]"></div>
+                <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-coral via-iris to-mint"></div>
 
                 <div>
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="p-3 bg-[#584BE0]/20 text-[#a59bfb] border border-[#584BE0]/30 rounded-2xl">
+                    <div className="p-3 bg-iris/20 text-[#a59bfb] border border-iris/30 rounded-2xl">
                       <FileText size={24} className="drop-shadow-[0_0_8px_rgba(88,75,224,0.6)]" />
                     </div>
                     <div>
@@ -819,19 +819,19 @@ export default function ReportPage() {
 
                   <ul className="space-y-2.5 text-xs text-slate-300 mb-6 bg-black/40 p-4 rounded-2xl border border-white/5">
                     <li className="flex items-start gap-2">
-                      <Check size={16} className="text-[#00D99D] shrink-0 mt-0.5" />
+                      <Check size={16} className="text-mint shrink-0 mt-0.5" />
                       <span><strong>Standardized ISO Timestamp & Sector:</strong> Auditable timestamp and geographic coordinates.</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <Check size={16} className="text-[#00D99D] shrink-0 mt-0.5" />
+                      <Check size={16} className="text-mint shrink-0 mt-0.5" />
                       <span><strong>International Human Rights Standards:</strong> Formatted to cite UN IE SOGI mandate, OHCHR Special Procedures, UDHR (Art. 3, 5, 7), ICCPR, & Yogyakarta Principles.</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <Check size={16} className="text-[#00D99D] shrink-0 mt-0.5" />
+                      <Check size={16} className="text-mint shrink-0 mt-0.5" />
                       <span><strong>Institutional Negligence Review:</strong> Exhaustion of domestic remedies & ACTION_IGNORED documentation.</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <Check size={16} className="text-[#00D99D] shrink-0 mt-0.5" />
+                      <Check size={16} className="text-mint shrink-0 mt-0.5" />
                       <span><strong>Protective Signature Annex:</strong> Pre-structured signature block signed under anonymous protective protocol.</span>
                     </li>
                   </ul>
@@ -841,7 +841,7 @@ export default function ReportPage() {
                   <button
                     onClick={handleDownloadPdf}
                     disabled={isDownloadingPdf}
-                    className="w-full bg-linear-to-r from-[#FB4E77] via-[#584BE0] to-[#00D99D] hover:from-[#ff648a] hover:via-[#6b5ff5] hover:to-[#1fe2a9] text-white font-bold py-4 px-6 rounded-xl transition-all shadow-[0_0_20px_rgba(88,75,224,0.3)] hover:shadow-[0_0_30px_rgba(88,75,224,0.5)] flex items-center justify-center gap-3 text-sm sm:text-base border border-white/20 disabled:opacity-50"
+                    className="w-full bg-linear-to-r from-coral via-iris to-mint hover:from-[#ff648a] hover:via-[#6b5ff5] hover:to-[#1fe2a9] text-white font-bold py-4 px-6 rounded-xl transition-all shadow-[0_0_20px_rgba(88,75,224,0.3)] hover:shadow-[0_0_30px_rgba(88,75,224,0.5)] flex items-center justify-center gap-3 text-sm sm:text-base border border-white/20 disabled:opacity-50"
                   >
                     <Download size={20} />
                     {isDownloadingPdf ? "Compiling Client-Side PDF..." : "Download Official UN/HRC Complaint PDF"}
@@ -863,12 +863,12 @@ export default function ReportPage() {
         {(activeTab === "all" || activeTab === "community") && (
           <section id="community-shield-section" className="mb-12 animate-in fade-in duration-300">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-[#FB4E77]/20 text-[#FB4E77] border border-[#FB4E77]/30 flex items-center justify-center font-bold text-lg">
+              <div className="w-10 h-10 rounded-xl bg-coral/20 text-coral border border-coral/30 flex items-center justify-center font-bold text-lg">
                 2
               </div>
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
-                  Pillar 2: The Global Community Shield <span className="text-xs bg-[#FB4E77]/20 text-[#FB4E77] px-2 py-0.5 rounded-full border border-[#FB4E77]/30 font-normal">Global Viral Loop</span>
+                  Pillar 2: The Global Community Shield <span className="text-xs bg-coral/20 text-coral px-2 py-0.5 rounded-full border border-coral/30 font-normal">Global Viral Loop</span>
                 </h2>
                 <p className="text-slate-400 text-xs sm:text-sm">
                   Warn local community members and friends anonymously across borders without linking your identity.
@@ -904,13 +904,13 @@ export default function ReportPage() {
             </a>
             <button
               onClick={handleResetForm}
-              className="text-slate-300 hover:text-[#FB4E77] active:text-[#FB4E77] font-bold uppercase tracking-wider text-xs py-2.5 px-4 rounded-xl transition-colors cursor-pointer"
+              className="text-slate-300 hover:text-coral active:text-coral font-bold uppercase tracking-wider text-xs py-2.5 px-4 rounded-xl transition-colors cursor-pointer"
             >
               Submit another report
             </button>
             <button
               onClick={handlePanicExit}
-              className="bg-[#FB4E77]/30 hover:bg-[#FB4E77]/50 text-[#FB4E77] border border-[#FB4E77]/40 font-bold uppercase tracking-wider text-xs py-2.5 px-4 rounded-xl transition-colors flex items-center gap-1.5"
+              className="bg-coral/30 hover:bg-coral/50 text-coral border border-coral/40 font-bold uppercase tracking-wider text-xs py-2.5 px-4 rounded-xl transition-colors flex items-center gap-1.5"
             >
               <AlertTriangle size={14} /> Panic Exit
             </button>
@@ -926,7 +926,7 @@ export default function ReportPage() {
       
       {/* Header */}
       <div className="mb-8 sm:mb-10 text-center max-w-3xl mx-auto">
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 text-transparent bg-clip-text bg-linear-to-r from-[#FB4E77] via-[#a59bfb] to-[#00D99D] drop-shadow-[0_0_20px_rgba(88,75,224,0.3)]">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 text-transparent bg-clip-text bg-linear-to-r from-coral via-[#a59bfb] to-mint drop-shadow-[0_0_20px_rgba(88,75,224,0.3)]">
           Document an Incident Safely
         </h1>
         <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
@@ -938,7 +938,7 @@ export default function ReportPage() {
       {/* Zero-Knowledge Protection HUD */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
         <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 p-4 rounded-2xl flex items-center gap-3 shadow-lg">
-          <div className="p-2.5 rounded-xl bg-[#00D99D]/15 text-[#00D99D] border border-[#00D99D]/30">
+          <div className="p-2.5 rounded-xl bg-mint/15 text-mint border border-mint/30">
             <Lock size={18} />
           </div>
           <div>
@@ -948,7 +948,7 @@ export default function ReportPage() {
         </div>
 
         <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 p-4 rounded-2xl flex items-center gap-3 shadow-lg">
-          <div className="p-2.5 rounded-xl bg-[#584BE0]/20 text-[#a59bfb] border border-[#584BE0]/30">
+          <div className="p-2.5 rounded-xl bg-iris/20 text-[#a59bfb] border border-iris/30">
             <ShieldCheck size={18} />
           </div>
           <div>
@@ -959,7 +959,7 @@ export default function ReportPage() {
 
         <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 p-4 rounded-2xl flex items-center justify-between shadow-lg">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-[#FB4E77]/20 text-[#FB4E77] border border-[#FB4E77]/30">
+            <div className="p-2.5 rounded-xl bg-coral/20 text-coral border border-coral/30">
               <Zap size={18} />
             </div>
             <div>
@@ -970,7 +970,7 @@ export default function ReportPage() {
           <button
             type="button"
             onClick={handlePanicExit}
-            className="text-[11px] font-bold bg-[#FB4E77]/20 hover:bg-[#FB4E77] text-[#FB4E77] hover:text-white px-2.5 py-1 rounded-lg border border-[#FB4E77]/40 transition-colors"
+            className="text-[11px] font-bold bg-coral/20 hover:bg-coral text-coral hover:text-white px-2.5 py-1 rounded-lg border border-coral/40 transition-colors"
           >
             Exit
           </button>
@@ -978,16 +978,16 @@ export default function ReportPage() {
       </div>
 
       {/* Courage & Documentation Strength Meter */}
-      <div className="bg-linear-to-br from-slate-900/90 via-[#584BE0]/10 to-slate-900/90 border border-[#584BE0]/30 rounded-3xl p-5 sm:p-6 mb-8 shadow-2xl relative overflow-hidden">
+      <div className="bg-linear-to-br from-slate-900/90 via-iris/10 to-slate-900/90 border border-iris/30 rounded-3xl p-5 sm:p-6 mb-8 shadow-2xl relative overflow-hidden">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-3">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-[#584BE0]/20 text-[#a59bfb] border border-[#584BE0]/40">
+            <div className="p-2 rounded-xl bg-iris/20 text-[#a59bfb] border border-iris/40">
               <Activity size={18} />
             </div>
             <div>
               <h2 className="text-sm font-bold text-white flex items-center gap-2">
                 <span>Case Impact & Documentation Strength</span>
-                <span className="text-xs font-mono text-[#00D99D] font-normal">({strengthScore}%)</span>
+                <span className="text-xs font-mono text-mint font-normal">({strengthScore}%)</span>
               </h2>
               <p className="text-xs text-slate-400">
                 {strengthScore < 40 && "Step 1: Adding location & misconduct initiates your regional safety flag."}
@@ -1000,20 +1000,20 @@ export default function ReportPage() {
           {/* Live Status Badge Preview */}
           <div className="shrink-0">
             {liveStatus === "PUBLIC_VERIFIED" && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FB4E77]/20 border border-[#FB4E77]/50 text-[#FB4E77] text-xs font-bold animate-pulse">
-                <span className="w-2 h-2 rounded-full bg-[#FB4E77]"></span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-coral/20 border border-coral/50 text-coral text-xs font-bold animate-pulse">
+                <span className="w-2 h-2 rounded-full bg-coral"></span>
                 Level 1: Public Verified Pin
               </span>
             )}
             {liveStatus === "ACTION_IGNORED" && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#584BE0]/20 border border-[#584BE0]/50 text-[#a59bfb] text-xs font-bold">
-                <span className="w-2 h-2 rounded-full bg-[#584BE0]"></span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-iris/20 border border-iris/50 text-[#a59bfb] text-xs font-bold">
+                <span className="w-2 h-2 rounded-full bg-iris"></span>
                 Action Ignored (Neglect Flagged)
               </span>
             )}
             {liveStatus === "HEATMAP_AGGREGATED" && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#00D99D]/20 border border-[#00D99D]/50 text-[#00D99D] text-xs font-bold">
-                <span className="w-2 h-2 rounded-full bg-[#00D99D]"></span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-mint/20 border border-mint/50 text-mint text-xs font-bold">
+                <span className="w-2 h-2 rounded-full bg-mint"></span>
                 Protected Heatmap Zone
               </span>
             )}
@@ -1023,7 +1023,7 @@ export default function ReportPage() {
         {/* Progress Bar */}
         <div className="w-full bg-black/50 h-2.5 rounded-full overflow-hidden border border-white/5">
           <div 
-            className="h-full bg-linear-to-r from-[#FB4E77] via-[#584BE0] to-[#00D99D] transition-all duration-500 rounded-full"
+            className="h-full bg-linear-to-r from-coral via-iris to-mint transition-all duration-500 rounded-full"
             style={{ width: `${Math.max(8, strengthScore)}%` }}
           ></div>
         </div>
@@ -1033,17 +1033,17 @@ export default function ReportPage() {
         
         {/* Mock Mode Testing Bar */}
         {isMockMode && (
-          <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 bg-[#584BE0]/20 border border-[#584BE0]/30 rounded-2xl">
+          <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 bg-iris/20 border border-iris/30 rounded-2xl">
             <span className="text-xs font-mono text-[#a59bfb] flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#00D99D] animate-pulse"></span>
+              <span className="w-2 h-2 rounded-full bg-mint animate-pulse"></span>
               Mock Mode: Instant Mock Testing Active
             </span>
             <button
               type="button"
               onClick={handleAutofillDemo}
-              className="text-xs bg-[#584BE0]/40 hover:bg-[#584BE0]/60 active:bg-[#584BE0] text-white font-bold py-1.5 px-3 rounded-lg border border-[#584BE0]/40 transition-colors flex items-center gap-1.5 shadow"
+              className="text-xs bg-iris/40 hover:bg-iris/60 active:bg-iris text-white font-bold py-1.5 px-3 rounded-lg border border-iris/40 transition-colors flex items-center gap-1.5 shadow"
             >
-              <Sparkles size={13} className="text-[#FB4E77]" /> Autofill Demo Incident
+              <Sparkles size={13} className="text-coral" /> Autofill Demo Incident
             </button>
           </div>
         )}
@@ -1063,8 +1063,8 @@ export default function ReportPage() {
 
         {/* Top Error Banner (if submission failed) */}
         {submitStatus === 'error' && (
-          <div className="p-4 bg-[#FB4E77]/20 border border-[#FB4E77]/50 rounded-2xl text-[#FB4E77] text-center font-bold text-sm shadow-lg flex items-center justify-center gap-2">
-            <AlertTriangle size={18} className="text-[#FB4E77] shrink-0" />
+          <div className="p-4 bg-coral/20 border border-coral/50 rounded-2xl text-coral text-center font-bold text-sm shadow-lg flex items-center justify-center gap-2">
+            <AlertTriangle size={18} className="text-coral shrink-0" />
             <span>{errorMessage || "An error occurred while submitting. Please check your details and try again."}</span>
           </div>
         )}
@@ -1073,7 +1073,7 @@ export default function ReportPage() {
         <div className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-2">
             <div className="flex items-center gap-2">
-              <MapPin size={18} className="text-[#00D99D]" />
+              <MapPin size={18} className="text-mint" />
               <span className="text-sm font-bold text-white uppercase tracking-wider">1. Incident Location</span>
             </div>
 
@@ -1081,17 +1081,17 @@ export default function ReportPage() {
               type="button"
               onClick={handleAutoDetectLocation}
               disabled={isDetectingLocation}
-              className="inline-flex items-center gap-1.5 text-xs bg-[#00D99D]/10 hover:bg-[#00D99D]/20 active:bg-[#00D99D]/30 text-[#00D99D] border border-[#00D99D]/30 px-3 py-1.5 rounded-xl transition-all shadow-sm font-semibold cursor-pointer disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 text-xs bg-mint/10 hover:bg-mint/20 active:bg-mint/30 text-mint border border-mint/30 px-3 py-1.5 rounded-xl transition-all shadow-sm font-semibold cursor-pointer disabled:opacity-50"
               title="Reverse geocode current location via Photon by Komoot"
             >
               {isDetectingLocation ? (
                 <>
-                  <Activity size={13} className="animate-spin text-[#00D99D]" />
+                  <Activity size={13} className="animate-spin text-mint" />
                   <span>Reverse Geocoding (Photon)...</span>
                 </>
               ) : (
                 <>
-                  <Navigation size={13} className="text-[#00D99D]" />
+                  <Navigation size={13} className="text-mint" />
                   <span>Auto-Detect Location (Photon)</span>
                 </>
               )}
@@ -1101,7 +1101,7 @@ export default function ReportPage() {
           {/* Quick Open-Source City / District Grid Search (Natural Earth & GeoNames) */}
           <div className="relative">
             <div className="flex items-center gap-2 bg-slate-900/60 border border-slate-700/80 rounded-xl px-3 py-2 text-xs">
-              <Search size={14} className="text-[#00D99D] shrink-0" />
+              <Search size={14} className="text-mint shrink-0" />
               <input
                 type="text"
                 value={citySearchInput}
@@ -1142,14 +1142,14 @@ export default function ReportPage() {
                     className="w-full px-3 py-2 text-left hover:bg-slate-800 border-b border-white/5 last:border-0 transition-colors flex items-center justify-between group cursor-pointer"
                   >
                     <div>
-                      <div className="text-xs font-bold text-white group-hover:text-[#00D99D]">
+                      <div className="text-xs font-bold text-white group-hover:text-mint">
                         {city.properties.name}
                       </div>
                       <div className="text-[11px] text-slate-400">
                         {[city.properties.district, city.properties.country].filter(Boolean).join(", ")}
                       </div>
                     </div>
-                    <span className="text-[10px] font-mono text-[#00D99D] bg-[#00D99D]/10 px-1.5 py-0.5 rounded border border-[#00D99D]/20">
+                    <span className="text-[10px] font-mono text-mint bg-mint/10 px-1.5 py-0.5 rounded border border-mint/20">
                       {city.properties.plusCode?.slice(0, 8)}
                     </span>
                   </button>
@@ -1161,13 +1161,13 @@ export default function ReportPage() {
           {detectedLocationInfo && (
             <div className={`p-3 rounded-xl text-xs flex items-center gap-2 border animate-in fade-in duration-300 ${
               detectedLocationInfo.error
-                ? "bg-[#FB4E77]/20 border-[#FB4E77]/40 text-[#FB4E77]"
-                : "bg-[#00D99D]/15 border-[#00D99D]/40 text-[#00D99D]"
+                ? "bg-coral/20 border-coral/40 text-coral"
+                : "bg-mint/15 border-mint/40 text-mint"
             }`}>
               {detectedLocationInfo.error ? (
-                <AlertTriangle size={14} className="text-[#FB4E77] shrink-0" />
+                <AlertTriangle size={14} className="text-coral shrink-0" />
               ) : (
-                <CheckCircle2 size={14} className="text-[#00D99D] shrink-0" />
+                <CheckCircle2 size={14} className="text-mint shrink-0" />
               )}
               <span>{detectedLocationInfo.message}</span>
             </div>
@@ -1182,7 +1182,7 @@ export default function ReportPage() {
                 maxLength={100} 
                 value={formData.country} 
                 onChange={handleChange} 
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-[#584BE0] focus:ring-1 focus:ring-[#584BE0] transition-all placeholder:text-slate-600 text-sm" 
+                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-iris focus:ring-1 focus:ring-iris transition-all placeholder:text-slate-600 text-sm" 
                 placeholder="e.g., India" 
               />
             </div>
@@ -1194,7 +1194,7 @@ export default function ReportPage() {
                 maxLength={100} 
                 value={formData.region} 
                 onChange={handleChange} 
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-[#584BE0] focus:ring-1 focus:ring-[#584BE0] transition-all placeholder:text-slate-600 text-sm" 
+                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-iris focus:ring-1 focus:ring-iris transition-all placeholder:text-slate-600 text-sm" 
                 placeholder="e.g., Maharashtra" 
               />
             </div>
@@ -1205,7 +1205,7 @@ export default function ReportPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between border-b border-white/10 pb-2">
             <div className="flex items-center gap-2">
-              <Layers size={18} className="text-[#584BE0]" />
+              <Layers size={18} className="text-iris" />
               <span className="text-sm font-bold text-white uppercase tracking-wider">2. Involved Facility or Entity</span>
             </div>
             <span className="text-[11px] text-slate-400">Optional</span>
@@ -1217,7 +1217,7 @@ export default function ReportPage() {
               maxLength={200} 
               value={formData.facilityName} 
               onChange={handleChange} 
-              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-[#584BE0] focus:ring-1 focus:ring-[#584BE0] transition-all placeholder:text-slate-600 text-sm" 
+              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-iris focus:ring-1 focus:ring-iris transition-all placeholder:text-slate-600 text-sm" 
               placeholder="Name of clinic, hospital, rehabilitation ashram, or organization" 
             />
             <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
@@ -1229,7 +1229,7 @@ export default function ReportPage() {
         {/* Section 3: Misconduct Category */}
         <div className="space-y-4">
           <div className="flex items-center gap-2 border-b border-white/10 pb-2">
-            <AlertTriangle size={18} className="text-[#FB4E77]" />
+            <AlertTriangle size={18} className="text-coral" />
             <span className="text-sm font-bold text-white uppercase tracking-wider">3. Misconduct Category *</span>
           </div>
 
@@ -1244,13 +1244,13 @@ export default function ReportPage() {
                   onClick={() => handleCategorySelect(preset.id)}
                   className={`p-3 rounded-2xl border text-left transition-all flex flex-col justify-between ${
                     isSelected
-                      ? "bg-[#584BE0]/30 border-[#00D99D] shadow-[0_0_15px_rgba(0,217,157,0.3)] text-white"
+                      ? "bg-iris/30 border-mint shadow-[0_0_15px_rgba(0,217,157,0.3)] text-white"
                       : "bg-black/30 border-white/5 hover:border-white/20 text-slate-300 hover:text-white"
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-lg">{preset.icon}</span>
-                    {isSelected && <Check size={14} className="text-[#00D99D]" />}
+                    {isSelected && <Check size={14} className="text-mint" />}
                   </div>
                   <span className="text-xs font-bold leading-tight">{preset.short}</span>
                 </button>
@@ -1265,7 +1265,7 @@ export default function ReportPage() {
               value={formData.category} 
               onChange={handleChange} 
               style={{ colorScheme: 'dark' }} 
-              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#584BE0] focus:ring-1 focus:ring-[#584BE0] transition-all appearance-none cursor-pointer text-sm"
+              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-iris focus:ring-1 focus:ring-iris transition-all appearance-none cursor-pointer text-sm"
             >
               <option value="">Or select from list...</option>
               {CATEGORY_PRESETS.map(p => (
@@ -1288,7 +1288,7 @@ export default function ReportPage() {
                 value={customCategory} 
                 onChange={(e) => setCustomCategory(e.target.value)} 
                 placeholder="e.g. Workplace discrimination, housing eviction, online outing..." 
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-[#584BE0] focus:ring-1 focus:ring-[#584BE0] transition-all placeholder:text-slate-600 text-sm" 
+                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-iris focus:ring-1 focus:ring-iris transition-all placeholder:text-slate-600 text-sm" 
               />
             </div>
           )}
@@ -1298,7 +1298,7 @@ export default function ReportPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between border-b border-white/10 pb-2">
             <div className="flex items-center gap-2">
-              <FileText size={18} className="text-[#FB4E77]" />
+              <FileText size={18} className="text-coral" />
               <span className="text-sm font-bold text-white uppercase tracking-wider">4. Factual Experience Narrative *</span>
             </div>
             <span className="text-[11px] font-mono text-slate-400">
@@ -1334,7 +1334,7 @@ export default function ReportPage() {
               value={formData.summary} 
               onChange={handleChange} 
               rows={5} 
-              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-[#584BE0] focus:ring-1 focus:ring-[#584BE0] transition-all placeholder:text-slate-600 leading-relaxed text-sm" 
+              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-iris focus:ring-1 focus:ring-iris transition-all placeholder:text-slate-600 leading-relaxed text-sm" 
               placeholder="Describe what occurred objectively. Mention dates, methods, facility statements, or coercion used..."
             ></textarea>
             
@@ -1351,11 +1351,11 @@ export default function ReportPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between border-b border-white/10 pb-2">
             <div className="flex items-center gap-2">
-              <Share2 size={18} className="text-[#00D99D]" />
+              <Share2 size={18} className="text-mint" />
               <span className="text-sm font-bold text-white uppercase tracking-wider">5. Corroborating Evidence Links</span>
             </div>
             {detectedLinks.length > 0 ? (
-              <span className="text-[11px] font-bold text-[#FB4E77] bg-[#FB4E77]/20 px-2 py-0.5 rounded-full border border-[#FB4E77]/40">
+              <span className="text-[11px] font-bold text-coral bg-coral/20 px-2 py-0.5 rounded-full border border-coral/40">
                 ✓ {detectedLinks.length} Verifiable Link{detectedLinks.length > 1 ? "s" : ""}
               </span>
             ) : (
@@ -1370,7 +1370,7 @@ export default function ReportPage() {
               value={formData.evidenceLinks} 
               onChange={handleChange} 
               rows={2} 
-              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#584BE0] focus:ring-1 focus:ring-[#584BE0] transition-all placeholder:text-slate-600 leading-relaxed text-sm" 
+              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-iris focus:ring-1 focus:ring-iris transition-all placeholder:text-slate-600 leading-relaxed text-sm" 
               placeholder="Google Drive affidavits, news investigations, social evidence, audio transcripts (comma or line separated)..."
             ></textarea>
             <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
@@ -1387,7 +1387,7 @@ export default function ReportPage() {
               name="reportedToAuthorities" 
               checked={formData.reportedToAuthorities} 
               onChange={handleChange} 
-              className="mt-1 w-5 h-5 rounded border-slate-700 text-[#584BE0] focus:ring-[#584BE0] bg-black/40 cursor-pointer" 
+              className="mt-1 w-5 h-5 rounded border-slate-700 text-iris focus:ring-iris bg-black/40 cursor-pointer" 
             />
             <span className="text-sm font-medium text-slate-300 group-hover:text-white transition-colors">
               I have reported this incident to official authorities (Police, State Medical Council, Human Rights Commission).
@@ -1403,21 +1403,21 @@ export default function ReportPage() {
                   maxLength={5000} 
                   value={formData.authorityDetails} 
                   onChange={handleChange} 
-                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#584BE0] focus:ring-1 focus:ring-[#584BE0] transition-all placeholder:text-slate-600 text-sm" 
+                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-iris focus:ring-1 focus:ring-iris transition-all placeholder:text-slate-600 text-sm" 
                   placeholder="e.g., Lodged formal complaint with District Magistrate and Medical Council" 
                 />
               </div>
 
-              <label className="flex items-start gap-3 cursor-pointer group bg-[#FB4E77]/10 p-4 rounded-xl border border-[#FB4E77]/30 hover:bg-[#FB4E77]/20 transition-colors">
+              <label className="flex items-start gap-3 cursor-pointer group bg-coral/10 p-4 rounded-xl border border-coral/30 hover:bg-coral/20 transition-colors">
                 <input 
                   type="checkbox" 
                   name="actionIgnored" 
                   checked={formData.actionIgnored} 
                   onChange={handleChange} 
-                  className="mt-1 w-5 h-5 rounded border-slate-700 text-[#FB4E77] focus:ring-[#FB4E77] bg-black/40 cursor-pointer" 
+                  className="mt-1 w-5 h-5 rounded border-slate-700 text-coral focus:ring-coral bg-black/40 cursor-pointer" 
                 />
                 <span className="text-xs font-medium text-slate-300 leading-relaxed">
-                  <strong className="text-[#FB4E77] block mb-0.5 text-sm">Flag as ACTION_IGNORED:</strong> 
+                  <strong className="text-coral block mb-0.5 text-sm">Flag as ACTION_IGNORED:</strong> 
                   Authorities were formally notified but failed to investigate or provide remedies. (Pins institutional negligence on the map as an Electric Iris marker).
                 </span>
               </label>
@@ -1432,15 +1432,15 @@ export default function ReportPage() {
           </span>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-300">
             <div className="flex items-start gap-2.5 bg-white/5 p-3 rounded-xl border border-white/5">
-              <FileText size={16} className="text-[#00D99D] shrink-0 mt-0.5" />
+              <FileText size={16} className="text-mint shrink-0 mt-0.5" />
               <span><strong>UN/HRC Complaint Dossier:</strong> Downloadable PDF formatted for UN Special Procedures.</span>
             </div>
             <div className="flex items-start gap-2.5 bg-white/5 p-3 rounded-xl border border-white/5">
-              <AlertTriangle size={16} className="text-[#FB4E77] shrink-0 mt-0.5" />
+              <AlertTriangle size={16} className="text-coral shrink-0 mt-0.5" />
               <span><strong>Mutual-Aid Caution Card:</strong> Instant visual card with QR code for WhatsApp/Signal groups.</span>
             </div>
             <div className="flex items-start gap-2.5 bg-white/5 p-3 rounded-xl border border-white/5">
-              <Shield size={16} className="text-[#00D99D] shrink-0 mt-0.5" />
+              <Shield size={16} className="text-mint shrink-0 mt-0.5" />
               <span><strong>Secret Tracking Key:</strong> Check status and add updates with zero personal accounts.</span>
             </div>
             <div className="flex items-start gap-2.5 bg-white/5 p-3 rounded-xl border border-white/5">
@@ -1454,11 +1454,11 @@ export default function ReportPage() {
         <button 
           type="submit" 
           disabled={isSubmitting || rateLimited}
-          className="w-full bg-linear-to-r from-[#FB4E77] via-[#584BE0] to-[#00D99D] hover:opacity-95 text-white font-bold py-4 sm:py-5 rounded-xl transition-all shadow-[0_0_20px_rgba(88,75,224,0.3)] hover:shadow-[0_0_30px_rgba(88,75,224,0.5)] disabled:opacity-50 disabled:shadow-none text-base sm:text-lg tracking-wide border border-white/20 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
+          className="w-full bg-linear-to-r from-coral via-iris to-mint hover:opacity-95 text-white font-bold py-4 sm:py-5 rounded-xl transition-all shadow-[0_0_20px_rgba(88,75,224,0.3)] hover:shadow-[0_0_30px_rgba(88,75,224,0.5)] disabled:opacity-50 disabled:shadow-none text-base sm:text-lg tracking-wide border border-white/20 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
         >
           {isSubmitting ? (
             <span className="flex items-center gap-2 animate-pulse">
-              <Shield size={20} className="animate-spin text-[#00D99D]" />
+              <Shield size={20} className="animate-spin text-mint" />
               <span>
                 {submittingStep === 1 && "1/4 Purging device telemetry & headers..."}
                 {submittingStep === 2 && "2/4 Geocoding incident sector..."}
@@ -1478,7 +1478,7 @@ export default function ReportPage() {
         </button>
 
         {submitStatus === 'error' && (
-          <div className="p-4 bg-[#FB4E77]/20 border border-[#FB4E77]/50 rounded-xl text-[#FB4E77] text-center font-bold text-sm shadow-lg">
+          <div className="p-4 bg-coral/20 border border-coral/50 rounded-xl text-coral text-center font-bold text-sm shadow-lg">
             {errorMessage || "An error occurred while submitting. Please try again."}
           </div>
         )}
