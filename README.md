@@ -8,7 +8,7 @@ A privacy-first, zero-touch, open-source web application dedicated to global LGB
 - **Privacy First**: We do not collect, log, or store IP addresses, user-agents, or browser fingerprints. No user accounts are required.
 - **Panic Button**: Instantly clears browser storage and redirects to Wikipedia.
 - **UN & Local HRC Action Portal**: Generate formal complaint PDFs locally in your browser. No personal data for these complaints touches the server.
-- **Privacy Policy**: Read our comprehensive [Privacy Policy](/app/privacy/page.jsx) that outlines exactly how we protect users.
+- **Privacy Policy**: Read our comprehensive [Privacy Policy (PRIVACY.md)](PRIVACY.md) in this repository or access the live policy at [/privacy](https://sogi-shield.pages.dev/privacy). Location is strictly requested upon user consent only for incident sector geoguessing, with 100% offline manual alternatives.
 
 ## 🛠️ Tech Stack
 
