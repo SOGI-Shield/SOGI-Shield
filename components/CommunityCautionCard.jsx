@@ -90,33 +90,33 @@ export default function CommunityCautionCard({ report }) {
 
     // Dark sleek background with subtle gradient
     const gradient = ctx.createLinearGradient(0, 0, width, height);
-    gradient.addColorStop(0, "#020617"); // slate-950
-    gradient.addColorStop(0.5, "#0b0f19");
-    gradient.addColorStop(1, "#171026"); // subtle dark purple
+    gradient.addColorStop(0, "#060913"); // brand dark surface
+    gradient.addColorStop(0.5, "#0d1326");
+    gradient.addColorStop(1, "#181436"); // dark iris tint
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, width, height);
 
     // Glowing border
-    ctx.strokeStyle = "rgba(239, 68, 68, 0.4)"; // red alert glow
+    ctx.strokeStyle = "rgba(251, 78, 119, 0.5)"; // Coral Rose alert glow
     ctx.lineWidth = 3;
     ctx.strokeRect(8, 8, width - 16, height - 16);
 
-    // Top Warning Bar
+    // Top Brand Gradient Bar
     const topBarGrad = ctx.createLinearGradient(0, 0, width, 0);
-    topBarGrad.addColorStop(0, "#ef4444");
-    topBarGrad.addColorStop(0.5, "#f97316");
-    topBarGrad.addColorStop(1, "#ec4899");
+    topBarGrad.addColorStop(0, "#FB4E77"); // Coral Rose
+    topBarGrad.addColorStop(0.5, "#584BE0"); // Electric Iris
+    topBarGrad.addColorStop(1, "#00D99D"); // Vivid Mint
     ctx.fillStyle = topBarGrad;
     ctx.fillRect(8, 8, width - 16, 8);
 
     // Badge
-    ctx.fillStyle = "rgba(239, 68, 68, 0.2)";
+    ctx.fillStyle = "rgba(251, 78, 119, 0.2)";
     ctx.fillRect(40, 40, 260, 36);
-    ctx.strokeStyle = "#ef4444";
+    ctx.strokeStyle = "#FB4E77";
     ctx.lineWidth = 1.5;
     ctx.strokeRect(40, 40, 260, 36);
 
-    ctx.fillStyle = "#fca5a5";
+    ctx.fillStyle = "#FB4E77";
     ctx.font = "bold 15px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
     ctx.fillText("⚠️ SOGI SAFETY CAUTION", 55, 63);
 
@@ -126,7 +126,7 @@ export default function CommunityCautionCard({ report }) {
     ctx.fillText("INCIDENT FLAGGED IN SECTOR", 40, 115);
 
     // Sector Location (constrained so it never overlaps the QR box at x=540)
-    ctx.fillStyle = "#38bdf8"; // sky blue
+    ctx.fillStyle = "#00D99D"; // Vivid Mint
     ctx.font = "bold 22px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
     const locText = `${region || "Area"}, ${country || "Global"}`;
     let displayLoc = locText;
@@ -141,7 +141,7 @@ export default function CommunityCautionCard({ report }) {
     // Plus Code badge if available
     let nextY = 175;
     if (plusCode) {
-      ctx.fillStyle = "#38bdf8";
+      ctx.fillStyle = "#00D99D";
       ctx.font = "bold 13px 'Courier New', monospace";
       ctx.fillText(`PLUS CODE: ${plusCode}`, 40, nextY);
       nextY += 22;
@@ -340,16 +340,16 @@ export default function CommunityCautionCard({ report }) {
   };
 
   return (
-    <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 sm:p-8 shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative overflow-hidden flex flex-col justify-between">
-      <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-rose-500 via-pink-500 to-indigo-500"></div>
+    <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 hover:border-[#FB4E77]/40 rounded-3xl p-6 sm:p-8 shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative overflow-hidden flex flex-col justify-between transition-all">
+      <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-[#FB4E77] via-[#584BE0] to-[#00D99D]"></div>
       <canvas ref={canvasRef} className="hidden" />
 
       <div>
         {/* Header */}
         <div className="flex items-start justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-2xl">
-              <AlertTriangle size={24} className="drop-shadow-[0_0_8px_rgba(244,63,94,0.6)]" />
+            <div className="p-3 bg-[#FB4E77]/15 text-[#FB4E77] border border-[#FB4E77]/30 rounded-2xl">
+              <AlertTriangle size={24} className="drop-shadow-[0_0_8px_rgba(251,78,119,0.6)]" />
             </div>
             <div>
               <h3 className="text-xl font-bold text-white">Community Caution Card</h3>
@@ -359,34 +359,34 @@ export default function CommunityCautionCard({ report }) {
             </div>
           </div>
           <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-slate-300">
-            <Shield size={12} className="text-emerald-400" /> 100% Anonymous
+            <Shield size={12} className="text-[#00D99D]" /> 100% Anonymous
           </span>
         </div>
 
         {/* Visual Caution Card Preview */}
-        <div className="bg-linear-to-br from-slate-950 via-slate-900 to-slate-950 border border-rose-500/30 rounded-2xl p-5 sm:p-6 mb-6 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-red-500 via-orange-500 to-rose-500"></div>
+        <div className="bg-linear-to-br from-slate-950 via-[#060913] to-slate-950 border border-[#FB4E77]/40 rounded-2xl p-5 sm:p-6 mb-6 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-[#FB4E77] via-[#584BE0] to-[#00D99D]"></div>
           
           <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6">
             <div className="space-y-3 flex-1 text-center sm:text-left">
-              <div className="inline-flex items-center gap-2 bg-rose-950/60 border border-rose-500/40 px-3 py-1 rounded-full text-xs font-bold text-rose-300 uppercase tracking-wider">
-                <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+              <div className="inline-flex items-center gap-2 bg-[#FB4E77]/20 border border-[#FB4E77]/40 px-3 py-1 rounded-full text-xs font-bold text-[#FB4E77] uppercase tracking-wider">
+                <span className="w-2 h-2 rounded-full bg-[#FB4E77] animate-ping"></span>
                 ⚠️ SOGI Safety Alert
               </div>
               <h4 className="text-xl sm:text-2xl font-extrabold text-white leading-tight">
                 Incident Flagged near {region || "Area"}, {country || "Global"}
               </h4>
               {plusCode && (
-                <div className="inline-flex items-center gap-1.5 bg-cyan-950/60 border border-cyan-500/40 text-cyan-300 font-mono text-xs px-2.5 py-1 rounded-lg">
-                  <MapPin size={12} className="text-cyan-400" />
+                <div className="inline-flex items-center gap-1.5 bg-[#00D99D]/15 border border-[#00D99D]/40 text-[#00D99D] font-mono text-xs px-2.5 py-1 rounded-lg">
+                  <MapPin size={12} className="text-[#00D99D]" />
                   <span>Plus Code: <strong>{plusCode}</strong></span>
                 </div>
               )}
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                Live decentralized safety map updated on <span className="text-indigo-300 font-semibold">SOGI-Shield</span>. Exercise heightened situational awareness in this vicinity.
+                Live decentralized safety map updated on <span className="text-[#00D99D] font-semibold">SOGI-Shield</span>. Exercise heightened situational awareness in this vicinity.
               </p>
               <div className="pt-1 flex flex-wrap items-center justify-center sm:justify-start gap-2 text-xs text-slate-400 font-mono">
-                <span className="px-2 py-0.5 rounded bg-white/5 border border-white/5 text-rose-300 font-sans font-medium">
+                <span className="px-2 py-0.5 rounded bg-white/5 border border-white/5 text-[#FB4E77] font-sans font-medium">
                   {category}
                 </span>
                 <span>• No personal sender info</span>
@@ -409,14 +409,14 @@ export default function CommunityCautionCard({ report }) {
         {/* Copyable Quick Text Snippet Box */}
         <div className="bg-black/40 border border-white/10 rounded-2xl p-4 mb-6">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold text-indigo-300 uppercase tracking-wider">
+            <span className="text-xs font-bold text-slate-200 uppercase tracking-wider">
               Discreet Text Snippet for Messaging Groups
             </span>
             <button
               onClick={handleCopyText}
-              className="text-xs text-slate-300 hover:text-white flex items-center gap-1.5 bg-white/5 hover:bg-white/10 px-2.5 py-1 rounded-lg transition-colors"
+              className="text-xs text-slate-300 hover:text-white flex items-center gap-1.5 bg-white/5 hover:bg-white/10 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
             >
-              {copiedText ? <><Check size={14} className="text-emerald-400" /> Copied!</> : <><Copy size={14} /> Copy Text</>}
+              {copiedText ? <><Check size={14} className="text-[#00D99D]" /> Copied!</> : <><Copy size={14} /> Copy Text</>}
             </button>
           </div>
           <p className="text-xs text-slate-300 font-mono bg-black/50 p-2.5 rounded-xl border border-white/5 leading-relaxed break-all select-all">
@@ -432,7 +432,7 @@ export default function CommunityCautionCard({ report }) {
           <button
             onClick={handleDownloadCard}
             disabled={isGeneratingImage}
-            className="w-full bg-linear-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 active:from-rose-700 active:to-pink-700 text-white font-bold py-3.5 px-3 rounded-xl transition-all shadow-[0_0_15px_rgba(244,63,94,0.4)] flex items-center justify-center gap-2 text-sm border border-rose-400/30 disabled:opacity-50"
+            className="w-full bg-[#FB4E77] hover:opacity-95 text-white font-bold py-3.5 px-3 rounded-xl transition-all shadow-[0_0_15px_rgba(251,78,119,0.4)] flex items-center justify-center gap-2 text-sm border border-[#FB4E77]/40 disabled:opacity-50 cursor-pointer"
           >
             <Download size={17} />
             <span>{isGeneratingImage ? "Rendering..." : "Download (.PNG)"}</span>
@@ -442,10 +442,10 @@ export default function CommunityCautionCard({ report }) {
           <button
             onClick={handlePreviewCard}
             disabled={isGeneratingImage}
-            className="w-full bg-white/10 hover:bg-white/15 active:bg-white/20 text-white font-bold py-3.5 px-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm border border-white/10 disabled:opacity-50"
+            className="w-full bg-white/10 hover:bg-white/15 active:bg-white/20 text-white font-bold py-3.5 px-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm border border-white/10 disabled:opacity-50 cursor-pointer"
             title="Open high-resolution graphic directly in browser"
           >
-            <ExternalLink size={17} className="text-cyan-400" />
+            <ExternalLink size={17} className="text-[#00D99D]" />
             <span>Open in Tab</span>
           </button>
 
@@ -453,11 +453,11 @@ export default function CommunityCautionCard({ report }) {
           <button
             onClick={handleCopyImage}
             disabled={isGeneratingImage}
-            className="w-full bg-white/10 hover:bg-white/15 active:bg-white/20 text-white font-bold py-3.5 px-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm border border-white/10 disabled:opacity-50"
+            className="w-full bg-white/10 hover:bg-white/15 active:bg-white/20 text-white font-bold py-3.5 px-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm border border-white/10 disabled:opacity-50 cursor-pointer"
           >
             {copiedImage ? (
               <>
-                <Check size={17} className="text-emerald-400" /> <span>Copied!</span>
+                <Check size={17} className="text-[#00D99D]" /> <span>Copied!</span>
               </>
             ) : (
               <>
@@ -473,23 +473,23 @@ export default function CommunityCautionCard({ report }) {
           
           <button
             onClick={handleTelegramShare}
-            className="bg-[#229ED9]/20 hover:bg-[#229ED9]/30 text-[#229ED9] border border-[#229ED9]/40 px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-bold transition-colors"
+            className="bg-[#229ED9]/20 hover:bg-[#229ED9]/30 text-[#229ED9] border border-[#229ED9]/40 px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-bold transition-colors cursor-pointer"
           >
             <Send size={14} /> Telegram
           </button>
 
           <button
             onClick={handleWhatsappShare}
-            className="bg-[#25D366]/20 hover:bg-[#25D366]/30 text-[#25D366] border border-[#25D366]/40 px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-bold transition-colors"
+            className="bg-[#25D366]/20 hover:bg-[#25D366]/30 text-[#25D366] border border-[#25D366]/40 px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-bold transition-colors cursor-pointer"
           >
             <MessageSquare size={14} /> WhatsApp
           </button>
 
           <button
             onClick={handleCopyLink}
-            className="bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/40 px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-bold transition-colors"
+            className="bg-[#584BE0]/20 hover:bg-[#584BE0]/30 text-slate-200 hover:text-white border border-[#584BE0]/40 px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-bold transition-colors cursor-pointer"
           >
-            {copiedLink ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />} 
+            {copiedLink ? <Check size={14} className="text-[#00D99D]" /> : <Copy size={14} />} 
             {copiedLink ? "Link Copied" : "Copy Regional Link"}
           </button>
 

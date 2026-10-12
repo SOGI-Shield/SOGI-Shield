@@ -46,12 +46,7 @@ Sincerely,
   return (
     <div className="flex-1 container mx-auto px-4 py-8 sm:py-12 max-w-5xl relative z-10">
       <div className="mb-8 sm:mb-12 text-center max-w-3xl mx-auto">
-        <div className="flex justify-center mb-6">
-          <div className="p-4 bg-linear-to-br from-pink-500/20 to-rose-500/20 border border-pink-500/30 rounded-2xl shadow-[0_0_20px_rgba(244,63,94,0.3)]">
-            <FileText size={48} className="text-pink-400 drop-shadow-[0_0_10px_rgba(244,63,94,0.5)]" />
-          </div>
-        </div>
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 sm:mb-6 text-transparent bg-clip-text bg-linear-to-r from-cyan-400 via-indigo-400 to-pink-400 drop-shadow-[0_0_15px_rgba(99,102,241,0.2)]">Global Human Rights Action Portal</h1>
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 sm:mb-6 text-transparent bg-clip-text bg-linear-to-r from-[#FB4E77] via-[#584BE0] to-[#00D99D] drop-shadow-[0_0_20px_rgba(251,78,119,0.3)]">Global Human Rights Action Portal</h1>
         <p className="text-slate-300 text-base sm:text-lg leading-relaxed">
           Take your documentation a step further. Use our standardized legal complaint format to report incidents directly to international human rights commissions and local authorities worldwide.
         </p>
@@ -66,25 +61,25 @@ Sincerely,
             <p className="text-sm text-slate-300 mb-6 leading-relaxed">After customizing your complaint letter, use these global directories and portals to submit it:</p>
             
             <a href="https://sps.un.org/english/rights" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-black/40 hover:bg-white/10 active:bg-white/20 border border-white/10 rounded-2xl mb-4 transition-all group">
-              <span className="font-bold text-sm text-slate-200 group-hover:text-cyan-400 transition-colors">UN Human Rights Submissions</span>
-              <ExternalLink size={16} className="text-slate-500 group-hover:text-cyan-400 transition-colors" />
+              <span className="font-bold text-sm text-slate-200 group-hover:text-[#00D99D] transition-colors">UN Human Rights Submissions</span>
+              <ExternalLink size={16} className="text-slate-500 group-hover:text-[#00D99D] transition-colors" />
             </a>
             
             <a href="https://ganhri.org/membership/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-black/40 hover:bg-white/10 active:bg-white/20 border border-white/10 rounded-2xl mb-4 transition-all group">
-              <span className="font-bold text-sm text-slate-200 group-hover:text-indigo-400 transition-colors">Global NHRI Directory</span>
-              <ExternalLink size={16} className="text-slate-500 group-hover:text-indigo-400 transition-colors" />
+              <span className="font-bold text-sm text-slate-200 group-hover:text-white transition-colors">Global NHRI Directory</span>
+              <ExternalLink size={16} className="text-slate-500 group-hover:text-white transition-colors" />
             </a>
 
             <a href="https://outrightinternational.org/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-black/40 hover:bg-white/10 active:bg-white/20 border border-white/10 rounded-2xl transition-all group">
-              <span className="font-bold text-sm text-slate-200 group-hover:text-pink-400 transition-colors">Outright International</span>
-              <ExternalLink size={16} className="text-slate-500 group-hover:text-pink-400 transition-colors" />
+              <span className="font-bold text-sm text-slate-200 group-hover:text-[#FB4E77] transition-colors">Outright International</span>
+              <ExternalLink size={16} className="text-slate-500 group-hover:text-[#FB4E77] transition-colors" />
             </a>
           </div>
 
           <div className="bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-3xl shadow-lg relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-1 h-full bg-linear-to-b from-indigo-500 to-pink-500"></div>
-            <h3 className="font-bold text-indigo-300 mb-4 uppercase tracking-widest text-sm">Guidelines for Reporting</h3>
-            <ul className="text-sm text-slate-300 space-y-4 list-disc pl-4 marker:text-indigo-500 leading-relaxed">
+            <div className="absolute top-0 left-0 w-1.5 h-full bg-linear-to-b from-[#584BE0] via-[#FB4E77] to-[#00D99D]"></div>
+            <h3 className="font-bold text-white mb-4 uppercase tracking-widest text-sm">Guidelines for Reporting</h3>
+            <ul className="text-sm text-slate-300 space-y-4 list-disc pl-4 marker:text-[#00D99D] leading-relaxed">
               <li><strong className="text-white">Be factual:</strong> Stick strictly to the facts of what happened without emotional exaggeration.</li>
               <li><strong className="text-white">Protect yourself:</strong> If you fear retaliation, you are fully entitled to submit the complaint anonymously or withhold your home address.</li>
               <li><strong className="text-white">Secure channels:</strong> Do not send highly sensitive photo evidence through unencrypted email channels unless specifically requested via a secure link.</li>
@@ -101,14 +96,14 @@ Sincerely,
             </div>
             <button 
               onClick={copyToClipboard}
-              className="bg-linear-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 active:from-pink-700 active:to-rose-700 text-white font-bold py-3 px-6 rounded-xl transition-all flex items-center gap-2 text-sm shrink-0 w-full sm:w-auto justify-center shadow-[0_0_15px_rgba(225,29,72,0.4)] hover:shadow-[0_0_25px_rgba(225,29,72,0.6)] border border-rose-400/30 uppercase tracking-wider"
+              className="bg-[#FB4E77] hover:opacity-95 text-white font-bold py-3 px-6 rounded-xl transition-all flex items-center gap-2 text-sm shrink-0 w-full sm:w-auto justify-center shadow-[0_0_15px_rgba(251,78,119,0.4)] hover:shadow-[0_0_25px_rgba(251,78,119,0.6)] border border-[#FB4E77]/40 uppercase tracking-wider cursor-pointer active:scale-95"
             >
-              {copied ? <><CheckCircle2 size={18} /> Copied!</> : <><Copy size={18} /> Copy Template</>}
+              {copied ? <><CheckCircle2 size={18} className="text-[#00D99D]" /> Copied!</> : <><Copy size={18} /> Copy Template</>}
             </button>
           </div>
           
           <div className="p-4 sm:p-8 bg-transparent overflow-x-auto relative z-10">
-            <pre className="text-xs sm:text-sm text-slate-300 font-mono whitespace-pre-wrap leading-relaxed bg-black/40 p-4 sm:p-6 rounded-2xl border border-white/5 shadow-inner selection:bg-pink-500/30">
+            <pre className="text-xs sm:text-sm text-slate-300 font-mono whitespace-pre-wrap leading-relaxed bg-black/40 p-4 sm:p-6 rounded-2xl border border-white/5 shadow-inner selection:bg-[#FB4E77]/30">
               {templateText}
             </pre>
           </div>

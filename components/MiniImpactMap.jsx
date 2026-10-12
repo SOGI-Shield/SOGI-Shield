@@ -18,9 +18,9 @@ export default function MiniImpactMap({ lat, lng, category, status }) {
   const latitude = Number(lat) || 20;
   const longitude = Number(lng) || 0;
 
-  let circleColor = "#d97706"; // Amber
-  if (status === "PUBLIC_VERIFIED") circleColor = "#ef4444"; // Red
-  if (status === "ACTION_IGNORED") circleColor = "#94a3b8"; // Slate
+  let circleColor = "#00D99D"; // Vivid Mint for default/heatmap
+  if (status === "PUBLIC_VERIFIED") circleColor = "#FB4E77"; // Coral Rose for verified
+  if (status === "ACTION_IGNORED") circleColor = "#584BE0"; // Electric Iris for ignored
 
   return (
     <div className="w-full h-48 sm:h-56 rounded-2xl overflow-hidden border border-white/10 relative shadow-inner">
@@ -71,8 +71,8 @@ export default function MiniImpactMap({ lat, lng, category, status }) {
       </MapContainer>
 
       {/* Floating status tag on map */}
-      <div className="absolute top-3 left-3 z-[400] bg-slate-950/80 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 text-xs font-mono text-cyan-300 flex items-center gap-1.5 shadow-lg">
-        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+      <div className="absolute top-3 left-3 z-[400] bg-slate-950/90 backdrop-blur-md px-3 py-1 rounded-full border border-white/15 text-xs font-mono text-[#00D99D] flex items-center gap-1.5 shadow-lg">
+        <span className="w-2 h-2 rounded-full bg-[#00D99D] animate-ping"></span>
         <span>LIVE CLUSTER PING ACTIVE</span>
       </div>
     </div>

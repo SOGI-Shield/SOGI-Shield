@@ -2,8 +2,26 @@
 @import "leaflet/dist/leaflet.css";
 
 :root {
-  --background: #0f172a;
+  --background: #060913;
   --foreground: #f8fafc;
+  --color-coral: #FB4E77;
+  --color-coral-hover: #e03b63;
+  --color-mint: #00D99D;
+  --color-mint-hover: #00b885;
+  --color-iris: #584BE0;
+  --color-iris-hover: #4639cb;
+}
+
+@theme {
+  --color-coral: #FB4E77;
+  --color-coral-hover: #e03b63;
+  --color-coral-dark: #8c1a36;
+  --color-mint: #00D99D;
+  --color-mint-hover: #00b885;
+  --color-mint-dark: #004d38;
+  --color-iris: #584BE0;
+  --color-iris-hover: #4639cb;
+  --color-iris-dark: #271f78;
 }
 
 body {
