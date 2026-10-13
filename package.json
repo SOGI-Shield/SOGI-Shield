@@ -45,7 +45,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "postcss": "^8",
     "tailwindcss": "^4.3.3",
-    "typescript": "^5.9.3",
+    "typescript": "^7.0.2",
     "wrangler": "^4.147.0"
   },
   "allowScripts": {
