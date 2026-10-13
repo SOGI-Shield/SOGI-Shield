@@ -5,9 +5,10 @@
 
 version: 2
 updates:
-  # Maintain dependencies for npm
+  # Maintain dependencies for npm targeting the beta branch only
   - package-ecosystem: "npm"
     directory: "/"
+    target-branch: "beta"
     schedule:
       interval: "weekly"
       day: "monday"
