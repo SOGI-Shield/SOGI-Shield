@@ -22,7 +22,7 @@ export default function Header() {
               className="w-full h-full object-contain filter drop-shadow-[0_4px_12px_rgba(251,78,119,0.4)] group-hover:drop-shadow-[0_4px_16px_rgba(0,217,157,0.5)] transition-all" 
             />
           </div>
-          <span className="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-1">
+          <span className="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-1 font-heading">
             <span>SOGI</span>
             <span className="text-[#FB4E77]">-</span>
             <span className="bg-clip-text text-transparent bg-linear-to-r from-[#FB4E77] to-[#00D99D]">Shield</span>
@@ -58,7 +58,7 @@ export default function Header() {
           <div className="flex items-center gap-3 py-3 px-6 mb-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/icon.svg" alt="SOGI-Shield" className="w-9 h-9 object-contain filter drop-shadow-[0_4px_12px_rgba(251,78,119,0.4)]" />
-            <span className="text-2xl font-black tracking-tight text-white flex items-center gap-1">
+            <span className="text-2xl font-black tracking-tight text-white flex items-center gap-1 font-heading">
               <span>SOGI</span>
               <span className="text-[#FB4E77]">-</span>
               <span className="bg-clip-text text-transparent bg-linear-to-r from-[#FB4E77] to-[#00D99D]">Shield</span>

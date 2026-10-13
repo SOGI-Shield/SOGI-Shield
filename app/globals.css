@@ -23,15 +23,41 @@
   --color-iris-hover: #4639cb;
   --color-iris-dark: #271f78;
   --color-iris-400: #7b70ea;
+
+  --font-cabinet: var(--font-cabinet), "Cabinet Grotesk", system-ui, -apple-system, sans-serif;
+  --font-satoshi: var(--font-satoshi), "Satoshi", system-ui, -apple-system, sans-serif;
+  --font-sans: var(--font-satoshi), "Satoshi", system-ui, -apple-system, sans-serif;
+  --font-heading: var(--font-cabinet), "Cabinet Grotesk", system-ui, -apple-system, sans-serif;
+  --font-body: var(--font-satoshi), "Satoshi", system-ui, -apple-system, sans-serif;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-satoshi), "Satoshi", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+}
+
+/* Headings & Brand Identity Typography (Cabinet Grotesk) */
+h1, h2, h3, h4, h5, h6, .font-heading, .brand-identity {
+  font-family: var(--font-cabinet), "Cabinet Grotesk", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Body, Forms, Inputs, Buttons, & Microcopy Typography (Satoshi) */
+input, textarea, select, button, label, p, span, table, form, .font-body, .microcopy {
+  font-family: var(--font-satoshi), "Satoshi", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Ensure Heading Hierarchy within complex containers preserves Cabinet Grotesk */
+h1, h2, h3, h4, h5, h6, .font-heading, .brand-identity {
+  font-family: var(--font-cabinet), "Cabinet Grotesk", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+}
+
+/* Smooth font feature settings for enhanced legibility */
+body, input, textarea, select, button {
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
 /* Eliminate 300ms mobile touch delay */
