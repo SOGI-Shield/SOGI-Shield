@@ -1,11 +1,13 @@
 "use client";
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import { MapContainer, TileLayer, Marker, Popup, CircleMarker, GeoJSON, useMapEvents, useMap, ZoomControl } from "react-leaflet";
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from "leaflet";
 import { isValidWebUrl } from "@/lib/utils";
 import { getGeoJson } from "@/lib/geoDataService";
 import { subscribeReports, fetchAllReports, initBackgroundPoller } from "@/lib/reportsCache";
+import { decompressReport } from "@/lib/compress";
 import { 
   Maximize2, 
   Minimize2, 
@@ -20,7 +22,9 @@ import {
   MapPin,
   Layers,
   ChevronDown,
-  Info
+  Info,
+  Calendar,
+  ExternalLink
 } from "lucide-react";
 
 function MapEvents({ setZoom, setBounds }) {
@@ -121,6 +125,30 @@ export default function MapClient() {
   const [currentZoom, setCurrentZoom] = useState(2);
   const [mapBounds, setMapBounds] = useState(null);
   const [selectedReport, setSelectedReport] = useState(null);
+  const isMounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+
+  useEffect(() => {
+    if (!selectedReport) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") setSelectedReport(null);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedReport]);
+
+  const handleOpenReportDetails = async (report) => {
+    if (!report) return;
+    if (report.c_data && !report._isDecompressed) {
+      const decompressed = await decompressReport(report);
+      setSelectedReport(decompressed);
+    } else {
+      setSelectedReport(report);
+    }
+  };
 
   const truncateWords = (str, numWords = 8) => {
     if (!str) return "";
@@ -608,14 +636,16 @@ export default function MapClient() {
                 <Marker key={reportKey} position={[Number(report.lat), Number(report.lng)]} icon={icons.coral}>
                   <Popup>
                     <div className="text-slate-900 w-full max-w-[260px]">
-                      <h3 className="font-bold text-lg mb-1 wrap-break-word">{report.facilityName || "Verified Incident"}</h3>
-                      <p className="text-sm font-semibold text-coral mb-2 wrap-break-word">{report.category}</p>
-                      <p className="text-sm mb-3 wrap-break-word whitespace-pre-wrap">{truncateWords(report.summary)}</p>
+                      <h3 className="font-bold text-base mb-1 wrap-break-word">{report.facilityName || "Verified Incident"}</h3>
+                      <p className="text-xs font-semibold text-coral mb-2 wrap-break-word">{report.category}</p>
+                      {report.summary ? (
+                        <p className="text-xs text-slate-600 mb-2.5 wrap-break-word leading-relaxed">{truncateWords(report.summary)}</p>
+                      ) : null}
                       <button 
-                        onClick={() => setSelectedReport(report)}
-                        className="w-full min-h-[44px] bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-900 text-xs font-bold py-2.5 px-3 rounded-lg transition-colors flex items-center justify-center cursor-pointer shadow-sm"
+                        onClick={() => handleOpenReportDetails(report)}
+                        className="w-full bg-slate-900 hover:bg-slate-800 active:bg-black text-white text-xs font-bold py-2 px-3 rounded-xl transition-all flex items-center justify-center cursor-pointer shadow-sm active:scale-95"
                       >
-                        Read Full Report
+                        View Full Report
                       </button>
                     </div>
                   </Popup>
@@ -626,17 +656,19 @@ export default function MapClient() {
                 <Marker key={reportKey} position={[Number(report.lat), Number(report.lng)]} icon={icons.grey}>
                   <Popup>
                     <div className="text-slate-900 w-full max-w-[260px]">
-                      <div className="inline-block bg-iris/15 text-iris text-xs font-bold px-2 py-1 rounded mb-2 uppercase tracking-wide border border-iris/30">
+                      <div className="inline-block bg-iris/15 text-iris text-[10px] font-bold px-2 py-0.5 rounded mb-1.5 uppercase tracking-wide border border-iris/30">
                         Action Ignored
                       </div>
-                      <h3 className="font-bold text-lg mb-1 wrap-break-word">{report.facilityName || "Incident"}</h3>
-                      <p className="text-sm font-semibold text-slate-600 mb-2 wrap-break-word">{report.category}</p>
-                      <p className="text-sm mb-3 wrap-break-word whitespace-pre-wrap">{truncateWords(report.summary)}</p>
+                      <h3 className="font-bold text-base mb-1 wrap-break-word">{report.facilityName || "Incident"}</h3>
+                      <p className="text-xs font-semibold text-slate-600 mb-2 wrap-break-word">{report.category}</p>
+                      {report.summary ? (
+                        <p className="text-xs text-slate-600 mb-2.5 wrap-break-word leading-relaxed">{truncateWords(report.summary)}</p>
+                      ) : null}
                       <button 
-                        onClick={() => setSelectedReport(report)}
-                        className="w-full min-h-[44px] bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-900 text-xs font-bold py-2.5 px-3 rounded-lg transition-colors flex items-center justify-center cursor-pointer shadow-sm"
+                        onClick={() => handleOpenReportDetails(report)}
+                        className="w-full bg-slate-900 hover:bg-slate-800 active:bg-black text-white text-xs font-bold py-2 px-3 rounded-xl transition-all flex items-center justify-center cursor-pointer shadow-sm active:scale-95"
                       >
-                        Read Full Report
+                        View Full Report
                       </button>
                     </div>
                   </Popup>
@@ -669,87 +701,155 @@ export default function MapClient() {
         </MarkerClusterGroup>
       </MapContainer>
 
-      {/* Full Report Modal */}
-      {selectedReport && (
-        <div className="fixed inset-0 z-[1050] bg-slate-950/80 backdrop-blur flex items-center justify-center p-2 sm:p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-2xl w-full max-h-[85vh] sm:max-h-[90vh] overflow-y-auto p-4 sm:p-6 shadow-2xl relative text-left">
-            <button 
-              onClick={() => setSelectedReport(null)}
-              className="absolute top-2 sm:top-4 right-2 sm:right-4 min-w-[44px] min-h-[44px] p-2 text-slate-400 hover:text-white active:bg-slate-800 rounded-full transition-colors flex items-center justify-center"
-              aria-label="Close report details"
-            >
-              <X size={24} />
-            </button>
-            
-            <div className="mb-6 pr-8">
-              <span className={`inline-block text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-3 ${
-                selectedReport.status === "PUBLIC_VERIFIED" 
-                  ? "bg-red-500/20 text-red-400 border border-red-500/30" 
-                  : "bg-slate-500/20 text-slate-400 border border-slate-500/30"
-              }`}>
-                {selectedReport.status === "PUBLIC_VERIFIED" ? "Public Verified Incident" : "Action Ignored"}
-              </span>
-              <h2 className="text-2xl font-bold text-white mb-1 wrap-break-word">{selectedReport.facilityName || "Unnamed Facility / Incident"}</h2>
-              <p className="text-sm text-slate-400 wrap-break-word">{selectedReport.region}, {selectedReport.country}</p>
-              {selectedReport.plusCode && (
-                <div className="mt-1 text-xs font-mono text-cyan-400">
-                  Sector Grid: {selectedReport.plusCode}
+      {/* Full Report Modal - Portaled to document.body so it spans the entire website viewport */}
+      {isMounted && selectedReport && typeof document !== "undefined" && createPortal(
+        <div 
+          className="fixed inset-0 z-[99999] bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 overflow-y-auto"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setSelectedReport(null);
+          }}
+        >
+          <div 
+            className="bg-slate-900/98 border border-white/10 rounded-2xl sm:rounded-3xl max-w-lg w-full max-h-[88vh] flex flex-col shadow-[0_25px_70px_rgba(0,0,0,0.9)] overflow-hidden relative text-left"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="p-4 sm:p-5 pb-3 border-b border-white/10 relative shrink-0">
+              <button 
+                onClick={() => setSelectedReport(null)}
+                className="absolute top-3.5 right-3.5 p-2 text-slate-400 hover:text-white hover:bg-white/10 active:bg-white/20 rounded-xl transition-all flex items-center justify-center cursor-pointer"
+                aria-label="Close report details"
+              >
+                <X size={18} />
+              </button>
+
+              <div className="flex items-center gap-2 mb-2 pr-10 flex-wrap">
+                <span className={`inline-block text-[11px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
+                  selectedReport.status === "PUBLIC_VERIFIED" 
+                    ? "bg-coral/15 text-coral border border-coral/30" 
+                    : selectedReport.status === "ACTION_IGNORED"
+                    ? "bg-iris/15 text-iris-400 border border-iris/30"
+                    : "bg-mint/15 text-mint border border-mint/30"
+                }`}>
+                  {selectedReport.status === "PUBLIC_VERIFIED" 
+                    ? "Public Verified" 
+                    : selectedReport.status === "ACTION_IGNORED"
+                    ? "Action Ignored"
+                    : "Heatmap Aggregated"}
+                </span>
+
+                {selectedReport.plusCode && (
+                  <span className="text-[11px] font-mono text-cyan-400 bg-cyan-950/40 border border-cyan-800/40 px-2 py-0.5 rounded-md">
+                    {selectedReport.plusCode}
+                  </span>
+                )}
+              </div>
+
+              <h2 className="text-lg sm:text-xl font-bold font-heading text-white wrap-break-word pr-8 leading-snug">
+                {selectedReport.facilityName || "Verified Incident Record"}
+              </h2>
+              <p className="text-xs text-slate-400 wrap-break-word mt-1 flex items-center gap-1.5">
+                <MapPin size={13} className="text-mint shrink-0" />
+                <span>{selectedReport.region}, {selectedReport.country}</span>
+              </p>
+            </div>
+
+            {/* Modal Body - Scrollable Content */}
+            <div className="p-4 sm:p-5 overflow-y-auto space-y-3.5 flex-1">
+              {/* Metadata Micro-Cards */}
+              <div className="grid grid-cols-2 gap-2.5">
+                <div className="bg-black/40 border border-white/5 p-2.5 rounded-xl">
+                  <span className="block text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Category</span>
+                  <span className="text-xs font-semibold text-slate-200 mt-0.5 block wrap-break-word">{selectedReport.category}</span>
+                </div>
+                <div className="bg-black/40 border border-white/5 p-2.5 rounded-xl">
+                  <span className="block text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Incident Date</span>
+                  <span className="text-xs font-semibold text-slate-200 mt-0.5 block flex items-center gap-1">
+                    <Calendar size={12} className="text-iris-400 shrink-0" />
+                    <span>{selectedReport.incidentDate || "Undisclosed"}</span>
+                  </span>
+                </div>
+              </div>
+
+              {/* Detailed Narrative */}
+              <div>
+                <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                  Detailed Narrative
+                </h3>
+                <div className="bg-black/40 border border-white/5 p-3.5 rounded-xl text-slate-300 text-xs sm:text-sm whitespace-pre-wrap leading-relaxed wrap-break-word max-h-56 overflow-y-auto font-sans select-text">
+                  {selectedReport.summary || "No narrative details attached."}
+                </div>
+              </div>
+
+              {/* Authorities Filed / Details */}
+              {selectedReport.authorityDetails && (
+                <div>
+                  <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                    Authority Filings & Misconduct Notes
+                  </h3>
+                  <div className="bg-iris/10 border border-iris/25 p-3 rounded-xl text-slate-300 text-xs leading-relaxed wrap-break-word">
+                    {selectedReport.authorityDetails}
+                  </div>
+                </div>
+              )}
+
+              {/* Alleged Perpetrators if any */}
+              {selectedReport.allegedPerpetrators && (
+                <div>
+                  <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                    Perpetrators / Practitioners
+                  </h3>
+                  <div className="bg-black/40 border border-white/5 p-3 rounded-xl text-slate-300 text-xs wrap-break-word">
+                    {selectedReport.allegedPerpetrators}
+                  </div>
+                </div>
+              )}
+
+              {/* Evidence Links */}
+              {selectedReport.evidenceLinks && selectedReport.evidenceLinks.length > 0 && (
+                <div>
+                  <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                    Public Evidence Links
+                  </h3>
+                  <div className="bg-black/40 border border-white/5 p-2.5 rounded-xl space-y-1.5">
+                    {selectedReport.evidenceLinks.map((link, i) => {
+                      const isSafe = isValidWebUrl(link);
+                      return (
+                        <div key={i} className="flex items-center gap-1.5 text-xs">
+                          {isSafe ? (
+                            <a 
+                              href={link} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              className="text-mint hover:underline break-all inline-flex items-center gap-1 font-mono text-[11px]"
+                            >
+                              <ExternalLink size={11} className="shrink-0" />
+                              <span>{link}</span>
+                            </a>
+                          ) : (
+                            <span className="text-slate-400 font-mono text-[11px] break-all">{link}</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mb-6 bg-slate-950/50 p-4 rounded-xl border border-slate-800">
-              <div>
-                <span className="block text-xs text-slate-500 uppercase tracking-wider font-semibold">Category</span>
-                <span className="text-sm font-medium text-slate-200">{selectedReport.category}</span>
-              </div>
-              <div>
-                <span className="block text-xs text-slate-500 uppercase tracking-wider font-semibold">Incident Date</span>
-                <span className="text-sm font-medium text-slate-200">{selectedReport.incidentDate || "Undisclosed"}</span>
-              </div>
+            {/* Modal Footer */}
+            <div className="p-3 px-5 border-t border-white/10 flex items-center justify-end bg-slate-950/60 shrink-0">
+              <button
+                type="button"
+                onClick={() => setSelectedReport(null)}
+                className="px-4 py-2 bg-white/10 hover:bg-white/20 active:bg-white/30 text-white text-xs font-semibold rounded-xl transition-all cursor-pointer"
+              >
+                Close Preview
+              </button>
             </div>
-
-            <div className="mb-6">
-              <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Detailed Narrative</h3>
-              <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800 text-slate-300 text-sm whitespace-pre-wrap leading-relaxed wrap-break-word">
-                {selectedReport.summary}
-              </div>
-            </div>
-
-            {selectedReport.allegedPerpetrators && (
-              <div className="mb-6">
-                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Perpetrators / Practitioners</h3>
-                <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800 text-slate-300 text-sm wrap-break-word">
-                  {selectedReport.allegedPerpetrators}
-                </div>
-              </div>
-            )}
-
-            {selectedReport.evidenceLinks && selectedReport.evidenceLinks.length > 0 && (
-              <div>
-                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Public Evidence Links</h3>
-                <ul className="list-disc pl-4 space-y-2">
-                  {selectedReport.evidenceLinks.map((link, i) => {
-                    const isSafe = isValidWebUrl(link);
-                    return (
-                      <li key={i}>
-                        {isSafe ? (
-                          <a href={link} target="_blank" rel="noopener noreferrer" className="text-mint hover:underline break-all">
-                            {link}
-                          </a>
-                        ) : (
-                          <span className="text-slate-400 font-mono text-xs break-all">
-                            {link}
-                          </span>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

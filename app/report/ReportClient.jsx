@@ -37,6 +37,7 @@ import { sanitizeReportPayload, classifyReport, isValidWebUrl, normalizeWebUrl, 
 import { Turnstile } from '@marsidev/react-turnstile';
 import { generateComplaintPdf } from "@/lib/generateComplaintPdf";
 import { saveLocalReport } from "@/lib/localStore";
+import { compressPayload } from "@/lib/compress";
 import CommunityCautionCard from "@/components/CommunityCautionCard";
 import RegionalImpactPreview from "@/components/RegionalImpactPreview";
 import EvidenceLockerResources from "@/components/EvidenceLockerResources";
@@ -535,8 +536,35 @@ export default function ReportPage() {
       // Crucial security fix: Delete trackingCode from the public document so it isn't leaked
       delete finalReport.trackingCode;
 
-      // Step 4: Synthesizing client protections
+      // Step 4: Synthesizing client protections with Selective Hybrid Compression
       setSubmittingStep(4);
+
+      // Compress heavy narrative text and evidence into Base64 gzip string
+      const compressedDetails = await compressPayload({
+        summary: finalReport.summary || "",
+        evidenceLinks: finalReport.evidenceLinks || [],
+        authorityDetails: finalReport.authorityDetails || "",
+      });
+
+      // Selective Hybrid Payload: Keep map & query fields plaintext, store heavy text in c_data
+      const firestorePayload = {
+        id: finalReport.id,
+        timestamp: finalReport.timestamp,
+        country: finalReport.country,
+        region: finalReport.region,
+        category: finalReport.category,
+        status: finalReport.status,
+        verificationScore: finalReport.verificationScore,
+        lat: finalReport.lat,
+        lng: finalReport.lng,
+        plusCode: finalReport.plusCode,
+        reportedToAuthorities: finalReport.reportedToAuthorities,
+        facilityName: finalReport.facilityName || null,
+        c_data: compressedDetails,
+      };
+
+      // Also attach c_data to fullClientCopy so local storage tests compression
+      fullClientCopy.c_data = compressedDetails;
 
       // Always save to local dev store in mock mode or development
       if (isMockMode || process.env.NODE_ENV === 'development') {
@@ -547,12 +575,12 @@ export default function ReportPage() {
       if (!isMockMode && process.env.NEXT_PUBLIC_FIREBASE_API_KEY && process.env.NEXT_PUBLIC_FIREBASE_API_KEY !== 'your_api_key_here') {
         const { doc, setDoc } = await import("firebase/firestore/lite");
         // We MUST await these, otherwise errors are swallowed and the user thinks it succeeded!
-        await setDoc(doc(db, "reports", reportId), finalReport);
+        await setDoc(doc(db, "reports", reportId), firestorePayload);
         // Use trackingCode as the document ID so it can only be read by someone who knows it
         await setDoc(doc(db, "report_secrets", generatedTrackingCode), secretReport);
       } else {
         // Simulate network request
-        console.log("Mock submission saved to local store:", finalReport);
+        console.log("Mock submission saved to local store (selective hybrid compressed):", firestorePayload);
         await new Promise(resolve => setTimeout(resolve, 600));
       }
 

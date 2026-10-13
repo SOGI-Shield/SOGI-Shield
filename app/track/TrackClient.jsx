@@ -7,6 +7,7 @@ import { db, isMockMode } from "@/lib/firebase";
 import { generateComplaintPdf } from "@/lib/generateComplaintPdf";
 import { getLocalReportByTrackingCode, updateLocalReportStatus } from "@/lib/localStore";
 import { isValidWebUrl } from "@/lib/utils";
+import { decompressReport } from "@/lib/compress";
 
 export default function TrackCasePage() {
   const [trackingCode, setTrackingCode] = useState(() => {
@@ -34,7 +35,8 @@ export default function TrackCasePage() {
       // 1. Check local dev store first (makes newly submitted dev reports immediately available)
       const localFound = await getLocalReportByTrackingCode(code);
       if (localFound) {
-        setReport({ ...localFound, _docId: localFound.id, trackingCode: code });
+        const fullReport = await decompressReport(localFound);
+        setReport({ ...fullReport, _docId: fullReport.id, trackingCode: code });
         setIsSearching(false);
         return;
       }
@@ -44,7 +46,8 @@ export default function TrackCasePage() {
         const mockData = m.default || m;
         const found = mockData.find(r => r.trackingCode === code);
         if (found) {
-          setReport({ ...found, _docId: found.id, trackingCode: code });
+          const fullReport = await decompressReport(found);
+          setReport({ ...fullReport, _docId: fullReport.id, trackingCode: code });
         } else {
           setError("No incident found with this tracking code.");
         }
@@ -73,7 +76,9 @@ export default function TrackCasePage() {
           return;
         }
         
-        setReport({ ...reportSnap.data(), _docId: reportId, trackingCode: code });
+        const rawData = reportSnap.data();
+        const fullReport = await decompressReport(rawData);
+        setReport({ ...fullReport, _docId: reportId, trackingCode: code });
       }
     } catch (err) {
       console.error(err);

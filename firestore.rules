@@ -19,8 +19,8 @@ service cloud.firestore {
       
       // 2. CREATE RULES: Strict Schema Validation
       allow create: if 
-        // Must contain ONLY these specific fields
-        hasOnlyAllowedFields(['id', 'timestamp', 'country', 'region', 'category', 'summary', 'evidenceLinks', 'status', 'verificationScore', 'lat', 'lng', 'facilityName', 'plusCode', 'reportedToAuthorities', 'authorityDetails']) &&
+        // Must contain ONLY these specific fields (including c_data and incidentDate)
+        hasOnlyAllowedFields(['id', 'timestamp', 'country', 'region', 'category', 'summary', 'evidenceLinks', 'status', 'verificationScore', 'lat', 'lng', 'facilityName', 'plusCode', 'reportedToAuthorities', 'authorityDetails', 'c_data', 'incidentDate']) &&
         
         // Ensure document ID matches payload ID
         isValidString(reportId, 1, 100) &&
@@ -30,18 +30,35 @@ service cloud.firestore {
         isValidString(request.resource.data.country, 1, 100) &&
         isValidString(request.resource.data.region, 1, 100) &&
         isValidString(request.resource.data.category, 1, 100) &&
-        isValidString(request.resource.data.summary, 1, 20000) &&
         request.resource.data.timestamp is string &&
         request.resource.data.reportedToAuthorities is bool &&
         
         // Validate status is one of the allowed values
         (request.resource.data.status == 'PUBLIC_VERIFIED' || request.resource.data.status == 'HEATMAP_AGGREGATED' || request.resource.data.status == 'ACTION_IGNORED') &&
         
-        // Validate evidenceLinks is a list and capped at a reasonable amount to prevent spam
-        request.resource.data.evidenceLinks is list &&
-        request.resource.data.evidenceLinks.size() <= 10 &&
+        // Content validation: At least one payload format must exist (c_data or summary)
+        ('summary' in request.resource.data || 'c_data' in request.resource.data) &&
+        (
+          !('summary' in request.resource.data) || 
+          isValidString(request.resource.data.summary, 0, 20000)
+        ) &&
+        (
+          !('c_data' in request.resource.data) || 
+          isValidString(request.resource.data.c_data, 1, 100000)
+        ) &&
+
+        // Validate evidenceLinks if present at root level
+        (
+          !('evidenceLinks' in request.resource.data) || 
+          (request.resource.data.evidenceLinks is list && request.resource.data.evidenceLinks.size() <= 10)
+        ) &&
         
         // Optional fields validation
+        (
+          !('incidentDate' in request.resource.data) || 
+          request.resource.data.incidentDate == null || 
+          isValidString(request.resource.data.incidentDate, 0, 100)
+        ) &&
         (
           !('facilityName' in request.resource.data) || 
           request.resource.data.facilityName == null || 
