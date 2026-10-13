@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { Radio, Users, MapPin, Eye } from "lucide-react";
 import { encodePlusCode } from "@/lib/pluscode";
+import { buildSafeMapUrl } from "@/lib/utils";
 
 const MiniImpactMap = dynamic(() => import("./MiniImpactMap"), {
   ssr: false,
@@ -74,7 +75,7 @@ export default function RegionalImpactPreview({ report }) {
           <Eye size={14} className="text-mint" /> Visible on public safety heatmap
         </span>
         <a
-          href={`/?lat=${lat || 20}&lng=${lng || 0}&zoom=11`}
+          href={buildSafeMapUrl(lat, lng, 11)}
           target="_blank"
           rel="noopener noreferrer"
           className="text-mint hover:text-white underline font-bold"

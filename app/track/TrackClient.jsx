@@ -5,6 +5,7 @@ import { Search, ShieldCheck, ShieldAlert, Activity, AlertCircle, FileText, Down
 import { collection, query, where, getDocs, updateDoc, doc } from "firebase/firestore/lite";
 import { db, isMockMode } from "@/lib/firebase";
 import { generateComplaintPdf } from "@/lib/generateComplaintPdf";
+import { getLocalReportByTrackingCode, updateLocalReportStatus } from "@/lib/localStore";
 import { isValidWebUrl, sanitizeTrackingCode, buildSafeMapUrl } from "@/lib/utils";
 import { decompressReport } from "@/lib/compress";
 
@@ -12,7 +13,7 @@ export default function TrackCasePage() {
   const [trackingCode, setTrackingCode] = useState(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
-      return params.get("code") || "";
+      return sanitizeTrackingCode(params.get("code") || "");
     }
     return "";
   });
@@ -23,8 +24,13 @@ export default function TrackCasePage() {
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
   const executeSearch = useCallback(async (codeToSearch) => {
-    const code = (codeToSearch || trackingCode || "").trim();
-    if (!code) return;
+    const rawCode = (codeToSearch || trackingCode || "").trim();
+    if (!rawCode) return;
+    const code = sanitizeTrackingCode(rawCode);
+    if (!code) {
+      setError("Invalid tracking code format.");
+      return;
+    }
     
     setIsSearching(true);
     setError(null);
@@ -90,7 +96,7 @@ export default function TrackCasePage() {
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
-      const code = params.get("code");
+      const code = sanitizeTrackingCode(params.get("code") || "");
       if (code) {
         queueMicrotask(() => {
           executeSearch(code);
@@ -353,7 +359,7 @@ export default function TrackCasePage() {
                   <span>Preview / Print</span>
                 </button>
                 <a
-                  href={`/?lat=${report.lat || 20}&lng=${report.lng || 0}&zoom=11`}
+                  href={buildSafeMapUrl(report.lat, report.lng, 11)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="bg-white/10 hover:bg-white/15 text-white font-bold py-3.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2 text-sm border border-white/10"

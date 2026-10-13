@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import QRCode from "qrcode";
-import { downloadFile, openInNewTab } from "@/lib/utils";
+import { downloadFile, openInNewTab, buildSafeMapUrl } from "@/lib/utils";
 import { 
   Share2, 
   Download, 
@@ -37,7 +37,7 @@ export default function CommunityCautionCard({ report }) {
 
   // 3. Construct live map URL for the QR code
   const qrTargetUrl = lat && lng 
-    ? `${resolvedOrigin}/?lat=${lat}&lng=${lng}&zoom=11`
+    ? buildSafeMapUrl(lat, lng, 11, resolvedOrigin)
     : `${resolvedOrigin}/#map?sector=${encodeURIComponent(sector)}`;
 
   const shareUrl = qrTargetUrl;
