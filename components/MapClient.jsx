@@ -1,11 +1,13 @@
 "use client";
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import { MapContainer, TileLayer, Marker, Popup, CircleMarker, GeoJSON, useMapEvents, useMap, ZoomControl } from "react-leaflet";
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from "leaflet";
 import { isValidWebUrl } from "@/lib/utils";
 import { getGeoJson } from "@/lib/geoDataService";
 import { subscribeReports, fetchAllReports, initBackgroundPoller } from "@/lib/reportsCache";
+import { decompressReport } from "@/lib/compress";
 import { 
   Maximize2, 
   Minimize2, 
@@ -20,7 +22,9 @@ import {
   MapPin,
   Layers,
   ChevronDown,
-  Info
+  Info,
+  Calendar,
+  ExternalLink
 } from "lucide-react";
 
 function MapEvents({ setZoom, setBounds }) {
@@ -74,35 +78,39 @@ export default function MapClient() {
   const [reports, setReports] = useState([]);
   const [isLoadingReports, setIsLoadingReports] = useState(true);
   const [icons] = useState(() => {
-    if (typeof window === "undefined" || !L || !L.Icon) {
-      return { red: null, grey: null };
+    if (typeof window === "undefined" || !L || !L.divIcon) {
+      return { coral: null, grey: null };
     }
-    delete L.Icon.Default.prototype._getIconUrl;
-    L.Icon.Default.mergeOptions({
-      iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-      iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+
+    // High-contrast, custom-rendered Coral Rose pin for verified incident facilities
+    const coralIcon = L.divIcon({
+      className: "custom-coral-pin",
+      html: `
+        <div style="position: relative; width: 30px; height: 38px; display: flex; align-items: center; justify-content: center;">
+          <div style="position: absolute; width: 26px; height: 26px; border-radius: 50% 50% 50% 0; background: #FB4E77; transform: rotate(-45deg); box-shadow: 0 0 15px rgba(251, 78, 119, 0.7); border: 2px solid #ffffff;"></div>
+          <div style="position: absolute; width: 10px; height: 10px; border-radius: 50%; background: #ffffff; top: 8px;"></div>
+        </div>
+      `,
+      iconSize: [30, 38],
+      iconAnchor: [15, 38],
+      popupAnchor: [0, -36],
     });
 
-    const redIcon = new L.Icon({
-      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-      iconSize: [25, 41],
-      iconAnchor: [12, 41],
-      popupAnchor: [1, -34],
-      shadowSize: [41, 41]
+    // High-contrast Iris/Slate pin for Action Ignored
+    const greyIcon = L.divIcon({
+      className: "custom-grey-pin",
+      html: `
+        <div style="position: relative; width: 30px; height: 38px; display: flex; align-items: center; justify-content: center;">
+          <div style="position: absolute; width: 26px; height: 26px; border-radius: 50% 50% 50% 0; background: #584BE0; transform: rotate(-45deg); box-shadow: 0 0 12px rgba(88, 75, 224, 0.5); border: 2px solid #ffffff;"></div>
+          <div style="position: absolute; width: 8px; height: 8px; border-radius: 50%; background: #ffffff; top: 9px;"></div>
+        </div>
+      `,
+      iconSize: [30, 38],
+      iconAnchor: [15, 38],
+      popupAnchor: [0, -36],
     });
 
-    const greyIcon = new L.Icon({
-      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-grey.png',
-      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-      iconSize: [25, 41],
-      iconAnchor: [12, 41],
-      popupAnchor: [1, -34],
-      shadowSize: [41, 41]
-    });
-
-    return { red: redIcon, grey: greyIcon };
+    return { coral: coralIcon, grey: greyIcon };
   });
 
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -117,6 +125,30 @@ export default function MapClient() {
   const [currentZoom, setCurrentZoom] = useState(2);
   const [mapBounds, setMapBounds] = useState(null);
   const [selectedReport, setSelectedReport] = useState(null);
+  const isMounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+
+  useEffect(() => {
+    if (!selectedReport) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") setSelectedReport(null);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedReport]);
+
+  const handleOpenReportDetails = async (report) => {
+    if (!report) return;
+    if (report.c_data && !report._isDecompressed) {
+      const decompressed = await decompressReport(report);
+      setSelectedReport(decompressed);
+    } else {
+      setSelectedReport(report);
+    }
+  };
 
   const truncateWords = (str, numWords = 8) => {
     if (!str) return "";
@@ -223,12 +255,12 @@ export default function MapClient() {
   }, [citiesData, activeLayer, currentZoom, mapBounds]);
 
   const styleDistrictFeature = () => ({
-    fillColor: "#6366f1",
-    color: "#818cf8",
+    fillColor: "#584BE0",
+    color: "#584BE0",
     weight: 1.5,
-    opacity: 0.6,
+    opacity: 0.7,
     dashArray: "4, 4",
-    fillOpacity: 0.05
+    fillOpacity: 0.08
   });
 
   const onEachDistrictFeature = useCallback((feature, layer) => {
@@ -274,18 +306,18 @@ export default function MapClient() {
       return { fillColor: "transparent", color: "transparent", weight: 0, opacity: 0, fillOpacity: 0 };
     }
 
-    let fillColor = "#D97706";
+    let fillColor = "#00D99D"; // Vivid Mint for safe density aggregation
     if (stats.ignored > stats.verified) {
-      fillColor = "#374151";
+      fillColor = "#584BE0"; // Electric Iris for neglected/ignored
     } else if (stats.total >= 50) {
-      fillColor = "#DC2626";
+      fillColor = "#FB4E77"; // Coral Rose for high verified violations
     }
 
     return {
       fillColor: fillColor,
-      weight: 1,
-      opacity: 0.8,
-      color: "#9CA3AF",
+      weight: 1.5,
+      opacity: 0.85,
+      color: "#ffffff",
       fillOpacity: 0.4
     };
   }, [countryStats]);
@@ -299,9 +331,9 @@ export default function MapClient() {
         <div style="font-family: sans-serif; color: #000; min-width: 140px;">
           <div style="font-weight: bold; font-size: 14px; margin-bottom: 4px;">${countryName}</div>
           <div style="font-size: 12px; margin-bottom: 2px;">Total Incidents: <b>${stats.total}</b></div>
-          <div style="font-size: 12px; color: #16a34a; margin-bottom: 2px;">Verified: <b>${stats.verified}</b></div>
-          <div style="font-size: 12px; color: #dc2626; margin-bottom: 2px;">Ignored: <b>${stats.ignored}</b></div>
-          <div style="font-size: 12px; color: #ea580c;">Heatmap Aggregated: <b>${stats.aggregated}</b></div>
+          <div style="font-size: 12px; color: #FB4E77; margin-bottom: 2px;">Verified: <b>${stats.verified}</b></div>
+          <div style="font-size: 12px; color: #584BE0; margin-bottom: 2px;">Ignored: <b>${stats.ignored}</b></div>
+          <div style="font-size: 12px; color: #00D99D;">Heatmap Aggregated: <b>${stats.aggregated}</b></div>
         </div>
       `;
       layer.bindTooltip(tooltipContent, { sticky: true });
@@ -324,7 +356,7 @@ export default function MapClient() {
         <div className="flex items-center gap-1.5 sm:gap-2 pointer-events-auto flex-1 max-w-sm sm:max-w-md">
           <div className="relative flex-1">
             <div className="bg-slate-900/95 backdrop-blur-md border border-slate-700/90 rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2 flex items-center gap-2 shadow-xl">
-              <Search size={14} className="text-cyan-400 shrink-0" />
+              <Search size={14} className="text-mint shrink-0" />
               <input
                 type="text"
                 value={citySearchQuery}
@@ -363,10 +395,10 @@ export default function MapClient() {
                       className="w-full px-3 py-2 text-left hover:bg-slate-800 active:bg-slate-700 border-b border-white/5 last:border-0 transition-colors cursor-pointer group"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-white group-hover:text-cyan-300">
+                        <span className="text-xs font-bold text-white group-hover:text-mint">
                           {city.properties.name}
                         </span>
-                        <span className="text-[10px] font-mono text-cyan-400 bg-cyan-950/60 px-1.5 py-0.5 rounded border border-cyan-500/20">
+                        <span className="text-[10px] font-mono text-mint bg-mint/15 px-1.5 py-0.5 rounded border border-mint/30">
                           {city.properties.plusCode?.slice(0, 8)}
                         </span>
                       </div>
@@ -388,7 +420,7 @@ export default function MapClient() {
               title="Toggle Map Layers"
               aria-label="Toggle Map Layers"
             >
-              <Layers size={13} className="text-indigo-400" />
+              <Layers size={13} className="text-iris" />
               <span className="hidden sm:inline capitalize">{activeLayer}</span>
               <ChevronDown size={12} className={`transition-transform duration-200 ${showLayerMenu ? "rotate-180" : ""}`} />
             </button>
@@ -403,7 +435,7 @@ export default function MapClient() {
                       setShowLayerMenu(false);
                     }}
                     className={`w-full px-2.5 py-1.5 rounded-lg text-left text-xs font-semibold capitalize transition-colors cursor-pointer ${
-                      activeLayer === layer ? "bg-indigo-600 text-white font-bold" : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                      activeLayer === layer ? "bg-iris text-white font-bold" : "text-slate-300 hover:bg-slate-800 hover:text-white"
                     }`}
                   >
                     {layer}
@@ -417,15 +449,15 @@ export default function MapClient() {
         {/* Right Toolbar: Sync Status + Fullscreen */}
         <div className="flex items-center gap-2 pointer-events-auto">
           {isLoadingReports && (
-            <div className="bg-slate-900/90 backdrop-blur-md border border-cyan-500/30 px-2.5 py-1.5 rounded-xl text-[10px] font-bold text-cyan-300 shadow-lg flex items-center gap-1.5 animate-pulse">
-              <Loader2 size={12} className="animate-spin text-cyan-400" />
+            <div className="bg-slate-900/90 backdrop-blur-md border border-mint/40 px-2.5 py-1.5 rounded-xl text-[10px] font-bold text-mint shadow-lg flex items-center gap-1.5 animate-pulse">
+              <Loader2 size={12} className="animate-spin text-mint" />
               <span className="hidden sm:inline">Syncing...</span>
             </div>
           )}
 
           <button 
             onClick={toggleFullscreen}
-            className="bg-slate-900/95 hover:bg-indigo-600 active:bg-indigo-700 text-white min-w-[36px] min-h-[36px] sm:min-w-[40px] sm:min-h-[40px] p-2 rounded-xl backdrop-blur-md shadow-lg border border-slate-700/90 transition-all flex items-center justify-center cursor-pointer"
+            className="bg-slate-900/95 hover:bg-slate-800 text-slate-300 hover:text-iris-400 hover:border-iris/50 active:scale-95 min-w-[36px] min-h-[36px] sm:min-w-[40px] sm:min-h-[40px] p-2 rounded-xl backdrop-blur-md shadow-lg border border-slate-700/90 transition-all flex items-center justify-center cursor-pointer"
             title="Toggle Fullscreen"
             aria-label="Toggle Fullscreen"
           >
@@ -435,27 +467,27 @@ export default function MapClient() {
       </div>
 
       {/* Floating Global Incident Stats HUD (Centered, Non-Obtrusive) */}
-      <div className="absolute bottom-14 left-3 right-3 sm:bottom-4 sm:left-1/2 sm:-translate-x-1/2 sm:right-auto z-[400] bg-slate-900/90 backdrop-blur-md text-[10px] sm:text-xs px-3 py-1.5 sm:px-5 sm:py-2.5 rounded-xl sm:rounded-full border border-slate-700/80 shadow-2xl pointer-events-none text-slate-200 flex items-center justify-between sm:justify-center gap-2 sm:gap-5">
+      <div className="absolute bottom-14 left-3 right-3 sm:bottom-4 sm:left-1/2 sm:-translate-x-1/2 sm:right-auto z-[400] bg-slate-950/90 backdrop-blur-md text-[10px] sm:text-xs px-3 py-1.5 sm:px-5 sm:py-2.5 rounded-xl sm:rounded-full border border-white/10 shadow-2xl pointer-events-none text-slate-200 flex items-center justify-between sm:justify-center gap-2 sm:gap-5">
         <div className="flex items-center gap-1 font-bold">
-          <Shield size={12} className="text-indigo-400" />
+          <Shield size={12} className="text-slate-400" />
           <span className="hidden sm:inline">Incidents:</span>
           <span>{globalStats.total}</span>
         </div>
         <div className="w-px h-3 bg-slate-700 hidden sm:block"></div>
-        <div className="flex items-center gap-1 text-rose-400 font-semibold">
-          <CheckCircle size={12} className="text-rose-500" />
+        <div className="flex items-center gap-1 text-coral font-semibold">
+          <CheckCircle size={12} className="text-coral" />
           <span className="hidden sm:inline">Verified:</span>
           <span>{globalStats.verified}</span>
         </div>
         <div className="w-px h-3 bg-slate-700 hidden sm:block"></div>
-        <div className="flex items-center gap-1 text-slate-400 font-semibold">
-          <AlertTriangle size={12} className="text-slate-400" />
+        <div className="flex items-center gap-1 text-iris-400 font-semibold">
+          <AlertTriangle size={12} className="text-iris-400" />
           <span className="hidden sm:inline">Ignored:</span>
           <span>{globalStats.ignored}</span>
         </div>
         <div className="w-px h-3 bg-slate-700 hidden sm:block"></div>
-        <div className="flex items-center gap-1 text-orange-400 font-semibold">
-          <Flame size={12} className="text-orange-500" />
+        <div className="flex items-center gap-1 text-mint font-semibold">
+          <Flame size={12} className="text-mint" />
           <span className="hidden sm:inline">Heatmaps:</span>
           <span>{globalStats.heatmap}</span>
         </div>
@@ -464,18 +496,18 @@ export default function MapClient() {
       {/* Collapsible Incident Legend (Bottom Left) */}
       <div className="absolute bottom-3 left-3 z-[400] flex flex-col items-start gap-1">
         {showLegend && (
-          <div className="bg-slate-900/95 backdrop-blur-md text-[10px] sm:text-xs px-3 py-2 rounded-xl border border-slate-700 shadow-2xl text-slate-200 flex flex-col gap-1.5 mb-1 animate-in fade-in duration-150">
+          <div className="bg-slate-950/95 backdrop-blur-md text-[10px] sm:text-xs px-3 py-2 rounded-xl border border-white/15 shadow-2xl text-slate-200 flex flex-col gap-1.5 mb-1 animate-in fade-in duration-150">
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.8)]"></span>
-              <span>Public Verified</span>
+              <span className="w-2.5 h-2.5 rounded-full bg-coral shadow-[0_0_8px_rgba(251,78,119,0.8)]"></span>
+              <span>Public Verified (#FB4E77)</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-slate-400 shadow-[0_0_8px_rgba(148,163,184,0.8)]"></span>
-              <span>Action Ignored</span>
+              <span className="w-2.5 h-2.5 rounded-full bg-iris shadow-[0_0_8px_rgba(88,75,224,0.8)]"></span>
+              <span>Action Ignored (#584BE0)</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-orange-500 opacity-80 shadow-[0_0_8px_rgba(249,115,22,0.8)]"></span>
-              <span>Heatmap Aggregated</span>
+              <span className="w-2.5 h-2.5 rounded-full bg-mint shadow-[0_0_8px_rgba(0,217,157,0.8)]"></span>
+              <span>Heatmap Aggregated (#00D99D)</span>
             </div>
           </div>
         )}
@@ -485,7 +517,7 @@ export default function MapClient() {
           title="Toggle Map Legend"
           aria-label="Toggle Map Legend"
         >
-          <Info size={11} className="text-cyan-400" />
+          <Info size={11} className="text-mint" />
           <span>Legend</span>
         </button>
       </div>
@@ -550,16 +582,16 @@ export default function MapClient() {
               center={[lat, lng]}
               radius={currentZoom >= 7 ? 6 : (isCapital ? 5 : 3.5)}
               pathOptions={{
-                fillColor: isCapital ? "#06b6d4" : "#6366f1",
+                fillColor: isCapital ? "#00D99D" : "#584BE0",
                 color: "#ffffff",
                 weight: 1,
-                opacity: 0.9,
+                opacity: 0.95,
                 fillOpacity: 0.85
               }}
             >
               <Popup>
                 <div className="text-slate-900 w-full max-w-[240px]">
-                  <div className="flex items-center gap-1.5 text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-1">
+                  <div className="flex items-center gap-1.5 text-[10px] font-bold text-iris uppercase tracking-wider mb-1">
                     <Building2 size={12} />
                     <span>{city.properties.type || "Populated Place"}</span>
                   </div>
@@ -581,7 +613,7 @@ export default function MapClient() {
                   </div>
                   <button
                     onClick={() => setFocusTarget({ lat, lng, zoom: 12 })}
-                    className="w-full bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-xs font-bold py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                    className="w-full bg-iris hover:opacity-90 active:scale-95 text-white text-xs font-bold py-2 px-3 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
                   >
                     <MapPin size={12} />
                     <span>Focus City Sector</span>
@@ -599,19 +631,21 @@ export default function MapClient() {
         >
           {reports.map((report, idx) => {
             const reportKey = `report-marker-${report.id || idx}-${idx}`;
-            if (report.status === "PUBLIC_VERIFIED" && report.lat && report.lng && icons.red) {
+            if (report.status === "PUBLIC_VERIFIED" && report.lat && report.lng && icons.coral) {
               return (
-                <Marker key={reportKey} position={[Number(report.lat), Number(report.lng)]} icon={icons.red}>
+                <Marker key={reportKey} position={[Number(report.lat), Number(report.lng)]} icon={icons.coral}>
                   <Popup>
                     <div className="text-slate-900 w-full max-w-[260px]">
-                      <h3 className="font-bold text-lg mb-1 wrap-break-word">{report.facilityName || "Verified Incident"}</h3>
-                      <p className="text-sm font-semibold text-red-600 mb-2 wrap-break-word">{report.category}</p>
-                      <p className="text-sm mb-3 wrap-break-word whitespace-pre-wrap">{truncateWords(report.summary)}</p>
+                      <h3 className="font-bold text-base mb-1 wrap-break-word">{report.facilityName || "Verified Incident"}</h3>
+                      <p className="text-xs font-semibold text-coral mb-2 wrap-break-word">{report.category}</p>
+                      {report.summary ? (
+                        <p className="text-xs text-slate-600 mb-2.5 wrap-break-word leading-relaxed">{truncateWords(report.summary)}</p>
+                      ) : null}
                       <button 
-                        onClick={() => setSelectedReport(report)}
-                        className="w-full min-h-[44px] bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-900 text-xs font-bold py-2.5 px-3 rounded-lg transition-colors flex items-center justify-center cursor-pointer shadow-sm"
+                        onClick={() => handleOpenReportDetails(report)}
+                        className="w-full bg-slate-900 hover:bg-slate-800 active:bg-black text-white text-xs font-bold py-2 px-3 rounded-xl transition-all flex items-center justify-center cursor-pointer shadow-sm active:scale-95"
                       >
-                        Read Full Report
+                        View Full Report
                       </button>
                     </div>
                   </Popup>
@@ -622,17 +656,19 @@ export default function MapClient() {
                 <Marker key={reportKey} position={[Number(report.lat), Number(report.lng)]} icon={icons.grey}>
                   <Popup>
                     <div className="text-slate-900 w-full max-w-[260px]">
-                      <div className="inline-block bg-slate-200 text-slate-700 text-xs font-bold px-2 py-1 rounded mb-2 uppercase tracking-wide">
+                      <div className="inline-block bg-iris/15 text-iris text-[10px] font-bold px-2 py-0.5 rounded mb-1.5 uppercase tracking-wide border border-iris/30">
                         Action Ignored
                       </div>
-                      <h3 className="font-bold text-lg mb-1 wrap-break-word">{report.facilityName || "Incident"}</h3>
-                      <p className="text-sm font-semibold text-slate-600 mb-2 wrap-break-word">{report.category}</p>
-                      <p className="text-sm mb-3 wrap-break-word whitespace-pre-wrap">{truncateWords(report.summary)}</p>
+                      <h3 className="font-bold text-base mb-1 wrap-break-word">{report.facilityName || "Incident"}</h3>
+                      <p className="text-xs font-semibold text-slate-600 mb-2 wrap-break-word">{report.category}</p>
+                      {report.summary ? (
+                        <p className="text-xs text-slate-600 mb-2.5 wrap-break-word leading-relaxed">{truncateWords(report.summary)}</p>
+                      ) : null}
                       <button 
-                        onClick={() => setSelectedReport(report)}
-                        className="w-full min-h-[44px] bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-900 text-xs font-bold py-2.5 px-3 rounded-lg transition-colors flex items-center justify-center cursor-pointer shadow-sm"
+                        onClick={() => handleOpenReportDetails(report)}
+                        className="w-full bg-slate-900 hover:bg-slate-800 active:bg-black text-white text-xs font-bold py-2 px-3 rounded-xl transition-all flex items-center justify-center cursor-pointer shadow-sm active:scale-95"
                       >
-                        Read Full Report
+                        View Full Report
                       </button>
                     </div>
                   </Popup>
@@ -644,11 +680,11 @@ export default function MapClient() {
                   key={reportKey}
                   center={[Number(report.lat), Number(report.lng)]}
                   radius={20}
-                  fillColor="#f97316"
-                  color="#ea580c"
-                  weight={1}
+                  fillColor="#00D99D"
+                  color="#00D99D"
+                  weight={1.5}
                   opacity={1}
-                  fillOpacity={0.4}
+                  fillOpacity={0.45}
                 >
                   <Popup>
                     <div className="text-slate-900 min-w-[200px]">
@@ -665,87 +701,155 @@ export default function MapClient() {
         </MarkerClusterGroup>
       </MapContainer>
 
-      {/* Full Report Modal */}
-      {selectedReport && (
-        <div className="fixed inset-0 z-[1050] bg-slate-950/80 backdrop-blur flex items-center justify-center p-2 sm:p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-2xl w-full max-h-[85vh] sm:max-h-[90vh] overflow-y-auto p-4 sm:p-6 shadow-2xl relative text-left">
-            <button 
-              onClick={() => setSelectedReport(null)}
-              className="absolute top-2 sm:top-4 right-2 sm:right-4 min-w-[44px] min-h-[44px] p-2 text-slate-400 hover:text-white active:bg-slate-800 rounded-full transition-colors flex items-center justify-center"
-              aria-label="Close report details"
-            >
-              <X size={24} />
-            </button>
-            
-            <div className="mb-6 pr-8">
-              <span className={`inline-block text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-3 ${
-                selectedReport.status === "PUBLIC_VERIFIED" 
-                  ? "bg-red-500/20 text-red-400 border border-red-500/30" 
-                  : "bg-slate-500/20 text-slate-400 border border-slate-500/30"
-              }`}>
-                {selectedReport.status === "PUBLIC_VERIFIED" ? "Public Verified Incident" : "Action Ignored"}
-              </span>
-              <h2 className="text-2xl font-bold text-white mb-1 wrap-break-word">{selectedReport.facilityName || "Unnamed Facility / Incident"}</h2>
-              <p className="text-sm text-slate-400 wrap-break-word">{selectedReport.region}, {selectedReport.country}</p>
-              {selectedReport.plusCode && (
-                <div className="mt-1 text-xs font-mono text-cyan-400">
-                  Sector Grid: {selectedReport.plusCode}
+      {/* Full Report Modal - Portaled to document.body so it spans the entire website viewport */}
+      {isMounted && selectedReport && typeof document !== "undefined" && createPortal(
+        <div 
+          className="fixed inset-0 z-[99999] bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 overflow-y-auto"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setSelectedReport(null);
+          }}
+        >
+          <div 
+            className="bg-slate-900/98 border border-white/10 rounded-2xl sm:rounded-3xl max-w-lg w-full max-h-[88vh] flex flex-col shadow-[0_25px_70px_rgba(0,0,0,0.9)] overflow-hidden relative text-left"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="p-4 sm:p-5 pb-3 border-b border-white/10 relative shrink-0">
+              <button 
+                onClick={() => setSelectedReport(null)}
+                className="absolute top-3.5 right-3.5 p-2 text-slate-400 hover:text-white hover:bg-white/10 active:bg-white/20 rounded-xl transition-all flex items-center justify-center cursor-pointer"
+                aria-label="Close report details"
+              >
+                <X size={18} />
+              </button>
+
+              <div className="flex items-center gap-2 mb-2 pr-10 flex-wrap">
+                <span className={`inline-block text-[11px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
+                  selectedReport.status === "PUBLIC_VERIFIED" 
+                    ? "bg-coral/15 text-coral border border-coral/30" 
+                    : selectedReport.status === "ACTION_IGNORED"
+                    ? "bg-iris/15 text-iris-400 border border-iris/30"
+                    : "bg-mint/15 text-mint border border-mint/30"
+                }`}>
+                  {selectedReport.status === "PUBLIC_VERIFIED" 
+                    ? "Public Verified" 
+                    : selectedReport.status === "ACTION_IGNORED"
+                    ? "Action Ignored"
+                    : "Heatmap Aggregated"}
+                </span>
+
+                {selectedReport.plusCode && (
+                  <span className="text-[11px] font-mono text-cyan-400 bg-cyan-950/40 border border-cyan-800/40 px-2 py-0.5 rounded-md">
+                    {selectedReport.plusCode}
+                  </span>
+                )}
+              </div>
+
+              <h2 className="text-lg sm:text-xl font-bold font-heading text-white wrap-break-word pr-8 leading-snug">
+                {selectedReport.facilityName || "Verified Incident Record"}
+              </h2>
+              <p className="text-xs text-slate-400 wrap-break-word mt-1 flex items-center gap-1.5">
+                <MapPin size={13} className="text-mint shrink-0" />
+                <span>{selectedReport.region}, {selectedReport.country}</span>
+              </p>
+            </div>
+
+            {/* Modal Body - Scrollable Content */}
+            <div className="p-4 sm:p-5 overflow-y-auto space-y-3.5 flex-1">
+              {/* Metadata Micro-Cards */}
+              <div className="grid grid-cols-2 gap-2.5">
+                <div className="bg-black/40 border border-white/5 p-2.5 rounded-xl">
+                  <span className="block text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Category</span>
+                  <span className="text-xs font-semibold text-slate-200 mt-0.5 block wrap-break-word">{selectedReport.category}</span>
+                </div>
+                <div className="bg-black/40 border border-white/5 p-2.5 rounded-xl">
+                  <span className="block text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Incident Date</span>
+                  <span className="text-xs font-semibold text-slate-200 mt-0.5 block flex items-center gap-1">
+                    <Calendar size={12} className="text-iris-400 shrink-0" />
+                    <span>{selectedReport.incidentDate || "Undisclosed"}</span>
+                  </span>
+                </div>
+              </div>
+
+              {/* Detailed Narrative */}
+              <div>
+                <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                  Detailed Narrative
+                </h3>
+                <div className="bg-black/40 border border-white/5 p-3.5 rounded-xl text-slate-300 text-xs sm:text-sm whitespace-pre-wrap leading-relaxed wrap-break-word max-h-56 overflow-y-auto font-sans select-text">
+                  {selectedReport.summary || "No narrative details attached."}
+                </div>
+              </div>
+
+              {/* Authorities Filed / Details */}
+              {selectedReport.authorityDetails && (
+                <div>
+                  <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                    Authority Filings & Misconduct Notes
+                  </h3>
+                  <div className="bg-iris/10 border border-iris/25 p-3 rounded-xl text-slate-300 text-xs leading-relaxed wrap-break-word">
+                    {selectedReport.authorityDetails}
+                  </div>
+                </div>
+              )}
+
+              {/* Alleged Perpetrators if any */}
+              {selectedReport.allegedPerpetrators && (
+                <div>
+                  <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                    Perpetrators / Practitioners
+                  </h3>
+                  <div className="bg-black/40 border border-white/5 p-3 rounded-xl text-slate-300 text-xs wrap-break-word">
+                    {selectedReport.allegedPerpetrators}
+                  </div>
+                </div>
+              )}
+
+              {/* Evidence Links */}
+              {selectedReport.evidenceLinks && selectedReport.evidenceLinks.length > 0 && (
+                <div>
+                  <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                    Public Evidence Links
+                  </h3>
+                  <div className="bg-black/40 border border-white/5 p-2.5 rounded-xl space-y-1.5">
+                    {selectedReport.evidenceLinks.map((link, i) => {
+                      const isSafe = isValidWebUrl(link);
+                      return (
+                        <div key={i} className="flex items-center gap-1.5 text-xs">
+                          {isSafe ? (
+                            <a 
+                              href={link} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              className="text-mint hover:underline break-all inline-flex items-center gap-1 font-mono text-[11px]"
+                            >
+                              <ExternalLink size={11} className="shrink-0" />
+                              <span>{link}</span>
+                            </a>
+                          ) : (
+                            <span className="text-slate-400 font-mono text-[11px] break-all">{link}</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mb-6 bg-slate-950/50 p-4 rounded-xl border border-slate-800">
-              <div>
-                <span className="block text-xs text-slate-500 uppercase tracking-wider font-semibold">Category</span>
-                <span className="text-sm font-medium text-slate-200">{selectedReport.category}</span>
-              </div>
-              <div>
-                <span className="block text-xs text-slate-500 uppercase tracking-wider font-semibold">Incident Date</span>
-                <span className="text-sm font-medium text-slate-200">{selectedReport.incidentDate || "Undisclosed"}</span>
-              </div>
+            {/* Modal Footer */}
+            <div className="p-3 px-5 border-t border-white/10 flex items-center justify-end bg-slate-950/60 shrink-0">
+              <button
+                type="button"
+                onClick={() => setSelectedReport(null)}
+                className="px-4 py-2 bg-white/10 hover:bg-white/20 active:bg-white/30 text-white text-xs font-semibold rounded-xl transition-all cursor-pointer"
+              >
+                Close Preview
+              </button>
             </div>
-
-            <div className="mb-6">
-              <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Detailed Narrative</h3>
-              <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800 text-slate-300 text-sm whitespace-pre-wrap leading-relaxed wrap-break-word">
-                {selectedReport.summary}
-              </div>
-            </div>
-
-            {selectedReport.allegedPerpetrators && (
-              <div className="mb-6">
-                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Perpetrators / Practitioners</h3>
-                <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800 text-slate-300 text-sm wrap-break-word">
-                  {selectedReport.allegedPerpetrators}
-                </div>
-              </div>
-            )}
-
-            {selectedReport.evidenceLinks && selectedReport.evidenceLinks.length > 0 && (
-              <div>
-                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Public Evidence Links</h3>
-                <ul className="list-disc pl-4 space-y-2">
-                  {selectedReport.evidenceLinks.map((link, i) => {
-                    const isSafe = isValidWebUrl(link);
-                    return (
-                      <li key={i}>
-                        {isSafe ? (
-                          <a href={link} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 hover:underline break-all">
-                            {link}
-                          </a>
-                        ) : (
-                          <span className="text-slate-400 font-mono text-xs break-all">
-                            {link}
-                          </span>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

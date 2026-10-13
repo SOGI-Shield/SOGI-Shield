@@ -38,14 +38,14 @@ export default function EvidenceLockerResources({ trackingCode }) {
   };
 
   return (
-    <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 sm:p-8 shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative overflow-hidden flex flex-col justify-between">
-      <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-cyan-500 via-indigo-500 to-purple-500"></div>
+    <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 hover:border-iris/40 rounded-3xl p-6 sm:p-8 shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative overflow-hidden flex flex-col justify-between transition-all">
+      <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-iris via-mint to-coral"></div>
 
       <div>
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 rounded-2xl">
-            <Lock size={24} className="drop-shadow-[0_0_8px_rgba(99,102,241,0.6)]" />
+          <div className="p-3 bg-iris/20 text-white border border-iris/40 rounded-2xl">
+            <Lock size={24} className="text-mint drop-shadow-[0_0_8px_rgba(0,217,157,0.5)]" />
           </div>
           <div>
             <h3 className="text-xl font-bold text-white">Evidence Locker & Safety Checklist</h3>
@@ -61,15 +61,15 @@ export default function EvidenceLockerResources({ trackingCode }) {
             onClick={() => toggleCheck("codeSaved")}
             className="flex items-start gap-3 p-3.5 bg-black/40 hover:bg-black/60 border border-white/5 rounded-2xl cursor-pointer transition-colors"
           >
-            <button className="mt-0.5 text-indigo-400 focus:outline-none">
-              {checklist.codeSaved ? <CheckSquare size={20} className="text-emerald-400" /> : <Square size={20} className="text-slate-500" />}
+            <button className="mt-0.5 text-slate-400 focus:outline-none">
+              {checklist.codeSaved ? <CheckSquare size={20} className="text-mint" /> : <Square size={20} className="text-slate-500" />}
             </button>
             <div className="text-xs sm:text-sm">
-              <strong className={`block ${checklist.codeSaved ? "text-emerald-300 line-through" : "text-white"}`}>
+              <strong className={`block ${checklist.codeSaved ? "text-mint line-through" : "text-white"}`}>
                 Save Secret Tracking Code Offline
               </strong>
               <span className="text-slate-400">
-                Write down <span className="font-mono text-indigo-300 font-bold">{trackingCode}</span> in a secure password manager or offline safe. It cannot be recovered.
+                Write down <span className="font-mono text-mint font-bold">{trackingCode}</span> in a secure password manager or offline safe. It cannot be recovered.
               </span>
             </div>
           </div>
@@ -78,11 +78,11 @@ export default function EvidenceLockerResources({ trackingCode }) {
             onClick={() => toggleCheck("evidenceBackedUp")}
             className="flex items-start gap-3 p-3.5 bg-black/40 hover:bg-black/60 border border-white/5 rounded-2xl cursor-pointer transition-colors"
           >
-            <button className="mt-0.5 text-indigo-400 focus:outline-none">
-              {checklist.evidenceBackedUp ? <CheckSquare size={20} className="text-emerald-400" /> : <Square size={20} className="text-slate-500" />}
+            <button className="mt-0.5 text-slate-400 focus:outline-none">
+              {checklist.evidenceBackedUp ? <CheckSquare size={20} className="text-mint" /> : <Square size={20} className="text-slate-500" />}
             </button>
             <div className="text-xs sm:text-sm">
-              <strong className={`block ${checklist.evidenceBackedUp ? "text-emerald-300 line-through" : "text-white"}`}>
+              <strong className={`block ${checklist.evidenceBackedUp ? "text-mint line-through" : "text-white"}`}>
                 Preserve Primary Evidence (Unedited)
               </strong>
               <span className="text-slate-400">
@@ -95,11 +95,11 @@ export default function EvidenceLockerResources({ trackingCode }) {
             onClick={() => toggleCheck("signalConfigured")}
             className="flex items-start gap-3 p-3.5 bg-black/40 hover:bg-black/60 border border-white/5 rounded-2xl cursor-pointer transition-colors"
           >
-            <button className="mt-0.5 text-indigo-400 focus:outline-none">
-              {checklist.signalConfigured ? <CheckSquare size={20} className="text-emerald-400" /> : <Square size={20} className="text-slate-500" />}
+            <button className="mt-0.5 text-slate-400 focus:outline-none">
+              {checklist.signalConfigured ? <CheckSquare size={20} className="text-mint" /> : <Square size={20} className="text-slate-500" />}
             </button>
             <div className="text-xs sm:text-sm">
-              <strong className={`block ${checklist.signalConfigured ? "text-emerald-300 line-through" : "text-white"}`}>
+              <strong className={`block ${checklist.signalConfigured ? "text-mint line-through" : "text-white"}`}>
                 Communicate via Disappearing Messages
               </strong>
               <span className="text-slate-400">
@@ -112,11 +112,11 @@ export default function EvidenceLockerResources({ trackingCode }) {
             onClick={() => toggleCheck("historyCleared")}
             className="flex items-start gap-3 p-3.5 bg-black/40 hover:bg-black/60 border border-white/5 rounded-2xl cursor-pointer transition-colors"
           >
-            <button className="mt-0.5 text-indigo-400 focus:outline-none">
-              {checklist.historyCleared ? <CheckSquare size={20} className="text-emerald-400" /> : <Square size={20} className="text-slate-500" />}
+            <button className="mt-0.5 text-slate-400 focus:outline-none">
+              {checklist.historyCleared ? <CheckSquare size={20} className="text-mint" /> : <Square size={20} className="text-slate-500" />}
             </button>
             <div className="text-xs sm:text-sm flex-1">
-              <strong className={`block ${checklist.historyCleared ? "text-emerald-300 line-through" : "text-white"}`}>
+              <strong className={`block ${checklist.historyCleared ? "text-mint line-through" : "text-white"}`}>
                 Sanitize Browser Footprint
               </strong>
               <span className="text-slate-400 block mb-2">
@@ -128,7 +128,7 @@ export default function EvidenceLockerResources({ trackingCode }) {
                   e.stopPropagation();
                   handleClearBrowserHistory();
                 }}
-                className="text-xs bg-white/10 hover:bg-white/20 text-slate-200 px-3 py-1.5 rounded-lg border border-white/10 font-bold transition-colors"
+                className="text-xs bg-white/10 hover:bg-white/20 active:bg-white/30 text-slate-200 px-3 py-1.5 rounded-lg border border-white/10 font-bold transition-colors cursor-pointer"
               >
                 Clear SOGI Session Storage
               </button>
@@ -139,7 +139,7 @@ export default function EvidenceLockerResources({ trackingCode }) {
         {/* Rapid Crisis & Legal Resources */}
         <div className="border-t border-white/10 pt-6">
           <div className="flex items-center gap-2 mb-4">
-            <LifeBuoy size={18} className="text-cyan-400" />
+            <LifeBuoy size={18} className="text-mint" />
             <h4 className="text-sm font-bold text-white uppercase tracking-wider">
               Emergency Hotlines & Human Rights Legal Aid
             </h4>
@@ -153,12 +153,12 @@ export default function EvidenceLockerResources({ trackingCode }) {
               className="p-3 bg-black/40 hover:bg-white/5 border border-white/10 rounded-xl transition-all flex items-center justify-between group"
             >
               <div>
-                <span className="block text-xs font-bold text-white group-hover:text-cyan-400 transition-colors">
+                <span className="block text-xs font-bold text-white group-hover:text-mint transition-colors">
                   Front Line Defenders 24/7
                 </span>
                 <span className="text-[11px] text-slate-400">+353 1 212 3750 (Emergency)</span>
               </div>
-              <ExternalLink size={14} className="text-slate-500 group-hover:text-cyan-400" />
+              <ExternalLink size={14} className="text-slate-500 group-hover:text-mint" />
             </a>
 
             <a
@@ -168,12 +168,12 @@ export default function EvidenceLockerResources({ trackingCode }) {
               className="p-3 bg-black/40 hover:bg-white/5 border border-white/10 rounded-xl transition-all flex items-center justify-between group"
             >
               <div>
-                <span className="block text-xs font-bold text-white group-hover:text-pink-400 transition-colors">
+                <span className="block text-xs font-bold text-white group-hover:text-coral transition-colors">
                   Outright International
                 </span>
                 <span className="text-[11px] text-slate-400">Emergency Support & Advocacy</span>
               </div>
-              <ExternalLink size={14} className="text-slate-500 group-hover:text-pink-400" />
+              <ExternalLink size={14} className="text-slate-500 group-hover:text-coral" />
             </a>
 
             <a
@@ -183,12 +183,12 @@ export default function EvidenceLockerResources({ trackingCode }) {
               className="p-3 bg-black/40 hover:bg-white/5 border border-white/10 rounded-xl transition-all flex items-center justify-between group"
             >
               <div>
-                <span className="block text-xs font-bold text-white group-hover:text-indigo-400 transition-colors">
+                <span className="block text-xs font-bold text-white group-hover:text-iris-400 transition-colors">
                   ILGA World Directory
                 </span>
                 <span className="text-[11px] text-slate-400">Global LGBTI Legal Aid Network</span>
               </div>
-              <ExternalLink size={14} className="text-slate-500 group-hover:text-indigo-400" />
+              <ExternalLink size={14} className="text-slate-500 group-hover:text-iris-400" />
             </a>
 
             <a
@@ -198,12 +198,12 @@ export default function EvidenceLockerResources({ trackingCode }) {
               className="p-3 bg-black/40 hover:bg-white/5 border border-white/10 rounded-xl transition-all flex items-center justify-between group"
             >
               <div>
-                <span className="block text-xs font-bold text-white group-hover:text-emerald-400 transition-colors">
+                <span className="block text-xs font-bold text-white group-hover:text-mint transition-colors">
                   UN OHCHR Portal
                 </span>
                 <span className="text-[11px] text-slate-400">Direct Special Procedures Filing</span>
               </div>
-              <ExternalLink size={14} className="text-slate-500 group-hover:text-emerald-400" />
+              <ExternalLink size={14} className="text-slate-500 group-hover:text-mint" />
             </a>
           </div>
         </div>

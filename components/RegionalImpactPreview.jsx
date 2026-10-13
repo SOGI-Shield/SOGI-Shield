@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { Radio, Users, MapPin, Eye } from "lucide-react";
 import { encodePlusCode } from "@/lib/pluscode";
+import { buildSafeMapUrl } from "@/lib/utils";
 
 const MiniImpactMap = dynamic(() => import("./MiniImpactMap"), {
   ssr: false,
@@ -18,18 +19,18 @@ export default function RegionalImpactPreview({ report }) {
   const plusCode = report?.plusCode || (lat && lng ? encodePlusCode(lat, lng) : null);
 
   return (
-    <div className="bg-slate-900/60 backdrop-blur-xl border border-indigo-500/30 rounded-3xl p-5 sm:p-7 shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative overflow-hidden flex flex-col justify-between">
-      <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-emerald-500 via-teal-500 to-cyan-500"></div>
+    <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 hover:border-mint/40 rounded-3xl p-5 sm:p-7 shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative overflow-hidden flex flex-col justify-between transition-all">
+      <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-mint via-iris to-coral"></div>
 
       <div>
         {/* Collective Impact Notification */}
         <div className="flex items-start gap-3 mb-4">
-          <div className="p-2.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl shrink-0 mt-0.5">
+          <div className="p-2.5 bg-mint/15 text-mint border border-mint/30 rounded-xl shrink-0 mt-0.5">
             <Radio size={22} className="animate-pulse" />
           </div>
           <div>
-            <div className="inline-flex items-center gap-2 bg-emerald-950/40 border border-emerald-500/30 px-2.5 py-0.5 rounded-full text-[11px] font-bold text-emerald-300 uppercase tracking-wider mb-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+            <div className="inline-flex items-center gap-2 bg-mint/15 border border-mint/30 px-2.5 py-0.5 rounded-full text-[11px] font-bold text-mint uppercase tracking-wider mb-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-mint"></span>
               Live Grid Updated
             </div>
             <h3 className="text-lg sm:text-xl font-bold text-white leading-snug">
@@ -43,16 +44,16 @@ export default function RegionalImpactPreview({ report }) {
 
         {/* Location & Sector Tag */}
         <div className="flex flex-wrap items-center gap-2 text-xs text-slate-300 bg-black/40 border border-white/5 p-3 rounded-xl mb-4">
-          <div className="flex items-center gap-1.5 text-cyan-400 font-semibold">
+          <div className="flex items-center gap-1.5 text-mint font-semibold">
             <MapPin size={14} />
             <span>{region || "Area"}, {country}</span>
-            {plusCode && <span className="font-mono text-cyan-300 text-[11px]">({plusCode})</span>}
+            {plusCode && <span className="font-mono text-mint text-[11px]">({plusCode})</span>}
           </div>
           <span className="text-slate-600">•</span>
-          <span className="text-slate-400">{category}</span>
+          <span className="text-slate-300">{category}</span>
           <span className="text-slate-600">•</span>
-          <div className="flex items-center gap-1 text-emerald-400 font-mono">
-            <Users size={13} />
+          <div className="flex items-center gap-1 text-slate-200 font-mono font-bold">
+            <Users size={13} className="text-mint" />
             <span>Regional Watch Active</span>
           </div>
         </div>
@@ -71,13 +72,13 @@ export default function RegionalImpactPreview({ report }) {
 
       <div className="pt-2 flex items-center justify-between text-xs text-slate-400">
         <span className="flex items-center gap-1.5">
-          <Eye size={14} className="text-indigo-400" /> Visible on public safety heatmap
+          <Eye size={14} className="text-mint" /> Visible on public safety heatmap
         </span>
         <a
-          href={`/?lat=${lat || 20}&lng=${lng || 0}&zoom=11`}
+          href={buildSafeMapUrl(lat, lng, 11)}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-cyan-400 hover:text-cyan-300 underline font-medium"
+          className="text-mint hover:text-white underline font-bold"
         >
           Open Global Map ↗
         </a>

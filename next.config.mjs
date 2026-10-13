@@ -27,6 +27,30 @@ const nextConfig = {
     };
     return config;
   },
+  async redirects() {
+    return [
+      {
+        source: '/privacy.md',
+        destination: '/privacy',
+        permanent: true,
+      },
+      {
+        source: '/PRIVACY.md',
+        destination: '/privacy',
+        permanent: true,
+      },
+      {
+        source: '/privacy-policy',
+        destination: '/privacy',
+        permanent: true,
+      },
+      {
+        source: '/privacy.html',
+        destination: '/privacy',
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {
@@ -55,7 +79,7 @@ const nextConfig = {
           },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=()',
+            value: 'camera=(), microphone=(), geolocation=(self)',
           },
           {
             key: 'X-XSS-Protection',
