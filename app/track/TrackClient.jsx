@@ -5,8 +5,7 @@ import { Search, ShieldCheck, ShieldAlert, Activity, AlertCircle, FileText, Down
 import { collection, query, where, getDocs, updateDoc, doc } from "firebase/firestore/lite";
 import { db, isMockMode } from "@/lib/firebase";
 import { generateComplaintPdf } from "@/lib/generateComplaintPdf";
-import { getLocalReportByTrackingCode, updateLocalReportStatus } from "@/lib/localStore";
-import { isValidWebUrl } from "@/lib/utils";
+import { isValidWebUrl, sanitizeTrackingCode, buildSafeMapUrl } from "@/lib/utils";
 import { decompressReport } from "@/lib/compress";
 
 export default function TrackCasePage() {
