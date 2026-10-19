@@ -1,7 +1,7 @@
 # Privacy Policy — SOGI-Shield
 
 > **Effective Date:** October 2026 (Version 1.2.0)  
-> **Repository:** [github.com/Shubham-hahh/SOGI-Shield](https://github.com/SOGI-Shield/SOGI-Shield)  
+> **Repository:** [github.com/SOGI-Shield/SOGI-Shield](https://github.com/SOGI-Shield/SOGI-Shield)  
 > **Live Application:** [sogi-shield.pages.dev/privacy](https://sogi-shield.pages.dev/privacy)  
 > **Automated Policy Route:** Requests to `/privacy.md`, `/PRIVACY.md`, or `/privacy-policy` automatically route to `/privacy`.
 
