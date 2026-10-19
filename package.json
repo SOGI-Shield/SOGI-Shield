@@ -16,7 +16,7 @@
     "clean-branches": "node scripts/cleanup-branches.mjs"
   },
   "dependencies": {
-    "@marsidev/react-turnstile": "^1.6.1",
+    "@marsidev/react-turnstile": "^1.6.2",
     "@vercel/analytics": "2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "firebase": "^13.0.0",
