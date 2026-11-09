@@ -18,7 +18,7 @@
   "dependencies": {
     "@marsidev/react-turnstile": "^1.6.3",
     "@vercel/analytics": "2.0.1",
-    "@vercel/speed-insights": "^2.0.0",
+    "@vercel/speed-insights": "^2.1.0",
     "firebase": "^13.1.0",
     "firebase-admin": "^14.5.0",
     "jspdf": "^4.2.1",
